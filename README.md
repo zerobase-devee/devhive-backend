@@ -1,1 +1,3 @@
-# devee-backend
+# devhive-backend
+
+DevHive Backend Repository
