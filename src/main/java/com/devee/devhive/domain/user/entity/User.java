@@ -5,6 +5,7 @@ import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.type.ActivityStatus;
 import com.devee.devhive.domain.user.type.GenderType;
+import com.devee.devhive.global.oauth2.domain.type.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,4 +72,18 @@ public class User extends BaseEntity{
     @LastModifiedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime modifiedDate;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public User update(String name, String profileImage) {
+        this.name = name;
+        this.profileImage = profileImage;
+
+        return this;
+    }
+
+    public String getRoleKey() {
+        return this.role.getKey();
+    }
 }
