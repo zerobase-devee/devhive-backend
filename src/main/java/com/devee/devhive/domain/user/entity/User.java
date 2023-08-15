@@ -1,10 +1,10 @@
 package com.devee.devhive.domain.user.entity;
 
-import com.devee.devhive.global.entity.BaseEntity;
 import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.type.ActivityStatus;
 import com.devee.devhive.domain.user.type.GenderType;
+import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,46 +29,42 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class User extends BaseEntity {
 
-    @Column(nullable = false, unique = true)
-    private String email;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private String password;
+  @Column(nullable = false, unique = true)
+  private String email;
 
-    @Column(nullable = false, unique = true)
-    private String nickName;
+  @Column(nullable = false)
+  private String password;
 
-    private String name;
+  @Column(nullable = false, unique = true)
+  private String nickName;
 
-    @Enumerated(EnumType.STRING)
-    private GenderType gender;
+  private String region;
 
-    private String region;
+  private String profileImage;
 
-    private String profileImage;
+  private String intro;
 
-    private String intro;
+  @OneToMany(mappedBy = "user")
+  private List<UserTechStack> userTechStacks;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserTechStack> userTechStacks;
+  private double rankPoint;
 
-    private double rankPoint;
+  @Enumerated(EnumType.STRING)
+  private ActivityStatus status;
 
-    @Enumerated(EnumType.STRING)
-    private ActivityStatus status;
+  @OneToMany(mappedBy = "user")
+  private List<Favorite> favorites;
 
-    @OneToMany(mappedBy = "user")
-    private List<Favorite> favorites;
+  @OneToMany(mappedBy = "user")
+  private List<Bookmark> bookmarks;
 
-    @OneToMany(mappedBy = "user")
-    private List<Bookmark> bookmarks;
-
-    @LastModifiedDate
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime modifiedDate;
+  @LastModifiedDate
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+  private LocalDateTime modifiedDate;
 }
