@@ -1,6 +1,7 @@
 package com.devee.devhive.domain.user.career.entity;
 
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.career.entity.dto.CareerDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,4 +33,14 @@ public class Career {
     private String position;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+
+    public static Career of(User user, CareerDto careerDto) {
+        return Career.builder()
+            .user(user)
+            .company(careerDto.getCompany())
+            .position(careerDto.getPosition())
+            .startDate(careerDto.getStartDate())
+            .endDate(careerDto.getEndDate())
+            .build();
+    }
 }

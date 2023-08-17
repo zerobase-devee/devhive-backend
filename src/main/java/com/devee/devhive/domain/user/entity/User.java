@@ -3,6 +3,7 @@ package com.devee.devhive.domain.user.entity;
 import static com.devee.devhive.domain.user.type.Role.USER;
 
 import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
+import com.devee.devhive.domain.user.career.entity.Career;
 import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.type.ActivityStatus;
 import com.devee.devhive.domain.user.type.Role;
@@ -52,14 +53,13 @@ public class User extends BaseEntity implements UserDetails {
   @Column(nullable = false, unique = true)
   private String nickName;
 
+  private boolean isNickNameChanged;
+
   private String region;
 
   private String profileImage;
 
   private String intro;
-
-  @OneToMany(mappedBy = "user")
-  private List<UserTechStack> userTechStacks;
 
   private double rankPoint;
 
@@ -75,6 +75,15 @@ public class User extends BaseEntity implements UserDetails {
 
   @OneToMany(mappedBy = "user")
   private List<Bookmark> bookmarks;
+
+  @OneToMany(mappedBy = "user")
+  private List<Career> userCareers;
+
+  @OneToMany(mappedBy = "user")
+  private List<UserTechStack> userTechStacks;
+
+  @OneToMany(mappedBy = "user")
+  private List<UserBadge> userBadges;
 
   @LastModifiedDate
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
@@ -124,5 +133,12 @@ public class User extends BaseEntity implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
+  }
+
+  public User update(String nickName, String profileImage) {
+    this.nickName = nickName;
+    this.profileImage = profileImage;
+
+    return this;
   }
 }

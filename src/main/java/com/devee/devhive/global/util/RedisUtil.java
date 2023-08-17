@@ -1,7 +1,9 @@
 package com.devee.devhive.global.util;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
@@ -11,12 +13,12 @@ import org.springframework.stereotype.Component;
 public class RedisUtil {
 
   private final StringRedisTemplate template;
+  private final RedisTemplate<String, String> nicknameRedisTemplate;
 
   public String getData(String key) {
     ValueOperations<String, String> valueOperations = template.opsForValue();
     return valueOperations.get(key);
   }
-
 
   public boolean existData(String key) {
     return Boolean.TRUE.equals(template.hasKey(key));
@@ -26,5 +28,16 @@ public class RedisUtil {
     ValueOperations<String, String> valueOperations = template.opsForValue();
     Duration expireDuration = Duration.ofSeconds(duration);
     valueOperations.set(key, value, expireDuration);
+  }
+
+  // 닉네임 락
+  public boolean getLock(String key, long timeoutInSeconds) {
+    ValueOperations<String, String> ops = nicknameRedisTemplate.opsForValue();
+    Boolean locked = ops.setIfAbsent(key, "locked", timeoutInSeconds, TimeUnit.SECONDS);
+    return locked != null && locked;
+  }
+  // 닉네임 락 해제
+  public void unLock(String key) {
+    nicknameRedisTemplate.delete(key);
   }
 }
