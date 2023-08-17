@@ -28,7 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
-  private static final String NO_CHECK_URL = "/api/users/login"; // "/api/users/login"으로 들어오는 요청은 Filter 작동 X
+  private static final String NO_CHECK_URL = "/api/auth/signin"; // "/api/auth/signin"으로 들어오는 요청은 Filter 작동 X
 
   private final TokenProvider tokenProvider;
   private final UserRepository userRepository;

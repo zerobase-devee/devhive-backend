@@ -50,11 +50,26 @@ public class SecurityConfig {
 //            )
 //        )
         .authorizeHttpRequests((authorizeRequests) -> {
-          authorizeRequests.requestMatchers("/api/user/**").permitAll();
+          authorizeRequests.requestMatchers(
+              "/api/auth/**",
+              "api/projects/list",
+              "/api/projects/{projectId}",
+              "/api/users/rank"
+          ).permitAll();
 
-          authorizeRequests.requestMatchers("/api/admin/test").hasRole("ADMIN");
+          authorizeRequests.requestMatchers(
+              "/api/users/**",
+              "/api/favorite/**",
+              "/api/bookmark/**",
+              "/api/projects/**",
+              "/api/chat/**",
+              "/api/comments/**",
+              "/api/reply/**"
+          ).hasAnyRole("USER", "ADMIN");
 
-          authorizeRequests.anyRequest().permitAll();
+          authorizeRequests.requestMatchers(
+              "/api/admin/**"
+          ).hasRole("ADMIN");
         })
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),

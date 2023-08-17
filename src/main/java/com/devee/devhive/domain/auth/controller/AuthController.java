@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth")
 @Slf4j
 public class AuthController {
 
@@ -61,7 +61,7 @@ public class AuthController {
     log.info("reIssuedRefreshToken : {}", reIssuedRefreshToken);
     tokenProvider.sendAccessToken(response, accessToken);
     tokenProvider.sendAccessAndRefreshToken(response, accessToken, reIssuedRefreshToken);
-    return "AccessToken이 재발급되었습니다.";
+    return accessToken;
   }
 
   private String reIssueRefreshToken(User user) {
