@@ -1,16 +1,22 @@
 package com.devee.devhive.domain.auth.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_NICKNAME;
+
 import com.devee.devhive.domain.auth.dto.EmailDTO;
 import com.devee.devhive.domain.auth.dto.JoinDTO;
+import com.devee.devhive.domain.auth.dto.NicknameDTO;
 import com.devee.devhive.domain.auth.service.AuthService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.TokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,5 +75,16 @@ public class AuthController {
     user.updateRefreshToken(reIssuedRefreshToken);
     userRepository.saveAndFlush(user);
     return reIssuedRefreshToken;
+  }
+
+  @GetMapping("/check-nickname")
+  public ResponseEntity<String> checkNickname(@RequestBody NicknameDTO nicknameDTO) {
+    boolean isNicknameAvailable = authService.isNicknameAvailable(nicknameDTO);
+
+    if (isNicknameAvailable) {
+      return ResponseEntity.ok("사용 가능한 닉네임입니다.");
+    } else {
+      throw new CustomException(DUPLICATE_NICKNAME);
+    }
   }
 }

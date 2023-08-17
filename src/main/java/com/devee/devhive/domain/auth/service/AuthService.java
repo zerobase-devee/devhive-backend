@@ -8,11 +8,13 @@ import static com.devee.devhive.global.exception.ErrorCode.INCORRECT_VERIFY_CODE
 
 import com.devee.devhive.domain.auth.dto.EmailDTO;
 import com.devee.devhive.domain.auth.dto.JoinDTO;
+import com.devee.devhive.domain.auth.dto.NicknameDTO;
 import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.util.RedisUtil;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -63,5 +65,10 @@ public class AuthService {
     }
 
     userRepository.save(user);
+  }
+
+  public boolean isNicknameAvailable(NicknameDTO nicknameDTO) {
+    Optional<User> userWithSameNickname = userRepository.findByNickName(nicknameDTO.getNickname());
+    return userWithSameNickname.isEmpty();
   }
 }

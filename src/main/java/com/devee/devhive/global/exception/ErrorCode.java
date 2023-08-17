@@ -12,7 +12,7 @@ public enum ErrorCode {
     EXPIRED_VERIFY_CODE(HttpStatus.BAD_REQUEST, "인증 코드가 만료되었습니다. "),
     FAILED_SENDING_VERIFY_CODE(HttpStatus.BAD_REQUEST, "인증 코드 전송에 실패했습니다. "),
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일 입니다. "),
-    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "이미 가입된 닉네임 입니다. "),
+    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "이미 등록된 닉네임 입니다. "),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다. "),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "권한이 없습니다. "),
     INVALID_JWT(HttpStatus.UNAUTHORIZED, "유효하지않은 인증입니다. "),
