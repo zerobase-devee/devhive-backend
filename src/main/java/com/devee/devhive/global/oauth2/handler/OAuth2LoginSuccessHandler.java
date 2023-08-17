@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -25,10 +26,10 @@ public class OAuth2LoginSuccessHandler implements
     log.info("onAuthenticationSuccess() 실행");
 
     try {
-      UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-      String email = userDetails.getUsername();
+      OAuth2User userDetails = (OAuth2User) authentication.getPrincipal();
+      String email = userDetails.getAttribute("email");
 
-      log.info(email + "로그인 완료.");
+      log.info(email + " 로그인 완료.");
     } catch (Exception e) {
       log.info(e.getMessage());
     }
