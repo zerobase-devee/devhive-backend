@@ -1,16 +1,14 @@
 package com.devee.devhive.domain.auth.controller;
 
-import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_NICKNAME;
-
-import com.devee.devhive.domain.auth.dto.EmailDTO;
-import com.devee.devhive.domain.auth.dto.JoinDTO;
-import com.devee.devhive.domain.auth.dto.NicknameDTO;
+import com.devee.devhive.domain.auth.dto.EmailDto;
+import com.devee.devhive.domain.auth.dto.JoinDto;
+import com.devee.devhive.domain.auth.dto.NicknameDto;
 import com.devee.devhive.domain.auth.service.AuthService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
-import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.TokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,14 +34,14 @@ public class AuthController {
 
   // 인증 코드
   @PostMapping("/verify")
-  public void sendVerificationCode(@RequestBody EmailDTO emailDTO) throws Exception {
+  public void sendVerificationCode(@RequestBody @Valid EmailDto emailDTO) throws Exception {
 
     authService.getVerificationCode(emailDTO);
   }
 
   // 유저 회원가입
   @PostMapping("/signup")
-  public void signUp(@RequestBody JoinDTO joinDTO) {
+  public void signUp(@RequestBody @Valid JoinDto joinDTO) {
 
     authService.signUp(joinDTO);
   }
@@ -78,9 +76,7 @@ public class AuthController {
   }
 
   @GetMapping("/check-nickname")
-  public ResponseEntity<Boolean> checkNickname(@RequestBody NicknameDTO nicknameDTO) {
-    boolean isNicknameAvailable = authService.isNicknameAvailable(nicknameDTO);
-
-    return ResponseEntity.ok(isNicknameAvailable);
+  public ResponseEntity<Boolean> checkNickname(@RequestBody NicknameDto nicknameDTO) {
+    return ResponseEntity.ok(authService.isNicknameAvailable(nicknameDTO));
   }
 }
