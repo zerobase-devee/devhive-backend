@@ -31,4 +31,11 @@ public class UserTechStack extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tech_stack_id")
     private TechStack techStack;
+
+    public static UserTechStack of(User user, TechStack techStack) {
+        return UserTechStack.builder()
+            .user(user)
+            .techStack(techStack)
+            .build();
+    }
 }
