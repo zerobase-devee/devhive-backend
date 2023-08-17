@@ -78,13 +78,9 @@ public class AuthController {
   }
 
   @GetMapping("/check-nickname")
-  public ResponseEntity<String> checkNickname(@RequestBody NicknameDTO nicknameDTO) {
+  public ResponseEntity<Boolean> checkNickname(@RequestBody NicknameDTO nicknameDTO) {
     boolean isNicknameAvailable = authService.isNicknameAvailable(nicknameDTO);
 
-    if (isNicknameAvailable) {
-      return ResponseEntity.ok("사용 가능한 닉네임입니다.");
-    } else {
-      throw new CustomException(DUPLICATE_NICKNAME);
-    }
+    return ResponseEntity.ok(isNicknameAvailable);
   }
 }
