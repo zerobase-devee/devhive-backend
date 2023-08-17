@@ -66,7 +66,7 @@ public class OAuthAttributes {
         .email(email)
         .profileImage(profileImage)
         .password("OAUTH_TEST")
-        .role(Role.GUEST)
+        .role(Role.USER)
         .build();
   }
 }
