@@ -48,7 +48,7 @@ public class CustomOAuth2UserService
     httpSession.setAttribute("user", userDto);
 
     return new DefaultOAuth2User(
-        Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
+        Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())),
         attributes.getAttributes(),
         attributes.getNameAttributeKey());
   }
