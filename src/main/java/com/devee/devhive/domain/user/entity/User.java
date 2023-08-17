@@ -94,7 +94,6 @@ public class User extends BaseEntity implements UserDetails {
   }
 
   // Methods required by UserDetails interface
-
   @Override
   public String getUsername() {
     return this.email;
