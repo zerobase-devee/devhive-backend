@@ -12,8 +12,6 @@ import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.security.JwtTokenProvider;
-import com.devee.devhive.global.security.UserDetailsServiceImpl;
 import com.devee.devhive.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
