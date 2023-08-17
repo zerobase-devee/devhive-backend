@@ -68,7 +68,7 @@ public class AuthService {
   }
 
   public boolean isNicknameAvailable(NicknameDTO nicknameDTO) {
-    Optional<User> userWithSameNickname = userRepository.findByNickName(nicknameDTO.getNickname());
-    return userWithSameNickname.isEmpty();
+
+    return userRepository.existsByNickName(nicknameDTO.getNickname());
   }
 }
