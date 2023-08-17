@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.auth.service;
 
+import static com.devee.devhive.domain.user.type.ActivityStatus.ACTIVITY;
 import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_EMAIL;
 import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.EXPIRED_VERIFY_CODE;
@@ -7,12 +8,15 @@ import static com.devee.devhive.global.exception.ErrorCode.INCORRECT_VERIFY_CODE
 
 import com.devee.devhive.domain.auth.dto.EmailDTO;
 import com.devee.devhive.domain.auth.dto.JoinDTO;
+import com.devee.devhive.domain.auth.dto.NicknameDTO;
 import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.util.RedisUtil;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,7 @@ public class AuthService {
   private final UserRepository userRepository;
   private final MailService mailService;
   private final RedisUtil redisUtil;
+  private final PasswordEncoder passwordEncoder;
 
   // 인증 코드
   public void getVerificationCode(EmailDTO emailDTO) throws Exception {
@@ -44,8 +49,9 @@ public class AuthService {
     User user = User.builder()
         .region(joinDTO.getRegion())
         .email(joinDTO.getEmail())
-        .password(joinDTO.getPassword())
+        .password(passwordEncoder.encode(joinDTO.getPassword()))
         .nickName(joinDTO.getNickName())
+        .status(ACTIVITY)
         .build();
 
     String enteredCode = joinDTO.getVerificationCode();
@@ -59,5 +65,10 @@ public class AuthService {
     }
 
     userRepository.save(user);
+  }
+
+  public boolean isNicknameAvailable(NicknameDTO nicknameDTO) {
+    Optional<User> userWithSameNickname = userRepository.findByNickName(nicknameDTO.getNickname());
+    return userWithSameNickname.isEmpty();
   }
 }
