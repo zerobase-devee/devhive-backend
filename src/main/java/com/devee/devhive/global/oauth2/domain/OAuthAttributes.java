@@ -1,7 +1,7 @@
 package com.devee.devhive.global.oauth2.domain;
 
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.global.oauth2.domain.type.Role;
+import com.devee.devhive.domain.user.type.Role;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;

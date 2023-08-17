@@ -1,4 +1,4 @@
-package com.devee.devhive.global.oauth2.domain.type;
+package com.devee.devhive.domain.user.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
