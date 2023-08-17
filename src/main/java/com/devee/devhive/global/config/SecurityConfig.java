@@ -92,8 +92,8 @@ public class SecurityConfig {
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),
             CustomJsonUsernamePasswordAuthenticationFilter.class);
-    return http.build();
 
+    return http.build();
   }
 
   @Bean
