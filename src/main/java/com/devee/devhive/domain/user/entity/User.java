@@ -95,6 +95,13 @@ public class User extends BaseEntity implements UserDetails {
     this.refreshToken = updateRefreshToken;
   }
 
+  public User update(String nickName, String profileImage) {
+    this.nickName = nickName;
+    this.profileImage = profileImage;
+
+    return this;
+  }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Set<GrantedAuthority> roles = new HashSet<>();
