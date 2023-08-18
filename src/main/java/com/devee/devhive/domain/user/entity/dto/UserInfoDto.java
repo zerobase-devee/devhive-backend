@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class UserInfoDto {
 
     private Long userId;
+    private boolean isFavorite;
     private String region;
     private String nickName;
     private String profileImage;
@@ -28,10 +29,12 @@ public class UserInfoDto {
     private int hiveLevel;
     private int exitNum;
 
-    public static UserInfoDto of(User user, UserInformationDto informationDto) {
-
+    public static UserInfoDto of(
+        User user, UserInformationDto informationDto, boolean isFavorite
+    ) {
         return UserInfoDto.builder()
             .userId(user.getId())
+            .isFavorite(isFavorite)
             .region(user.getRegion())
             .nickName(user.getNickName())
             .profileImage(user.getProfileImage())

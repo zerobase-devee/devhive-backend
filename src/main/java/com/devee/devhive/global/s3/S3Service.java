@@ -1,6 +1,7 @@
 package com.devee.devhive.global.s3;
 
 import static com.devee.devhive.global.exception.ErrorCode.S3_DELETE_ERROR;
+import static com.devee.devhive.global.exception.ErrorCode.S3_FILE_SIZE_EXCEEDED;
 import static com.devee.devhive.global.exception.ErrorCode.S3_NOT_FOUND_IMAGE;
 import static com.devee.devhive.global.exception.ErrorCode.S3_NOT_SUPPORT_IMAGE_TYPE;
 import static com.devee.devhive.global.exception.ErrorCode.S3_UPLOAD_ERROR;
@@ -30,12 +31,17 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private static final List<String> SUPPORTED_IMAGE_TYPES = Arrays.asList("PNG", "JPG", "JPEG", "SVG");
+    private static final List<String> SUPPORTED_IMAGE_TYPES = Arrays.asList("PNG", "JPG", "JPEG");
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
     public String upload(MultipartFile multipartFile) {
         if (multipartFile == null || multipartFile.isEmpty()) {
             throw new CustomException(S3_NOT_FOUND_IMAGE);
         }
+        if (multipartFile.getSize() > MAX_FILE_SIZE) {
+            throw new CustomException(S3_FILE_SIZE_EXCEEDED);
+        }
+
         String originalFilename = multipartFile.getOriginalFilename();
         String type = Objects.requireNonNull(originalFilename)
             .substring(originalFilename.lastIndexOf(".") + 1);

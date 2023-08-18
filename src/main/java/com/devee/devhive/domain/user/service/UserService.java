@@ -19,13 +19,13 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.UserTechStack;
 import com.devee.devhive.domain.user.entity.dto.MyInfoDto;
 import com.devee.devhive.domain.user.entity.dto.ProjectHistoryDto;
-import com.devee.devhive.domain.user.entity.dto.RankUserDto;
 import com.devee.devhive.domain.user.entity.dto.UserInfoDto;
 import com.devee.devhive.domain.user.entity.dto.UserInformationDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdateEtcInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
 import com.devee.devhive.domain.user.exithistory.repository.ExitHistoryRepository;
+import com.devee.devhive.domain.user.favorite.repository.FavoriteRepository;
 import com.devee.devhive.domain.user.repository.UserBadgeRepository;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.domain.user.repository.UserTechStackRepository;
@@ -34,14 +34,12 @@ import com.devee.devhive.global.s3.S3Service;
 import com.devee.devhive.global.util.RedisUtil;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,29 +56,34 @@ public class UserService {
     private final ExitHistoryRepository exitHistoryRepository;
     private final CareerRepository careerRepository;
     private final TechStackRepository techStackRepository;
+    private final FavoriteRepository favoriteRepository;
 
     private final S3Service s3Service;
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
 
     // 내 정보 조회
-    public MyInfoDto getMyInfo(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public MyInfoDto getMyInfo(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         UserInformationDto userInformation = getUserInformation(user);
         return MyInfoDto.of(user, userInformation);
     }
 
     // 다른 유저 정보 조회
-    public UserInfoDto getUserInfo(Long userId) {
-        User user = userRepository.findById(userId)
-
+    public UserInfoDto getUserInfo(Principal principal, Long userId) {
+        User user = userRepository.findByEmail(principal.getName())
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-        UserInformationDto userInformation = getUserInformation(user);
-        return UserInfoDto.of(user, userInformation);
+        User targetUser = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+        UserInformationDto userInformation = getUserInformation(targetUser);
+        boolean isFavorite =
+            favoriteRepository.findByUserAndFavoriteUser(user, targetUser).isPresent();
+        return UserInfoDto.of(targetUser, userInformation, isFavorite);
     }
 
-    private UserInformationDto getUserInformation(User user) {
+    public UserInformationDto getUserInformation(User user) {
         List<TechStackDto> techStacks = userTechStackRepository.findAllByUser(user).stream()
             .map(techStack -> TechStackDto.from(techStack.getTechStack()))
             .collect(Collectors.toList());
@@ -103,8 +106,9 @@ public class UserService {
 
     // 프로필 사진 수정
     @Transactional
-    public void updateProfileImage(MultipartFile multipartFile, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public void updateProfileImage(MultipartFile multipartFile, Principal principal) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         // 기존 프로필 있으면 s3에 저장한 이미지 삭제
         if (!user.getProfileImage().isEmpty() || user.getProfileImage() != null) {
@@ -121,8 +125,9 @@ public class UserService {
 
     // 내 프로필 사진 삭제
     @Transactional
-    public void deleteProfileImage(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public void deleteProfileImage(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         String imageUrl = URLDecoder.decode(user.getProfileImage(), StandardCharsets.UTF_8);
         String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
@@ -134,8 +139,9 @@ public class UserService {
 
     // 내 기본 정보 수정
     @Transactional
-    public void updateBasicInfo(Authentication authentication, UpdateBasicInfoForm form) {
-        User user = (User) authentication.getPrincipal();
+    public void updateBasicInfo(Principal principal, UpdateBasicInfoForm form) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         // 닉네임
         String nickname = form.getNickName();
@@ -186,8 +192,9 @@ public class UserService {
 
     // 내 기타 정보 수정(경력, 기술스택)
     @Transactional
-    public void updateEtcInfo(Authentication authentication, UpdateEtcInfoForm form) {
-        User user = (User) authentication.getPrincipal();
+    public void updateEtcInfo(Principal principal, UpdateEtcInfoForm form) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         updateTechStacks(user, form.getTechStacks());
         updateCareers(user, form.getCareerDtoList());
@@ -271,15 +278,10 @@ public class UserService {
         }
     }
 
-    // 랭킹 목록 조회
-    public Page<RankUserDto> getRankUsers(Pageable pageable) {
-        return userRepository.findAllByOrderByRankPointDesc(pageable)
-            .map(RankUserDto::from);
-    }
-
     // 비밀번호 변경
-    public void updatePassword(Authentication authentication, UpdatePasswordForm form) {
-        User user = (User) authentication.getPrincipal();
+    public void updatePassword(Principal principal, UpdatePasswordForm form) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         String userPassword = user.getPassword();
         String password = form.getPassword();

@@ -8,10 +8,10 @@ import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.favorite.repository.FavoriteRepository;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,8 +21,9 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final FavoriteRepository favoriteRepository;
 
-    public void register(Authentication authentication, Long targetUserId) {
-        User user = (User) authentication.getPrincipal();
+    public void register(Principal principal, Long targetUserId) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
         User favoriteUser = userRepository.findById(targetUserId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
@@ -32,8 +33,9 @@ public class FavoriteService {
                 .build());
     }
 
-    public void delete(Authentication authentication, Long targetUserId) {
-        User user = (User) authentication.getPrincipal();
+    public void delete(Principal principal, Long targetUserId) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
         User favoriteUser = userRepository.findById(targetUserId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
@@ -41,8 +43,9 @@ public class FavoriteService {
             .ifPresent(favoriteRepository::delete);
     }
 
-    public Page<SimpleUserDto> getFavoriteUsers(Authentication authentication, Pageable pageable) {
-        User user = (User) authentication.getPrincipal();
+    public Page<SimpleUserDto> getFavoriteUsers(Principal principal, Pageable pageable) {
+        User user = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         return favoriteRepository.findByUserOrderByCreatedDateDesc(user, pageable)
             .map(favorite -> SimpleUserDto.from(favorite.getUser()));

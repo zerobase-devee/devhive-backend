@@ -1,4 +1,4 @@
-package com.devee.devhive.domain.user.entity.dto;
+package com.devee.devhive.domain.nonuser.dto;
 
 import com.devee.devhive.domain.user.entity.User;
 import lombok.AllArgsConstructor;
