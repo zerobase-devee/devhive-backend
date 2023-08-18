@@ -3,6 +3,7 @@ package com.devee.devhive.domain.user.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,8 @@ import com.devee.devhive.domain.project.member.repository.ProjectMemberRepositor
 import com.devee.devhive.domain.project.repository.ProjectRepository;
 import com.devee.devhive.domain.project.review.repository.ProjectReviewRepository;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.repository.UserRepository;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +27,6 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 
 @SpringBootTest
 class UserProjectServiceTest {
@@ -37,21 +39,27 @@ class UserProjectServiceTest {
     private ProjectMemberRepository projectMemberRepository;
     @Mock
     private ProjectReviewRepository projectReviewRepository;
+    @Mock
+    private UserRepository userRepository;
 
     @Test
     @DisplayName("내가 생성한 프로젝트 목록 조회")
     void testGetWriteProjects() {
         //given
-        User user = new User();
+        User user = User.builder()
+            .id(1L)
+            .email("test@test.com")
+            .build();
         Pageable pageable = Pageable.ofSize(10);
 
         when(projectRepository.findByWriterUserOrderByCreatedDateDesc(eq(user), eq(pageable)))
             .thenReturn(Page.empty());
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        Page<SimpleProjectDto> projects = userProjectService.getWriteProjects(authentication, pageable);
+        Page<SimpleProjectDto> projects = userProjectService.getWriteProjects(principal, pageable);
         //then
         assertTrue(projects.isEmpty());
     }
@@ -60,15 +68,19 @@ class UserProjectServiceTest {
     @DisplayName("내가 참여한 프로젝트 목록 조회")
     void testGetParticipationProjects() {
         //given
-        User user = new User();
+        User user = User.builder()
+            .id(1L)
+            .email("test@test.com")
+            .build();
         Pageable pageable = Pageable.ofSize(10);
 
         when(projectMemberRepository.findByUserOrderByCreatedDateDesc(eq(user), eq(pageable)))
             .thenReturn(Page.empty());
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        Page<SimpleProjectDto> projects = userProjectService.getParticipationProjects(authentication, pageable);
+        Page<SimpleProjectDto> projects = userProjectService.getParticipationProjects(principal, pageable);
         //then
         assertTrue(projects.isEmpty());
     }
@@ -77,7 +89,10 @@ class UserProjectServiceTest {
     @DisplayName("내 프로젝트 정보 조회")
     void testGetProjectInfo() {
         // given
-        User user = new User();
+        User user = User.builder()
+            .id(1L)
+            .email("test@test.com")
+            .build();
         Long projectId = 1L;
 
         Project project = Project.builder().id(projectId).build();
@@ -90,10 +105,11 @@ class UserProjectServiceTest {
         project.setProjectMembers(projectMembers);
         when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
         when(projectReviewRepository.getTotalScoreByUserAndProject(eq(user), eq(project))).thenReturn(50);
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         // when
-        MyProjectInfoDto projectInfo = userProjectService.getProjectInfo(projectId, authentication);
+        MyProjectInfoDto projectInfo = userProjectService.getProjectInfo(projectId, principal);
         // then
         assertEquals(10.0, projectInfo.getTotalAverageScore());
     }

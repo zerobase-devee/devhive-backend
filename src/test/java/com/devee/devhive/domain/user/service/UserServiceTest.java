@@ -27,16 +27,20 @@ import com.devee.devhive.domain.user.career.repository.CareerRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.UserTechStack;
 import com.devee.devhive.domain.user.entity.dto.MyInfoDto;
+import com.devee.devhive.domain.user.entity.dto.UserInfoDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdateEtcInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
 import com.devee.devhive.domain.user.exithistory.repository.ExitHistoryRepository;
+import com.devee.devhive.domain.user.favorite.entity.Favorite;
+import com.devee.devhive.domain.user.favorite.repository.FavoriteRepository;
 import com.devee.devhive.domain.user.repository.UserBadgeRepository;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.domain.user.repository.UserTechStackRepository;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import com.devee.devhive.global.util.RedisUtil;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +51,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -75,6 +78,8 @@ class UserServiceTest {
     private RedisUtil redisUtil;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private FavoriteRepository favoriteRepository;
 
     @Test
     @DisplayName("내 프로필 정보 조회 - 성공")
@@ -82,7 +87,7 @@ class UserServiceTest {
         //given
         User user = User.builder()
             .id(1L)
-            .email("email")
+            .email("test@test.com")
             .region("seoul")
             .nickName("cool")
             .profileImage(null)
@@ -111,12 +116,68 @@ class UserServiceTest {
         when(projectMemberRepository.countCompletedProjectsByUser(user)).thenReturn(3);
         when(exitHistoryRepository.countExitHistoryByUser(user)).thenReturn(1);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        MyInfoDto result = userService.getMyInfo(authentication);
+        MyInfoDto result = userService.getMyInfo(principal);
         //then
         assertEquals(user.getNickName(), result.getNickName());
+        assertEquals(3, result.getHiveLevel());
+        assertEquals(1, result.getExitNum());
+        assertEquals(2, result.getProjectHistories().size());
+        assertEquals("java", result.getTechStacks().get(0).getName());
+    }
+
+    @Test
+    @DisplayName("다른유저 프로필 정보 조회 - 성공")
+    void testGetUserInfo() {
+        //given
+        User user = User.builder()
+            .id(3L)
+            .email("test@test.com")
+            .build();
+        User targetUser = User.builder()
+            .id(1L)
+            .region("seoul")
+            .nickName("cool")
+            .profileImage(null)
+            .intro(null)
+            .build();
+        TechStack techStack = TechStack.builder()
+            .id(3L)
+            .image("java.jpg")
+            .name("java")
+            .build();
+        List<UserTechStack> userTechStack = Collections.singletonList(
+            UserTechStack.builder()
+                .id(2L)
+                .user(targetUser)
+                .techStack(techStack)
+                .build());
+        targetUser.setUserTechStacks(userTechStack);
+        List<Object[]> projectHistories = new ArrayList<>();
+        projectHistories.add(new Object[] { "project1", 10.5 });
+        projectHistories.add(new Object[] { "project2", 15.2 });
+
+        Favorite favorite = Favorite.builder().favoriteUser(targetUser).user(user).build();
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(targetUser));
+        when(userTechStackRepository.findAllByUser(targetUser)).thenReturn(userTechStack);
+        when(careerRepository.findAllByUserOrderByStartDateAsc(targetUser)).thenReturn(List.of());
+        when(userBadgeRepository.findAllByUser(targetUser)).thenReturn(List.of());
+        when(projectMemberRepository.getProjectNamesAndTotalScoresByUser(targetUser)).thenReturn(projectHistories);
+        when(projectMemberRepository.countCompletedProjectsByUser(targetUser)).thenReturn(3);
+        when(exitHistoryRepository.countExitHistoryByUser(targetUser)).thenReturn(1);
+        when(favoriteRepository.findByUserAndFavoriteUser(user, targetUser)).thenReturn(Optional.of(favorite));
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+        //when
+        UserInfoDto result = userService.getUserInfo(principal, targetUser.getId());
+        //then
+        assertEquals(targetUser.getNickName(), result.getNickName());
         assertEquals(3, result.getHiveLevel());
         assertEquals(1, result.getExitNum());
         assertEquals(2, result.getProjectHistories().size());
@@ -130,16 +191,19 @@ class UserServiceTest {
         String existingProfileImage = "existing_profile_image.jpg";
         User user = User.builder()
             .id(1L)
+            .email("test@test.com")
             .profileImage(existingProfileImage)
             .build();
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         MultipartFile multipartFile = mock(MultipartFile.class);
         when(s3Service.upload(multipartFile)).thenReturn("new_profile_image.jpg");
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        userService.updateProfileImage(multipartFile, authentication);
+        userService.updateProfileImage(multipartFile, principal);
         //then
         verify(s3Service).delete(existingProfileImage);
         verify(userRepository).save(user);
@@ -151,6 +215,7 @@ class UserServiceTest {
         //given
         User user = User.builder()
             .id(1L)
+            .email("test@test.com")
             .region("seoul")
             .nickName("cool")
             .isNickNameChanged(false)
@@ -167,10 +232,12 @@ class UserServiceTest {
         when(redisUtil.getLock(anyString(), anyLong())).thenReturn(true);
         when(userRepository.existsByNickName(anyString())).thenReturn(false);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        userService.updateBasicInfo(authentication, form);
+        userService.updateBasicInfo(principal, form);
         //then
         verify(userRepository, times(2)).save(user);
     }
@@ -180,6 +247,7 @@ class UserServiceTest {
         //given
         User user = User.builder()
             .id(1L)
+            .email("test@test.com")
             .region("seoul")
             .nickName("cool")
             .isNickNameChanged(true)
@@ -194,11 +262,13 @@ class UserServiceTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
         CustomException exception = assertThrows(CustomException.class,
-            () -> userService.updateBasicInfo(authentication, form));
+            () -> userService.updateBasicInfo(principal, form));
 
         // then
         assertEquals(ALREADY_CHANGED_NICKNAME, exception.getErrorCode());
@@ -209,6 +279,7 @@ class UserServiceTest {
         //given
         User user = User.builder()
             .id(1L)
+            .email("test@test.com")
             .region("seoul")
             .nickName("cool")
             .isNickNameChanged(false)
@@ -225,11 +296,13 @@ class UserServiceTest {
         when(redisUtil.getLock(anyString(), anyLong())).thenReturn(true);
         when(userRepository.existsByNickName(anyString())).thenReturn(true);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
         CustomException exception = assertThrows(CustomException.class,
-            () -> userService.updateBasicInfo(authentication, form));
+            () -> userService.updateBasicInfo(principal, form));
 
         // then
         assertEquals(DUPLICATE_NICKNAME, exception.getErrorCode());
@@ -241,6 +314,7 @@ class UserServiceTest {
         //given
         User user = User.builder()
             .id(1L)
+            .email("test@test.com")
             .build();
 
         user.setUserTechStacks(List.of(UserTechStack.builder()
@@ -307,10 +381,12 @@ class UserServiceTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(techStackRepository.findAllById(anyList())).thenReturn(delete);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        userService.updateEtcInfo(authentication,form);
+        userService.updateEtcInfo(principal,form);
         //then
         verify(userTechStackRepository, times(1)).deleteAllByUserAndTechStackIdIn(any(User.class), anyList());
         verify(userTechStackRepository, times(1)).save(any(UserTechStack.class));
@@ -328,14 +404,19 @@ class UserServiceTest {
             .rePassword("test1212@")
             .build();
         String userPassword = passwordEncoder.encode(form.getPassword());
-        User user = User.builder().password(userPassword).build();
+        User user = User.builder()
+            .email("test@test.com")
+            .password(userPassword)
+            .build();
 
         when(passwordEncoder.matches(form.getPassword(), user.getPassword())).thenReturn(true);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
-        userService.updatePassword(authentication, form);
+        userService.updatePassword(principal, form);
         //then
         verify(userRepository, times(1)).save(any(User.class));
     }
@@ -349,15 +430,20 @@ class UserServiceTest {
             .newPassword("test1212@")
             .rePassword("test1212@")
             .build();
-        User user = User.builder().password("adf1234!").build();
+        User user = User.builder()
+            .email("test@test.com")
+            .password("adf1234!")
+            .build();
 
         when(passwordEncoder.matches(form.getPassword(), user.getPassword())).thenReturn(false);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
         CustomException exception = assertThrows(CustomException.class,
-            () -> userService.updatePassword(authentication, form));
+            () -> userService.updatePassword(principal, form));
 
         // then
         assertEquals(USER_PASSWORD_MISMATCH, exception.getErrorCode());
@@ -373,15 +459,20 @@ class UserServiceTest {
             .rePassword("aaa1234!")
             .build();
         String userPassword = passwordEncoder.encode(form.getPassword());
-        User user = User.builder().password(userPassword).build();
+        User user = User.builder()
+            .email("test@test.com")
+            .password(userPassword)
+            .build();
 
         when(passwordEncoder.matches(form.getPassword(), user.getPassword())).thenReturn(true);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
         CustomException exception = assertThrows(CustomException.class,
-            () -> userService.updatePassword(authentication, form));
+            () -> userService.updatePassword(principal, form));
 
         // then
         assertEquals(NEW_PASSWORD_MISMATCH_RE_PASSWORD, exception.getErrorCode());
@@ -397,15 +488,20 @@ class UserServiceTest {
             .rePassword("test1234!")
             .build();
         String userPassword = passwordEncoder.encode(form.getPassword());
-        User user = User.builder().password(userPassword).build();
+        User user = User.builder()
+            .email("test@test.com")
+            .password(userPassword)
+            .build();
 
         when(passwordEncoder.matches(form.getPassword(), user.getPassword())).thenReturn(true);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(user);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(user.getEmail());
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         //when
         CustomException exception = assertThrows(CustomException.class,
-            () -> userService.updatePassword(authentication, form));
+            () -> userService.updatePassword(principal, form));
 
         // then
         assertEquals(USER_PASSWORD_EQUALS_NEW_PASSWORD, exception.getErrorCode());

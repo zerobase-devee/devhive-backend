@@ -58,9 +58,7 @@ public class SecurityConfig {
         .authorizeHttpRequests((authorizeRequests) -> {
           authorizeRequests.requestMatchers(
               "/api/auth/**",
-              "api/projects/list",
-              "/api/projects/{projectId}",
-              "/api/users/rank"
+              "/api/nonusers/**"
           ).permitAll();
           authorizeRequests.requestMatchers(
               "/api/users/**",

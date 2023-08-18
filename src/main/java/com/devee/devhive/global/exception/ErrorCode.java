@@ -27,10 +27,11 @@ public enum ErrorCode {
     NOT_FOUND_PROJECT(HttpStatus.BAD_REQUEST, "프로젝트 모집 게시글을 찾을 수 없습니다. "),
 
     // S3
-    S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다. "),
-    S3_NOT_SUPPORT_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일형식입니다. "),
-    S3_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "파일 업로드 중 오류가 발생하였습니다. "),
-    S3_DELETE_ERROR(HttpStatus.BAD_REQUEST, "파일 삭제 중 오류가 발생하였습니다. ");
+    S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),
+    S3_FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "파일용량은 5MB 이하만 업로드 가능합니다."),
+    S3_NOT_SUPPORT_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일형식입니다."),
+    S3_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "파일 업로드 중 오류가 발생하였습니다."),
+    S3_DELETE_ERROR(HttpStatus.BAD_REQUEST, "파일 삭제 중 오류가 발생하였습니다.");
     private final HttpStatus httpStatus;
     private final String detail;
 }

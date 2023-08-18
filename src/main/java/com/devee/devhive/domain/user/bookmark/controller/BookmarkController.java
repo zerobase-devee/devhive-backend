@@ -2,12 +2,12 @@ package com.devee.devhive.domain.user.bookmark.controller;
 
 import com.devee.devhive.domain.user.bookmark.entity.dto.BookmarkProjectDto;
 import com.devee.devhive.domain.user.bookmark.service.BookmarkService;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,18 +23,18 @@ public class BookmarkController {
     private final BookmarkService bookmarkService;
 
     @PostMapping("/{projectId}")
-    public void register(Authentication authentication, @PathVariable("projectId") Long projectId) {
-        bookmarkService.register(authentication, projectId);
+    public void register(Principal principal, @PathVariable("projectId") Long projectId) {
+        bookmarkService.register(principal, projectId);
     }
 
     @DeleteMapping("/{projectId}")
-    public void delete(Authentication authentication, @PathVariable("projectId") Long projectId) {
-        bookmarkService.delete(authentication, projectId);
+    public void delete(Principal principal, @PathVariable("projectId") Long projectId) {
+        bookmarkService.delete(principal, projectId);
     }
 
     @GetMapping
-    public ResponseEntity<Page<BookmarkProjectDto>> getBookmarkProjects(Authentication authentication) {
-        Pageable pageable = PageRequest.of(1, 9);
-        return ResponseEntity.ok(bookmarkService.getBookmarkProjects(authentication, pageable));
+    public ResponseEntity<Page<BookmarkProjectDto>> getBookmarkProjects(Principal principal) {
+        Pageable pageable = PageRequest.of(0, 9);
+        return ResponseEntity.ok(bookmarkService.getBookmarkProjects(principal, pageable));
     }
 }

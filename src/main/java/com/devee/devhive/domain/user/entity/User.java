@@ -135,10 +135,4 @@ public class User extends BaseEntity implements UserDetails {
     return true;
   }
 
-  public User update(String nickName, String profileImage) {
-    this.nickName = nickName;
-    this.profileImage = profileImage;
-
-    return this;
-  }
 }

@@ -1,7 +1,7 @@
 package com.devee.devhive.global.security.handler;
 
 import com.devee.devhive.domain.user.repository.UserRepository;
-import com.devee.devhive.global.security.dto.TokenDTO;
+import com.devee.devhive.global.security.dto.TokenDto;
 import com.devee.devhive.global.security.service.TokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +40,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     log.info("로그인에 성공하였습니다. 이메일 : {}", email);
     log.info("로그인에 성공하였습니다. AccessToken : {}", accessToken);
 
-    TokenDTO tokenDTO = TokenDTO.builder()
+    TokenDto tokenDTO = TokenDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
