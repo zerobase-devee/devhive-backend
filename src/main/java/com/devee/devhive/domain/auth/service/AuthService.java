@@ -29,29 +29,29 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
 
   // 인증 코드
-  public void getVerificationCode(EmailDto emailDTO) throws Exception {
+  public void getVerificationCode(EmailDto emailDto) throws Exception {
 
-    if (userRepository.existsByEmail(emailDTO.getEmail())) {
+    if (userRepository.existsByEmail(emailDto.getEmail())) {
       throw new CustomException(DUPLICATE_EMAIL);
     }
-    mailService.sendAuthEmail(emailDTO.getEmail());
+    mailService.sendAuthEmail(emailDto.getEmail());
   }
 
   // 유저 회원가입
   @Transactional
-  public void signUp(JoinDto joinDTO) {
+  public void signUp(JoinDto joinDto) {
 
-    String enteredCode = joinDTO.getVerificationCode();
-    String cachedCode = redisUtil.getData(joinDTO.getEmail());
+    String enteredCode = joinDto.getVerificationCode();
+    String cachedCode = redisUtil.getData(joinDto.getEmail());
 
-    if (!redisUtil.existData(joinDTO.getEmail())) {
+    if (!redisUtil.existData(joinDto.getEmail())) {
       throw new CustomException(EXPIRED_VERIFY_CODE);
     }
     if (!cachedCode.equals(enteredCode)) {
       throw new CustomException(INCORRECT_VERIFY_CODE);
     }
 
-    String nickname = joinDTO.getNickName();
+    String nickname = joinDto.getNickName();
     try {
       boolean nicknameLocked = redisUtil.getLock(nickname, 5);
       if (nicknameLocked) {
@@ -60,9 +60,9 @@ public class AuthService {
           throw new CustomException(DUPLICATE_NICKNAME);
         }
         userRepository.save(User.builder()
-            .email(joinDTO.getEmail())
-            .password(passwordEncoder.encode(joinDTO.getPassword()))
-            .nickName(joinDTO.getNickName())
+            .email(joinDto.getEmail())
+            .password(passwordEncoder.encode(joinDto.getPassword()))
+            .nickName(joinDto.getNickName())
             .status(ACTIVITY)
             .build());
       }else {

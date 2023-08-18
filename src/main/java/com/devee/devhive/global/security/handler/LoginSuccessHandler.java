@@ -40,12 +40,12 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     log.info("로그인에 성공하였습니다. 이메일 : {}", email);
     log.info("로그인에 성공하였습니다. AccessToken : {}", accessToken);
 
-    TokenDto tokenDTO = TokenDto.builder()
+    TokenDto tokenDto = TokenDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
 
-    String tokenJson = new ObjectMapper().writeValueAsString(tokenDTO); // TokenDTO 객체를 JSON 문자열로 변환
+    String tokenJson = new ObjectMapper().writeValueAsString(tokenDto); // TokenDTO 객체를 JSON 문자열로 변환
 
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
