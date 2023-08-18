@@ -2,7 +2,7 @@ package com.devee.devhive.global.security.handler;
 
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.security.dto.TokenDto;
-import com.devee.devhive.global.security.service.TokenProvider;
+import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 @RequiredArgsConstructor
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-  private final TokenProvider tokenProvider;
+  private final TokenService tokenService;
   private final UserRepository userRepository;
 
   @Override
@@ -25,11 +25,11 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
       Authentication authentication) throws IOException {
     String email = extractUsername(authentication); // 인증 정보에서 Username(email) 추출
 
-    String accessToken = tokenProvider.createAccessToken(email,
+    String accessToken = tokenService.createAccessToken(email,
         authentication.getAuthorities()); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
-    String refreshToken = tokenProvider.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
+    String refreshToken = tokenService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
 
-    tokenProvider.sendAccessAndRefreshToken(response, accessToken,
+    tokenService.sendAccessAndRefreshToken(response, accessToken,
         refreshToken); // 응답 헤더에 AccessToken, RefreshToken 실어서 응답
 
     userRepository.findByEmail(email)
