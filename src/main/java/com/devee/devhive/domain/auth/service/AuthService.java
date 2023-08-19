@@ -13,7 +13,7 @@ import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.util.RedisUtil;
+import com.devee.devhive.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,44 +25,44 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final MailService mailService;
-  private final RedisUtil redisUtil;
+  private final RedisService redisService;
   private final PasswordEncoder passwordEncoder;
 
   // 인증 코드
-  public void getVerificationCode(EmailDto emailDTO) throws Exception {
+  public void getVerificationCode(EmailDto emailDto) throws Exception {
 
-    if (userRepository.existsByEmail(emailDTO.getEmail())) {
+    if (userRepository.existsByEmail(emailDto.getEmail())) {
       throw new CustomException(DUPLICATE_EMAIL);
     }
-    mailService.sendAuthEmail(emailDTO.getEmail());
+    mailService.sendAuthEmail(emailDto.getEmail());
   }
 
   // 유저 회원가입
   @Transactional
-  public void signUp(JoinDto joinDTO) {
+  public void signUp(JoinDto joinDto) {
 
-    String enteredCode = joinDTO.getVerificationCode();
-    String cachedCode = redisUtil.getData(joinDTO.getEmail());
+    String enteredCode = joinDto.getVerificationCode();
+    String cachedCode = redisService.getData(joinDto.getEmail());
 
-    if (!redisUtil.existData(joinDTO.getEmail())) {
+    if (!redisService.existData(joinDto.getEmail())) {
       throw new CustomException(EXPIRED_VERIFY_CODE);
     }
     if (!cachedCode.equals(enteredCode)) {
       throw new CustomException(INCORRECT_VERIFY_CODE);
     }
 
-    String nickname = joinDTO.getNickName();
+    String nickname = joinDto.getNickName();
     try {
-      boolean nicknameLocked = redisUtil.getLock(nickname, 5);
+      boolean nicknameLocked = redisService.getLock(nickname, 5);
       if (nicknameLocked) {
         // 락 확보 성공하면 중복 체크 수행
         if (userRepository.existsByNickName(nickname)) {
           throw new CustomException(DUPLICATE_NICKNAME);
         }
         userRepository.save(User.builder()
-            .email(joinDTO.getEmail())
-            .password(passwordEncoder.encode(joinDTO.getPassword()))
-            .nickName(joinDTO.getNickName())
+            .email(joinDto.getEmail())
+            .password(passwordEncoder.encode(joinDto.getPassword()))
+            .nickName(joinDto.getNickName())
             .status(ACTIVITY)
             .build());
       }else {
@@ -71,11 +71,11 @@ public class AuthService {
       }
     } finally {
       // 락 해제
-      redisUtil.unLock(nickname);
+      redisService.unLock(nickname);
     }
   }
 
-  public boolean isNicknameAvailable(NicknameDto nicknameDTO) {
-    return !userRepository.existsByNickName(nicknameDTO.getNickname());
+  public boolean isNicknameAvailable(NicknameDto nicknameDto) {
+    return !userRepository.existsByNickName(nicknameDto.getNickname());
   }
 }

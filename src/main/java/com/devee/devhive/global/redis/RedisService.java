@@ -1,4 +1,4 @@
-package com.devee.devhive.global.util;
+package com.devee.devhive.global.redis;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
-@Component
-public class RedisUtil {
+@Service
+public class RedisService {
 
   private final StringRedisTemplate template;
   private final RedisTemplate<String, String> nicknameRedisTemplate;

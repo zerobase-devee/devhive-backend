@@ -34,16 +34,16 @@ public class AuthController {
 
   // 인증 코드
   @PostMapping("/verify")
-  public void sendVerificationCode(@RequestBody @Valid EmailDto emailDTO) throws Exception {
+  public void sendVerificationCode(@RequestBody @Valid EmailDto emailDto) throws Exception {
 
-    authService.getVerificationCode(emailDTO);
+    authService.getVerificationCode(emailDto);
   }
 
   // 유저 회원가입
   @PostMapping("/signup")
-  public void signUp(@RequestBody @Valid JoinDto joinDTO) {
+  public void signUp(@RequestBody @Valid JoinDto joinDto) {
 
-    authService.signUp(joinDTO);
+    authService.signUp(joinDto);
   }
 
   @PostMapping("/refresh")
@@ -76,7 +76,7 @@ public class AuthController {
   }
 
   @GetMapping("/check-nickname")
-  public ResponseEntity<Boolean> checkNickname(@RequestBody NicknameDto nicknameDTO) {
-    return ResponseEntity.ok(authService.isNicknameAvailable(nicknameDTO));
+  public ResponseEntity<Boolean> checkNickname(@RequestBody NicknameDto nicknameDto) {
+    return ResponseEntity.ok(authService.isNicknameAvailable(nicknameDto));
   }
 }
