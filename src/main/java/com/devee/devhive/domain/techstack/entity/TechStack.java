@@ -28,7 +28,9 @@ public class TechStack {
 
     public static TechStack from(TechStackDto techStackDto) {
         return TechStack.builder()
+            .id(techStackDto.getId())
             .name(techStackDto.getName())
+            .image(techStackDto.getImage())
             .build();
     }
 }
