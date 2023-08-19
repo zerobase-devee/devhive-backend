@@ -2,9 +2,6 @@ package com.devee.devhive.domain.user.entity;
 
 import static com.devee.devhive.domain.user.type.Role.USER;
 
-import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
-import com.devee.devhive.domain.user.career.entity.Career;
-import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.type.ActivityStatus;
 import com.devee.devhive.domain.user.type.Role;
 import com.devee.devhive.global.entity.BaseEntity;
@@ -16,11 +13,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,21 +64,6 @@ public class User extends BaseEntity implements UserDetails {
   @Builder.Default
   @Enumerated(EnumType.STRING)
   private Role role = USER;
-
-  @OneToMany(mappedBy = "user")
-  private List<Favorite> favorites;
-
-  @OneToMany(mappedBy = "user")
-  private List<Bookmark> bookmarks;
-
-  @OneToMany(mappedBy = "user")
-  private List<Career> userCareers;
-
-  @OneToMany(mappedBy = "user")
-  private List<UserTechStack> userTechStacks;
-
-  @OneToMany(mappedBy = "user")
-  private List<UserBadge> userBadges;
 
   @LastModifiedDate
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
