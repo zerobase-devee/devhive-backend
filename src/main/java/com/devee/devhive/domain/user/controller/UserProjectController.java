@@ -38,7 +38,7 @@ public class UserProjectController {
     @GetMapping("/write")
     public ResponseEntity<Page<SimpleProjectDto>> getWriteProjects(Principal principal) {
         Pageable pageable = PageRequest.of(0, 3);
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         return ResponseEntity.ok(
             projectService.getWriteProjects(user.getId(), pageable)
             .map(SimpleProjectDto::from)
@@ -49,7 +49,7 @@ public class UserProjectController {
     @GetMapping("/participation")
     public ResponseEntity<Page<SimpleProjectDto>> getParticipationProjects(Principal principal) {
         Pageable pageable = PageRequest.of(0, 3);
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         return ResponseEntity.ok(
             projectMemberService.getParticipationProjects(user.getId(), pageable)
                 .map(projectMember -> SimpleProjectDto.from(projectMember.getProject()))
@@ -61,7 +61,7 @@ public class UserProjectController {
     public ResponseEntity<MyProjectInfoDto> getProjectInfo(
         @PathVariable("projectId") Long projectId, Principal principal
     ) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         Project project = projectService.findById(projectId);
         double totalAverageScore =
             projectReviewService.getAverageTotalScoreByTargetUserAndProject(user.getId(), projectId);

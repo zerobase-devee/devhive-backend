@@ -35,7 +35,7 @@ public class BookmarkController {
     // 프로젝트 북마크 등록
     @PostMapping("/{projectId}")
     public void register(Principal principal, @PathVariable("projectId") Long projectId) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         Project project = projectService.findById(projectId);
         bookmarkService.register(user, project);
     }
@@ -43,14 +43,14 @@ public class BookmarkController {
     // 프로젝트 북마크 해제
     @DeleteMapping("/{projectId}")
     public void delete(Principal principal, @PathVariable("projectId") Long projectId) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         bookmarkService.delete(user.getId(), projectId);
     }
 
     // 북마크 프로젝트 목록 조회
     @GetMapping
     public ResponseEntity<Page<BookmarkProjectDto>> getBookmarkProjects(Principal principal) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         Pageable pageable = PageRequest.of(0, 9);
         return ResponseEntity.ok(
             bookmarkService.getBookmarkProjects(user.getId(), pageable)

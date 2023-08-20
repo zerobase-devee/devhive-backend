@@ -32,7 +32,7 @@ public class FavoriteController {
     // 관심 유저 등록
     @PostMapping("/{userId}")
     public void register(Principal principal, @PathVariable("userId") Long targetUserId) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         User favoriteUser = userService.getUserById(targetUserId);
         favoriteService.register(user, favoriteUser);
     }
@@ -40,14 +40,14 @@ public class FavoriteController {
     // 관심 유저 삭제
     @DeleteMapping("/{userId}")
     public void delete(Principal principal, @PathVariable("userId") Long targetUserId) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         favoriteService.delete(user.getId(), targetUserId);
     }
 
     // 관심 유저 목록 조회
     @GetMapping
     public ResponseEntity<Page<SimpleUserDto>> getFavoriteUsers(Principal principal) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         Pageable pageable = PageRequest.of(0, 9);
         return ResponseEntity.ok(
             favoriteService.getFavoriteUsers(user.getId(), pageable)

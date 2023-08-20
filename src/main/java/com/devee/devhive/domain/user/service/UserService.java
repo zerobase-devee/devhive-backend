@@ -16,7 +16,6 @@ import com.devee.devhive.global.redis.RedisService;
 import com.devee.devhive.global.s3.S3Service;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,8 +35,8 @@ public class UserService {
     private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
 
-    public User getUserByPrincipal(Principal principal) {
-        return userRepository.findByEmail(principal.getName())
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 
