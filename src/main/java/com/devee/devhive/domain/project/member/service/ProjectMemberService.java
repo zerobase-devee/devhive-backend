@@ -19,6 +19,7 @@ public class ProjectMemberService {
         return projectMemberRepository.findAllByProjectId(projectId);
     }
 
+    // 내가 참여한 완료된 프로젝트 갯수 (벌집레벨)
     public int countCompletedProjectsByUserId(Long userId) {
         return projectMemberRepository.countCompletedProjectsByUserId(userId);
     }

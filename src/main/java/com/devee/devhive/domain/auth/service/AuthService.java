@@ -17,7 +17,6 @@ import com.devee.devhive.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +37,6 @@ public class AuthService {
   }
 
   // 유저 회원가입
-  @Transactional
   public void signUp(JoinDto joinDto) {
 
     String enteredCode = joinDto.getVerificationCode();

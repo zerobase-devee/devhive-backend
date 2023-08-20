@@ -10,6 +10,7 @@ public class ExitHistoryService {
 
     private final ExitHistoryRepository exitHistoryRepository;
 
+    // 퇴출 전적
     public int countExitHistoryByUserId(Long userId) {
         return exitHistoryRepository.countExitHistoryByUserId(userId);
     }

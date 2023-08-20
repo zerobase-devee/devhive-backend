@@ -105,8 +105,7 @@ public class UserService {
     }
 
     // 내 닉네임 변경
-    @Transactional
-    public void updateNickname(User user, String nickname) {
+    private void updateNickname(User user, String nickname) {
         try {
             boolean nicknameLocked = redisService.getLock(nickname, 5);
             if (nicknameLocked) {
