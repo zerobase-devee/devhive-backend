@@ -1,6 +1,9 @@
 package com.devee.devhive.domain.user.controller;
 
+import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
+import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.badge.entity.dto.BadgeDto;
 import com.devee.devhive.domain.user.career.entity.dto.CareerDto;
@@ -57,34 +60,29 @@ public class UserController {
     private final UserBadgeService userBadgeService;
     private final ProjectMemberService projectMemberService;
     private final ExitHistoryService exitHistoryService;
-
+    private final ProjectReviewService projectReviewService;
 
     // 다른 유저 정보 조회
     @GetMapping("/{userId}")
     public ResponseEntity<UserInfoDto> getUserInfo(@PathVariable("userId") Long targetUserId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User targetUser = userService.getUserById(targetUserId);
+        UserInformationDto informationDto = getUserInformation(targetUserId);
+        boolean isFavorite = false; // 비로그인 상태를 기본으로 설정
+
         if (authentication != null && authentication.isAuthenticated()) {
             // 로그인한 상태일 때 동작
-            User user = userService.getUserByPrincipal((Principal) authentication.getPrincipal());
-            User targetUser = userService.getUserById(targetUserId);
-            UserInformationDto informationDto = getUserInformation(targetUserId);
-            boolean isFavorite = favoriteService.isFavorite(user.getId(), targetUserId);
-
-            return ResponseEntity.ok(UserInfoDto.of(targetUser, informationDto, isFavorite));
-
-        } else {
-            // 비로그인 상태일 때 동작
-            User targetUser = userService.getUserById(targetUserId);
-            UserInformationDto informationDto = getUserInformation(targetUserId);
-
-            return ResponseEntity.ok(UserInfoDto.of(targetUser, informationDto, false));
+            User user = userService.getUserByEmail(authentication.getName());
+            isFavorite = favoriteService.isFavorite(user.getId(), targetUserId);
         }
+
+        return ResponseEntity.ok(UserInfoDto.of(targetUser, informationDto, isFavorite));
     }
 
     // 내 정보 조회
     @GetMapping("/my-profile")
     public ResponseEntity<MyInfoDto> getMyInfo(Principal principal){
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         UserInformationDto informationDto = getUserInformation(user.getId());
 
         return ResponseEntity.ok(MyInfoDto.of(user, informationDto));
@@ -96,7 +94,7 @@ public class UserController {
         Principal principal,
         @RequestBody @Valid UpdateBasicInfoForm form
     ) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         userService.updateBasicInfo(user, form);
     }
 
@@ -106,14 +104,14 @@ public class UserController {
         Principal principal,
         @RequestBody @Valid UpdatePasswordForm form
     ) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         userService.updatePassword(user, form);
     }
 
     // 내 기타 정보 수정 (기술스택, 경력)
     @PutMapping("/my-profile/etc")
     public void updateEtcInfo(Principal principal, @RequestBody UpdateEtcInfoForm form) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         userTechStackService.updateTechStacks(user, form.getTechStacks());
         careerService.updateCareers(user, form.getCareerDtoList());
     }
@@ -124,14 +122,14 @@ public class UserController {
         @RequestPart(value = "image", required = false) MultipartFile multipartFile,
         Principal principal
     ) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         userService.updateProfileImage(multipartFile, user);
     }
 
     // 내 프로필 사진 삭제
     @DeleteMapping("/my-profile/image")
     public void deleteProfileImage(Principal principal) {
-        User user = userService.getUserByPrincipal(principal);
+        User user = userService.getUserByEmail(principal.getName());
         userService.deleteProfileImage(user);
     }
 
@@ -154,14 +152,19 @@ public class UserController {
         List<BadgeDto> badges = userBadgeService.getUserBadges(userId).stream()
             .map(badge -> BadgeDto.from(badge.getBadge()))
             .collect(Collectors.toList());
+
+        List<Project> projects = projectMemberService.findAllByUserId(userId).stream()
+            .map(ProjectMember::getProject)
+            .toList();
         List<ProjectHistoryDto> projectHistories =
-            projectMemberService.getProjectNamesAndAverageReviewScoreByUserId(userId);
+            projects.stream().map(project -> ProjectHistoryDto.of(
+                project.getName(),
+                projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId,project.getId()))
+            ).collect(Collectors.toList());
 
         int hiveLevel = projectMemberService.countCompletedProjectsByUserId(userId);
         int exitNum = exitHistoryService.countExitHistoryByUserId(userId);
 
         return UserInformationDto.of(techStacks, careers, badges, projectHistories, hiveLevel, exitNum);
     }
-
-
 }
