@@ -6,7 +6,7 @@ import com.devee.devhive.domain.auth.dto.NicknameDto;
 import com.devee.devhive.domain.auth.service.AuthService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
-import com.devee.devhive.global.security.service.TokenProvider;
+import com.devee.devhive.global.security.service.TokenService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.Optional;
@@ -30,7 +30,7 @@ public class AuthController {
 
   private final UserRepository userRepository;
   private final AuthService authService;
-  private final TokenProvider tokenProvider;
+  private final TokenService tokenService;
 
   // 인증 코드
   @PostMapping("/verify")
@@ -60,16 +60,16 @@ public class AuthController {
     User user = userOptional.get();
     log.info("user : {}", user);
     String reIssuedRefreshToken = reIssueRefreshToken(user);
-    String accessToken = tokenProvider.createAccessToken(user.getEmail(), user.getAuthorities());
+    String accessToken = tokenService.createAccessToken(user.getEmail(), user.getAuthorities());
     log.info("accessToken : {}", accessToken);
     log.info("reIssuedRefreshToken : {}", reIssuedRefreshToken);
-    tokenProvider.sendAccessToken(response, accessToken);
-    tokenProvider.sendAccessAndRefreshToken(response, accessToken, reIssuedRefreshToken);
+    tokenService.sendAccessToken(response, accessToken);
+    tokenService.sendAccessAndRefreshToken(response, accessToken, reIssuedRefreshToken);
     return accessToken;
   }
 
   private String reIssueRefreshToken(User user) {
-    String reIssuedRefreshToken = tokenProvider.createRefreshToken();
+    String reIssuedRefreshToken = tokenService.createRefreshToken();
     user.updateRefreshToken(reIssuedRefreshToken);
     userRepository.saveAndFlush(user);
     return reIssuedRefreshToken;

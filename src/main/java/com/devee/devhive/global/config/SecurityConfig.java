@@ -10,7 +10,7 @@ import com.devee.devhive.global.security.filter.JwtAuthenticationProcessingFilte
 import com.devee.devhive.global.security.handler.LoginFailureHandler;
 import com.devee.devhive.global.security.handler.LoginSuccessHandler;
 import com.devee.devhive.global.security.service.CustomUserDetailService;
-import com.devee.devhive.global.security.service.TokenProvider;
+import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +32,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final TokenProvider tokenProvider;
+  private final TokenService tokenService;
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
   private final CustomUserDetailService customUserDetailService;
@@ -112,7 +112,7 @@ public class SecurityConfig {
 
   @Bean
   public LoginSuccessHandler loginSuccessHandler() {
-    return new LoginSuccessHandler(tokenProvider, userRepository);
+    return new LoginSuccessHandler(tokenService, userRepository);
   }
 
   @Bean
@@ -134,6 +134,6 @@ public class SecurityConfig {
   @Bean
   public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
     return new JwtAuthenticationProcessingFilter(
-        tokenProvider, userRepository);
+        tokenService, userRepository);
   }
 }

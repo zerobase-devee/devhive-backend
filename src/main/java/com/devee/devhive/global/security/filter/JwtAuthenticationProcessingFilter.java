@@ -2,7 +2,7 @@ package com.devee.devhive.global.security.filter;
 
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
-import com.devee.devhive.global.security.service.TokenProvider;
+import com.devee.devhive.global.security.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
   private static final String NO_CHECK_URL = "/api/auth/signin"; // "/api/auth/signin"으로 들어오는 요청은 Filter 작동 X
 
-  private final TokenProvider tokenProvider;
+  private final TokenService tokenService;
   private final UserRepository userRepository;
 
   private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
@@ -47,8 +47,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     // -> RefreshToken이 없거나 유효하지 않다면(DB에 저장된 RefreshToken과 다르다면) null을 반환
     // 사용자의 요청 헤더에 RefreshToken이 있는 경우는, AccessToken이 만료되어 요청한 경우밖에 없다.
     // 따라서, 위의 경우를 제외하면 추출한 refreshToken은 모두 null
-    String refreshToken = tokenProvider.extractRefreshToken(request)
-        .filter(tokenProvider::isTokenValid)
+    String refreshToken = tokenService.extractRefreshToken(request)
+        .filter(tokenService::isTokenValid)
         .orElse(null);
 
     // 리프레시 토큰이 요청 헤더에 존재했다면, 사용자가 AccessToken이 만료되어서
@@ -69,26 +69,26 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
   /**
    * [리프레시 토큰으로 유저 정보 찾기 & 액세스 토큰/리프레시 토큰 재발급 메소드] 파라미터로 들어온 헤더에서 추출한 리프레시 토큰으로 DB에서 유저를 찾고, 해당 유저가
-   * 있다면 JwtTokenProvider.createAccessToken()으로 AccessToken 생성, reIssueRefreshToken()로 리프레시 토큰 재발급 &
-   * DB에 리프레시 토큰 업데이트 메소드 호출 그 후 JwtTokenProvider.sendAccessTokenAndRefreshToken()으로 응답 헤더에 보내기
+   * 있다면 TokenService.createAccessToken()으로 AccessToken 생성, reIssueRefreshToken()로 리프레시 토큰 재발급 &
+   * DB에 리프레시 토큰 업데이트 메소드 호출 그 후 TokenService.sendAccessTokenAndRefreshToken()으로 응답 헤더에 보내기
    */
   public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response,
       String refreshToken) {
     userRepository.findByRefreshToken(refreshToken)
         .ifPresent(user -> {
           String reIssuedRefreshToken = reIssueRefreshToken(user);
-          tokenProvider.sendAccessAndRefreshToken(response,
-              tokenProvider.createAccessToken(user.getEmail(), user.getAuthorities()),
+          tokenService.sendAccessAndRefreshToken(response,
+              tokenService.createAccessToken(user.getEmail(), user.getAuthorities()),
               reIssuedRefreshToken);
         });
   }
 
   /**
-   * [리프레시 토큰 재발급 & DB에 리프레시 토큰 업데이트 메소드] jwtTokenProvider.createRefreshToken()으로 리프레시 토큰 재발급 후 DB에
+   * [리프레시 토큰 재발급 & DB에 리프레시 토큰 업데이트 메소드] TokenService.createRefreshToken()으로 리프레시 토큰 재발급 후 DB에
    * 재발급한 리프레시 토큰 업데이트 후 Flush
    */
   private String reIssueRefreshToken(User user) {
-    String reIssuedRefreshToken = tokenProvider.createRefreshToken();
+    String reIssuedRefreshToken = tokenService.createRefreshToken();
     user.updateRefreshToken(reIssuedRefreshToken);
     userRepository.saveAndFlush(user);
     return reIssuedRefreshToken;
@@ -103,9 +103,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     log.info("checkAccessTokenAndAuthentication() 호출");
-    tokenProvider.extractAccessToken(request)
-        .filter(tokenProvider::isTokenValid)
-        .ifPresent(accessToken -> tokenProvider.extractEmail(accessToken)
+    tokenService.extractAccessToken(request)
+        .filter(tokenService::isTokenValid)
+        .ifPresent(accessToken -> tokenService.extractEmail(accessToken)
             .ifPresent(email -> userRepository.findByEmail(email)
                 .ifPresent(this::saveAuthentication)));
 

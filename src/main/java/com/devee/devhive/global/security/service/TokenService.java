@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Getter
 @Slf4j
-public class TokenProvider {
+public class TokenService {
 
   /**
    * JWT의 Subject와 Claim으로 email 사용 -> 클레임의 name을 "email"으로 설정 JWT의 헤더에 들어오는 값 : 'Authorization(Key)
