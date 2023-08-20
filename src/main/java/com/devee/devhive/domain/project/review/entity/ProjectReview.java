@@ -1,10 +1,8 @@
 package com.devee.devhive.domain.project.review.entity;
 
-import com.devee.devhive.global.entity.BaseEntity;
 import com.devee.devhive.domain.project.entity.Project;
-import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.user.entity.User;
-import jakarta.persistence.CascadeType;
+import com.devee.devhive.global.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -12,8 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,7 +38,4 @@ public class ProjectReview extends BaseEntity {
     private User targetUser;
 
     private int totalScore; // 평가항목의 합계
-
-    @OneToMany(mappedBy = "projectReview", cascade = CascadeType.ALL)
-    private List<Evaluation> evaluations;
 }

@@ -7,39 +7,20 @@ import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_USER;
 import static com.devee.devhive.global.exception.ErrorCode.USER_PASSWORD_EQUALS_NEW_PASSWORD;
 import static com.devee.devhive.global.exception.ErrorCode.USER_PASSWORD_MISMATCH;
 
-import com.devee.devhive.domain.project.member.repository.ProjectMemberRepository;
-import com.devee.devhive.domain.techstack.entity.TechStack;
-import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
-import com.devee.devhive.domain.techstack.repository.TechStackRepository;
-import com.devee.devhive.domain.user.badge.entity.dto.BadgeDto;
-import com.devee.devhive.domain.user.career.entity.Career;
-import com.devee.devhive.domain.user.career.entity.dto.CareerDto;
-import com.devee.devhive.domain.user.career.repository.CareerRepository;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.entity.UserTechStack;
-import com.devee.devhive.domain.user.entity.dto.MyInfoDto;
-import com.devee.devhive.domain.user.entity.dto.ProjectHistoryDto;
-import com.devee.devhive.domain.user.entity.dto.UserInfoDto;
-import com.devee.devhive.domain.user.entity.dto.UserInformationDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
-import com.devee.devhive.domain.user.entity.form.UpdateEtcInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
-import com.devee.devhive.domain.user.exithistory.repository.ExitHistoryRepository;
-import com.devee.devhive.domain.user.favorite.repository.FavoriteRepository;
-import com.devee.devhive.domain.user.repository.UserBadgeRepository;
 import com.devee.devhive.domain.user.repository.UserRepository;
-import com.devee.devhive.domain.user.repository.UserTechStackRepository;
 import com.devee.devhive.global.exception.CustomException;
+import com.devee.devhive.global.redis.RedisService;
 import com.devee.devhive.global.s3.S3Service;
-import com.devee.devhive.global.util.RedisUtil;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,66 +31,29 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserBadgeRepository userBadgeRepository;
-    private final UserTechStackRepository userTechStackRepository;
-    private final ProjectMemberRepository projectMemberRepository;
-    private final ExitHistoryRepository exitHistoryRepository;
-    private final CareerRepository careerRepository;
-    private final TechStackRepository techStackRepository;
-    private final FavoriteRepository favoriteRepository;
 
     private final S3Service s3Service;
-    private final RedisUtil redisUtil;
+    private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
 
-    // 내 정보 조회
-    public MyInfoDto getMyInfo(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName())
+    public User getUserByPrincipal(Principal principal) {
+        return userRepository.findByEmail(principal.getName())
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
-        UserInformationDto userInformation = getUserInformation(user);
-        return MyInfoDto.of(user, userInformation);
     }
 
-    // 다른 유저 정보 조회
-    public UserInfoDto getUserInfo(Principal principal, Long userId) {
-        User user = userRepository.findByEmail(principal.getName())
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-        User targetUser = userRepository.findById(userId)
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-        UserInformationDto userInformation = getUserInformation(targetUser);
-        boolean isFavorite =
-            favoriteRepository.findByUserAndFavoriteUser(user, targetUser).isPresent();
-        return UserInfoDto.of(targetUser, userInformation, isFavorite);
     }
 
-    public UserInformationDto getUserInformation(User user) {
-        List<TechStackDto> techStacks = userTechStackRepository.findAllByUser(user).stream()
-            .map(techStack -> TechStackDto.from(techStack.getTechStack()))
-            .collect(Collectors.toList());
-        List<CareerDto> careers = careerRepository.findAllByUserOrderByStartDateAsc(user).stream()
-            .map(CareerDto::from)
-            .collect(Collectors.toList());
-        List<BadgeDto> badges = userBadgeRepository.findAllByUser(user).stream()
-            .map(badge -> BadgeDto.from(badge.getBadge()))
-            .collect(Collectors.toList());
-        List<ProjectHistoryDto> projectHistories =
-            projectMemberRepository.getProjectNamesAndTotalScoresByUser(user)
-                .stream()
-                .map(ProjectHistoryDto::from)
-                .collect(Collectors.toList());
-        int hiveLevel = projectMemberRepository.countCompletedProjectsByUser(user);
-        int exitNum = exitHistoryRepository.countExitHistoryByUser(user);
-
-        return UserInformationDto.of(techStacks, careers, badges, projectHistories, hiveLevel, exitNum);
+    // 랭킹 목록 조회
+    public Page<User> getRankUsers(Pageable pageable) {
+        return userRepository.findAllByOrderByRankPointDesc(pageable);
     }
 
     // 프로필 사진 수정
     @Transactional
-    public void updateProfileImage(MultipartFile multipartFile, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
+    public void updateProfileImage(MultipartFile multipartFile, User user) {
         // 기존 프로필 있으면 s3에 저장한 이미지 삭제
         if (!user.getProfileImage().isEmpty() || user.getProfileImage() != null) {
             String imageUrl = URLDecoder.decode(user.getProfileImage(), StandardCharsets.UTF_8);
@@ -124,11 +68,7 @@ public class UserService {
     }
 
     // 내 프로필 사진 삭제
-    @Transactional
-    public void deleteProfileImage(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
+    public void deleteProfileImage(User user) {
         String imageUrl = URLDecoder.decode(user.getProfileImage(), StandardCharsets.UTF_8);
         String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
 
@@ -139,10 +79,7 @@ public class UserService {
 
     // 내 기본 정보 수정
     @Transactional
-    public void updateBasicInfo(Principal principal, UpdateBasicInfoForm form) {
-        User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
+    public void updateBasicInfo(User user, UpdateBasicInfoForm form) {
         // 닉네임
         String nickname = form.getNickName();
         if (!user.getNickName().equals(nickname)) {
@@ -168,10 +105,9 @@ public class UserService {
     }
 
     // 내 닉네임 변경
-    @Transactional
-    public void updateNickname(User user, String nickname) {
+    private void updateNickname(User user, String nickname) {
         try {
-            boolean nicknameLocked = redisUtil.getLock(nickname, 5);
+            boolean nicknameLocked = redisService.getLock(nickname, 5);
             if (nicknameLocked) {
                 // 락 확보 성공하면 중복 체크 수행
                 if (userRepository.existsByNickName(nickname)) {
@@ -186,103 +122,12 @@ public class UserService {
             }
         } finally {
             // 락 해제
-            redisUtil.unLock(nickname);
-        }
-    }
-
-    // 내 기타 정보 수정(경력, 기술스택)
-    @Transactional
-    public void updateEtcInfo(Principal principal, UpdateEtcInfoForm form) {
-        User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
-        updateTechStacks(user, form.getTechStacks());
-        updateCareers(user, form.getCareerDtoList());
-    }
-
-    private void updateTechStacks(User user, List<TechStackDto> newTechStacks) {
-        List<UserTechStack> existingTechStacks = user.getUserTechStacks();
-
-        // 기존 유저기술스택이 비었다면 요청된 기술스택 바로 저장
-        if (existingTechStacks.isEmpty()) {
-            List<UserTechStack> newUserTechStacks = newTechStacks.stream()
-                .map(techStackDto -> UserTechStack.of(user, TechStack.from(techStackDto)))
-                .collect(Collectors.toList());
-            userTechStackRepository.saveAll(newUserTechStacks);
-        } else if (newTechStacks.isEmpty()) {
-            // 요청된 기술스택이 비었다면 기존 유저기술스택 모두 삭제
-            userTechStackRepository.deleteAll(user.getUserTechStacks());
-        }else {
-            // 기존 유저기술스택 삭제할거 삭제, 추가할거 추가 저장
-            List<Long> newTechStackIds = newTechStacks.stream()
-                .map(TechStackDto::getId)
-                .collect(Collectors.toList());
-            List<Long> techStackIdsToDelete = new ArrayList<>();
-
-            for (UserTechStack userTechStack : existingTechStacks) {
-                Long curExistingId = userTechStack.getTechStack().getId();
-                if (newTechStackIds.contains(curExistingId)) {
-                    newTechStackIds.remove(curExistingId);
-                } else {
-                    techStackIdsToDelete.add(curExistingId);
-                }
-            }
-
-            if (!techStackIdsToDelete.isEmpty()) {
-                userTechStackRepository.deleteAllByUserAndTechStackIdIn(user, techStackIdsToDelete);
-            }
-
-            if (!newTechStackIds.isEmpty()) {
-                List<TechStack> techStacks = techStackRepository.findAllById(newTechStackIds);
-                for (TechStack techStack : techStacks) {
-                    userTechStackRepository.save(UserTechStack.of(user, techStack));
-                }
-            }
-        }
-    }
-
-    private void updateCareers(User user, List<CareerDto> newCareers) {
-        List<Career> existingCareers = user.getUserCareers();
-
-        // 기존 유저경력 비었다면 요청된 경력 바로 저장
-        if (existingCareers.isEmpty()) {
-            careerRepository.saveAll(newCareers.stream()
-                .map(careerDto -> Career.of(user, careerDto))
-                .collect(Collectors.toList()));
-        } else if (newCareers.isEmpty()) {
-            // 요청 경력이 비었다면 기존 유저경력 모두 삭제
-            careerRepository.deleteAll(user.getUserCareers());
-        } else {
-            // 기존 유저경력 삭제할거 삭제, 추가할거 추가 저장
-            List<Career> careersToDelete = existingCareers.stream()
-                .filter(career -> newCareers.stream()
-                    .noneMatch(careerDto ->
-                        careerDto.equals(CareerDto.from(career))))
-                .toList();
-
-            if (!careersToDelete.isEmpty()) {
-                careerRepository.deleteAll(careersToDelete);
-            }
-
-            List<CareerDto> careersToAdd = newCareers.stream()
-                .filter(careerDto -> existingCareers.stream()
-                    .noneMatch(existingCareer ->
-                        CareerDto.from(existingCareer).equals(careerDto)))
-                .toList();
-
-            if (!careersToAdd.isEmpty()) {
-                careerRepository.saveAll(newCareers.stream()
-                    .map(careerDto -> Career.of(user, careerDto))
-                    .collect(Collectors.toList()));
-            }
+            redisService.unLock(nickname);
         }
     }
 
     // 비밀번호 변경
-    public void updatePassword(Principal principal, UpdatePasswordForm form) {
-        User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
+    public void updatePassword(User user, UpdatePasswordForm form) {
         String userPassword = user.getPassword();
         String password = form.getPassword();
         String newPassword = form.getNewPassword();

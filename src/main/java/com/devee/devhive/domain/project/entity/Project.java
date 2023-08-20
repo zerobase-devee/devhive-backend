@@ -1,11 +1,10 @@
 package com.devee.devhive.domain.project.entity;
 
-import com.devee.devhive.global.entity.BaseEntity;
-import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.project.type.RecruitmentType;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,9 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,12 +53,6 @@ public class Project extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private DevelopmentType developmentType;
-
-    @OneToMany(mappedBy = "project")
-    private List<ProjectTechStack> projectTechStacks;
-
-    @OneToMany(mappedBy = "project")
-    private List<ProjectMember> projectMembers;
 
     private LocalDateTime startDate; // 프로젝트 시작일자
     private LocalDateTime endDate;   // 프로젝트 종료일자

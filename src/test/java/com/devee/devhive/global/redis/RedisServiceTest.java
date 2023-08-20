@@ -1,4 +1,4 @@
-package com.devee.devhive.global.util;
+package com.devee.devhive.global.redis;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class RedisUtilTest {
+public class RedisServiceTest {
     @Autowired
-    private RedisUtil redisUtil;
+    private RedisService redisService;
 
     @Test
     public void testLockAndUnlock() throws InterruptedException {
@@ -32,7 +32,7 @@ public class RedisUtilTest {
                 try {
                     latch.countDown();
                     latch.await(); // 모든 스레드가 시작될 때까지 대기
-                    boolean isLocked = redisUtil.getLock(lockKey, 5);
+                    boolean isLocked = redisService.getLock(lockKey, 5);
                     if (isLocked) {
                         success.incrementAndGet();
                     }

@@ -5,7 +5,6 @@ import com.devee.devhive.domain.project.member.entity.dto.ProjectMemberDto;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +25,7 @@ public class MyProjectInfoDto {
     private List<ProjectMemberDto> projectMembers;
     private double totalAverageScore;
 
-    public static MyProjectInfoDto of(Project project, double totalAverageScore) {
+    public static MyProjectInfoDto of(Project project, List<ProjectMemberDto> projectMemberDtoList, double totalAverageScore) {
         return MyProjectInfoDto.builder()
             .name(project.getName())
             .projectId(project.getId())
@@ -34,10 +33,7 @@ public class MyProjectInfoDto {
             .status(project.getStatus())
             .startDate(project.getStartDate())
             .endDate(project.getEndDate())
-            .projectMembers(
-                project.getProjectMembers().stream()
-                .map(ProjectMemberDto::from)
-                .collect(Collectors.toList()))
+            .projectMembers(projectMemberDtoList)
             .totalAverageScore(totalAverageScore)
             .build();
     }
