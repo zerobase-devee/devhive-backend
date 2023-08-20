@@ -2,6 +2,7 @@ package com.devee.devhive.global.security.handler;
 
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.security.dto.TokenDto;
+import com.devee.devhive.global.security.service.PrincipalDetails;
 import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,7 +11,6 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 @Slf4j
@@ -25,8 +25,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
       Authentication authentication) throws IOException {
     String email = extractUsername(authentication); // 인증 정보에서 Username(email) 추출
 
-    String accessToken = tokenService.createAccessToken(email,
-        authentication.getAuthorities()); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
+    String accessToken = tokenService.createAccessToken(email); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
     String refreshToken = tokenService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
 
     tokenService.sendAccessAndRefreshToken(response, accessToken,
@@ -54,7 +53,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
   }
 
   private String extractUsername(Authentication authentication) {
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    PrincipalDetails userDetails = (PrincipalDetails) authentication.getPrincipal();
     return userDetails.getUsername();
   }
 }

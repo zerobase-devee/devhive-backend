@@ -35,11 +35,6 @@ public class UserService {
     private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
 
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-            .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-    }
-
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
