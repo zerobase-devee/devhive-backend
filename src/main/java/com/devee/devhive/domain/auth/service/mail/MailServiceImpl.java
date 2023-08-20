@@ -3,7 +3,7 @@ package com.devee.devhive.domain.auth.service.mail;
 import static com.devee.devhive.global.exception.ErrorCode.FAILED_SENDING_VERIFY_CODE;
 
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.util.RedisUtil;
+import com.devee.devhive.global.redis.RedisService;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMessage.RecipientType;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class MailServiceImpl implements MailService {
 
   private final JavaMailSender emailSender;
-  private final RedisUtil redisUtil;
+  private final RedisService redisService;
 
   private static String createKey() {
     StringBuilder key = new StringBuilder();
@@ -41,7 +41,7 @@ public class MailServiceImpl implements MailService {
   public void sendAuthEmail(String to) throws Exception {
     String authCode = createKey();
     MimeMessage message = createMessage(to, authCode);
-    redisUtil.setDataExpire(to, authCode, 60 * 5L);
+    redisService.setDataExpire(to, authCode, 60 * 5L);
     try {
       emailSender.send(message);
     } catch (MailException es) {

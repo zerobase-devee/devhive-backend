@@ -1,8 +1,6 @@
 package com.devee.devhive.domain.user.bookmark.repository;
 
-import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
-import com.devee.devhive.domain.user.entity.User;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
-    Optional<Bookmark> findBookmarkByUserAndProject(User user, Project project);
+    Optional<Bookmark> findBookmarkByUserIdAndProjectId(Long userId, Long projectId);
 
-    Page<Bookmark> findByUserOrderByCreatedDateDesc(User user, Pageable pageable);
+    Page<Bookmark> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
 }

@@ -13,11 +13,10 @@ import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.util.RedisUtil;
+import com.devee.devhive.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final MailService mailService;
-  private final RedisUtil redisUtil;
+  private final RedisService redisService;
   private final PasswordEncoder passwordEncoder;
 
   // 인증 코드
@@ -38,13 +37,12 @@ public class AuthService {
   }
 
   // 유저 회원가입
-  @Transactional
   public void signUp(JoinDto joinDto) {
 
     String enteredCode = joinDto.getVerificationCode();
-    String cachedCode = redisUtil.getData(joinDto.getEmail());
+    String cachedCode = redisService.getData(joinDto.getEmail());
 
-    if (!redisUtil.existData(joinDto.getEmail())) {
+    if (!redisService.existData(joinDto.getEmail())) {
       throw new CustomException(EXPIRED_VERIFY_CODE);
     }
     if (!cachedCode.equals(enteredCode)) {
@@ -53,7 +51,7 @@ public class AuthService {
 
     String nickname = joinDto.getNickName();
     try {
-      boolean nicknameLocked = redisUtil.getLock(nickname, 5);
+      boolean nicknameLocked = redisService.getLock(nickname, 5);
       if (nicknameLocked) {
         // 락 확보 성공하면 중복 체크 수행
         if (userRepository.existsByNickName(nickname)) {
@@ -71,11 +69,11 @@ public class AuthService {
       }
     } finally {
       // 락 해제
-      redisUtil.unLock(nickname);
+      redisService.unLock(nickname);
     }
   }
 
-  public boolean isNicknameAvailable(NicknameDto nicknameDTO) {
-    return !userRepository.existsByNickName(nicknameDTO.getNickname());
+  public boolean isNicknameAvailable(NicknameDto nicknameDto) {
+    return !userRepository.existsByNickName(nicknameDto.getNickname());
   }
 }

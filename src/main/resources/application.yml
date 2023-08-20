@@ -56,6 +56,10 @@ spring:
       host: 127.0.0.1
       port: 6379
 
+    jpa:
+      repositories:
+        enabled: true
+
   jwt:
     secret-key: ${JWT_SECRET_KEY}
 

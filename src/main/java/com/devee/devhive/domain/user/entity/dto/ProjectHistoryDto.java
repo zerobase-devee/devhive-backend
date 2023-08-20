@@ -14,15 +14,10 @@ public class ProjectHistoryDto {
     private String projectName;
     private double totalAverageScore;
 
-    public static ProjectHistoryDto from(Object[] projectData) {
+    public static ProjectHistoryDto of(String projectName, double totalAverageScore) {
         return ProjectHistoryDto.builder()
-            .projectName((String) projectData[0])
-            .totalAverageScore(calculateTotalAverageScore((double) projectData[1]))
+            .projectName(projectName)
+            .totalAverageScore(totalAverageScore)
             .build();
-    }
-
-    // 소수 첫째 자리까지 반올림
-    private static double calculateTotalAverageScore(double score) {
-        return Math.round(score / 5.0 * 10.0) / 10.0;
     }
 }
