@@ -2,12 +2,14 @@ package com.devee.devhive.global.security.filter;
 
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.global.security.service.PrincipalDetails;
 import com.devee.devhive.global.security.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -76,7 +77,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         .ifPresent(user -> {
           String reIssuedRefreshToken = reIssueRefreshToken(user);
           tokenService.sendAccessAndRefreshToken(response,
-              tokenService.createAccessToken(user.getEmail(), user.getAuthorities()),
+              tokenService.createAccessToken(user.getEmail()),
               reIssuedRefreshToken);
         });
   }
@@ -101,27 +102,24 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     log.info("checkAccessTokenAndAuthentication() 호출");
-    tokenService.extractAccessToken(request)
-        .filter(tokenService::isTokenValid)
-        .flatMap(tokenService::extractEmail)
-        .flatMap(userRepository::findByEmail)
-        .ifPresent(this::saveAuthentication);
+    String token = tokenService.extractAccessToken(request);
+    if (token != null && tokenService.isTokenValid(token)) {
+      Optional<String> email = tokenService.extractEmail(token);
+      email.flatMap(userRepository::findByEmail)
+          .ifPresent(this::saveAuthentication);
+    }
 
     filterChain.doFilter(request, response);
   }
 
   public void saveAuthentication(User myUser) {
-    String password = myUser.getPassword();
 
-    UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-        .username(myUser.getEmail())
-        .password(password)
-        .roles(myUser.getRole().name())
-        .build();
-
+    PrincipalDetails principalDetails = new PrincipalDetails(myUser);
     Authentication authentication =
-        new UsernamePasswordAuthenticationToken(userDetailsUser, null,
-            authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
+        new UsernamePasswordAuthenticationToken(
+            principalDetails, null,
+            authoritiesMapper.mapAuthorities(principalDetails.getAuthorities())
+        );
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
   }
