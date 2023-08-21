@@ -37,9 +37,11 @@ public enum ErrorCode {
     APPLICATION_STATUS_NOT_PENDING(HttpStatus.BAD_REQUEST, "신청이 승인/거절 되어 신청대기 상태가 아닙니다."),
     NOT_PROJECT_WRITER(HttpStatus.BAD_REQUEST, "프로젝트 작성자만 접근 가능합니다."),
 
-    // comment
+    // comment, reply
     NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
+    NOT_FOUND_REPLY(HttpStatus.BAD_REQUEST, "해당 대댓글을 찾을 수 없습니다."),
     NOT_YOUR_COMMENT(HttpStatus.BAD_REQUEST, "유저가 작성한 댓글이 아닙니다."),
+    NOT_YOUR_REPLY(HttpStatus.BAD_REQUEST, "유저가 작성한 대댓글이 아닙니다."),
 
 
     // S3
