@@ -1,19 +1,25 @@
 package com.devee.devhive.domain.project.service;
 
+import static com.devee.devhive.domain.project.type.ProjectStatus.COMPLETE;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITING;
+import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITMENT_COMPLETE;
 import static com.devee.devhive.domain.project.type.RecruitmentType.OFFLINE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_PROJECT;
+import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.ProjectTechStack;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
+import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.repository.ProjectRepository;
 import com.devee.devhive.domain.project.repository.ProjectTechStackRepository;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.techstack.entity.TechStack;
 import com.devee.devhive.domain.techstack.repository.TechStackRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +81,33 @@ public class ProjectService {
         .collect(Collectors.toList());
 
     projectTechStackRepository.saveAll(projectTechStacks);
+  }
+
+  public void updateProjectStatus(
+      PrincipalDetails principal,
+      Long projectId,
+      UpdateProjectStatusDto statusDto) {
+    Project project = projectRepository.findById(projectId)
+        .orElseThrow(() -> new CustomException(NOT_FOUND_PROJECT));
+
+    User writerUser = project.getWriterUser();
+
+    User currentUser = principal.getUser();
+
+    if (writerUser != null && writerUser.getId().equals(currentUser.getId())) {
+      ProjectStatus status = statusDto.getStatus();
+
+      if (status == RECRUITMENT_COMPLETE) {
+        project.setStartDate(LocalDateTime.now());
+      } else if (status == COMPLETE) {
+        project.setEndDate(LocalDateTime.now());
+      }
+
+      project.setStatus(status);
+
+      projectRepository.save(project);
+    } else {
+      throw new CustomException(UNAUTHORIZED);
+    }
   }
 }
