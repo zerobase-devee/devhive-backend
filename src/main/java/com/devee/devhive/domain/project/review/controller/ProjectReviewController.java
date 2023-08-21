@@ -4,10 +4,10 @@ import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.dto.ReviewDto;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.service.UserService;
-import java.security.Principal;
+import com.devee.devhive.global.security.service.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,18 +22,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProjectReviewController {
 
-  private final UserService userService;
   private final ProjectReviewService reviewService;
 
   @PostMapping("{projectId}/review/{targetUserId}")
   public ResponseEntity<ReviewDto> submitReview(
-      Principal principal,
+      @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId,
       @RequestBody EvaluationForm form
   ) {
-    User user = userService.getUserByEmail(principal.getName());
+    User user = principalDetails.getUser();
 
     return ResponseEntity.ok(reviewService.submitReview(user, projectId, targetUserId, form));
   }
-
 }
