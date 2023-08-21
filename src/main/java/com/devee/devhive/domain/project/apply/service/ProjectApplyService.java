@@ -121,19 +121,13 @@ public class ProjectApplyService {
     }
 
     // 신청 승인
-    public ProjectApply accept(User user, Long applicationId) {
-        ProjectApply projectApply = getProjectApplyById(applicationId);
-        // 프로젝트 작성자가 아닌 경우
-        if (!Objects.equals(projectApply.getProject().getWriterUser().getId(), user.getId())) {
-            throw new CustomException(NOT_PROJECT_WRITER);
-        }
+    public void accept(ProjectApply projectApply) {
         // 신청 대기 상태가 아닌 경우 (이미 승인/거절된 경우)
         if (projectApply.getStatus() != ApplyStatus.PENDING) {
             throw new CustomException(APPLICATION_STATUS_NOT_PENDING);
         }
-
         projectApply.setStatus(ApplyStatus.ACCEPT);
-        return projectApplyRepository.save(projectApply);
+        projectApplyRepository.save(projectApply);
     }
 
     // 신청 거절

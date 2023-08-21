@@ -17,4 +17,6 @@ public interface ProjectMemberRepository extends
     List<ProjectMember> findAllByUserIdOrderByCreatedDateDesc(Long userId);
 
     Page<ProjectMember> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
+
+    int countAllByProjectId(Long projectId);
 }
