@@ -6,6 +6,7 @@ import com.devee.devhive.domain.project.apply.entity.ProjectApply;
 import com.devee.devhive.domain.project.apply.entity.dto.ApplicantUserDto;
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
 import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
@@ -31,6 +32,7 @@ public class ProjectApplyController {
 
     private final ProjectApplyService projectApplyService;
     private final ProjectService projectService;
+    private final ProjectMemberService projectMemberService;
 
     // 프로젝트 참가 신청
     @PostMapping("/{projectId}/application")
@@ -77,7 +79,10 @@ public class ProjectApplyController {
         @PathVariable("applicationId") Long applicationId
     ) {
         User user = principalDetails.getUser();
-        projectApplyService.accept(user, applicationId);
+        // 승인
+        ProjectApply projectApply = projectApplyService.accept(user, applicationId);
+        // 프로젝트 멤버 저장
+        projectMemberService.saveProjectMember(projectApply.getUser(), projectApply.getProject());
     }
 
     // 신청 거절

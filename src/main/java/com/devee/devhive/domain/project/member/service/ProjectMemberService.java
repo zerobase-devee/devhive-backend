@@ -1,7 +1,9 @@
 package com.devee.devhive.domain.project.member.service;
 
+import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.repository.ProjectMemberRepository;
+import com.devee.devhive.domain.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,5 +33,14 @@ public class ProjectMemberService {
     // 내가 참여한 프로젝트 목록 페이지
     public Page<ProjectMember> getParticipationProjects(Long userId, Pageable pageable) {
         return projectMemberRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
+    }
+
+    // 신청 승인된 유저 멤버 저장
+    public void saveProjectMember(User user, Project project) {
+        projectMemberRepository.save(ProjectMember.builder()
+            .user(user)
+            .project(project)
+            .isReader(false)
+            .build());
     }
 }

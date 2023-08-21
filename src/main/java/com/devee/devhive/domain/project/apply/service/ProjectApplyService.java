@@ -121,7 +121,7 @@ public class ProjectApplyService {
     }
 
     // 신청 승인
-    public void accept(User user, Long applicationId) {
+    public ProjectApply accept(User user, Long applicationId) {
         ProjectApply projectApply = getProjectApplyById(applicationId);
         // 프로젝트 작성자가 아닌 경우
         if (!Objects.equals(projectApply.getProject().getWriterUser().getId(), user.getId())) {
@@ -133,7 +133,7 @@ public class ProjectApplyService {
         }
 
         projectApply.setStatus(ApplyStatus.ACCEPT);
-        projectApplyRepository.save(projectApply);
+        return projectApplyRepository.save(projectApply);
     }
 
     // 신청 거절
