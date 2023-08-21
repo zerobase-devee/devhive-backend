@@ -17,6 +17,7 @@ import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
+import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectApplyService {
 
     private final ProjectApplyRepository projectApplyRepository;
+    private final RedisService redisService;
 
     // 신청 상태
     public ApplyStatus getApplicationStatus(User user, Project project) {
@@ -69,12 +71,32 @@ public class ProjectApplyService {
                     throw new CustomException(APPLICATION_ALREADY_REJECT);
                 }
             });
+        // 동시성 이슈를 방지하기 위해 레디스락 사용, 락 획득할때까지 시도
+        String KEY = "PROJECT_" + projectId;
+        int retryDelayMilliseconds = 200; // 재시도 간격 (예: 200ms)
 
-        projectApplyRepository.save(ProjectApply.builder()
-            .project(project)
-            .user(user)
-            .status(ApplyStatus.PENDING)
-            .build());
+        while (true) {
+            boolean locked = redisService.getLock(KEY, 5);
+            if (locked) {
+                try {
+                    projectApplyRepository.save(ProjectApply.builder()
+                        .project(project)
+                        .user(user)
+                        .status(ApplyStatus.PENDING)
+                        .build());
+                    break; // 락을 획득하고 데이터 처리 후 루프 종료
+                } finally {
+                    redisService.unLock(KEY);
+                }
+            } else {
+                // 락을 획득하지 못한 경우, 일정 시간 동안 대기한 후 재시도
+                try {
+                    Thread.sleep(retryDelayMilliseconds);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
     }
 
     // 신청 취소
