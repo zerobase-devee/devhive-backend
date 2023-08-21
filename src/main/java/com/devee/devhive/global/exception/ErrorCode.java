@@ -24,14 +24,19 @@ public enum ErrorCode {
     USER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "기존 비밀번호가 일치하지 않습니다."),
     USER_PASSWORD_EQUALS_NEW_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 새 비밀번호가 일치합니다."),
     NEW_PASSWORD_MISMATCH_RE_PASSWORD(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
-    NOT_FOUND_PROJECT(HttpStatus.BAD_REQUEST, "프로젝트 모집 게시글을 찾을 수 없습니다. "),
 
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),
     S3_FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "파일용량은 5MB 이하만 업로드 가능합니다."),
     S3_NOT_SUPPORT_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일형식입니다."),
     S3_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "파일 업로드 중 오류가 발생하였습니다."),
-    S3_DELETE_ERROR(HttpStatus.BAD_REQUEST, "파일 삭제 중 오류가 발생하였습니다.");
+    S3_DELETE_ERROR(HttpStatus.BAD_REQUEST, "파일 삭제 중 오류가 발생하였습니다."),
+
+    // Project
+    NOT_FOUND_PROJECT(HttpStatus.BAD_REQUEST, "프로젝트 모집 게시글을 찾을 수 없습니다. "),
+    PROJECT_NOT_COMPLETE(HttpStatus.BAD_REQUEST, "해당 프로젝트는 이미 완료되었습니다."),
+    ALREADY_SUBMIT_TARGETUSER(HttpStatus.BAD_REQUEST, "해당 유저에 대한 리뷰가 이미 존재합니다.")
+    ;
     private final HttpStatus httpStatus;
     private final String detail;
 }
