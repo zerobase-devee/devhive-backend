@@ -1,12 +1,15 @@
 package com.devee.devhive.domain.project.apply.controller;
 
 import static com.devee.devhive.global.exception.ErrorCode.NOT_PROJECT_WRITER;
+import static com.devee.devhive.global.exception.ErrorCode.RECRUITMENT_ALREADY_COMPLETED;
 
 import com.devee.devhive.domain.project.apply.entity.ProjectApply;
 import com.devee.devhive.domain.project.apply.entity.dto.ApplicantUserDto;
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
 import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
@@ -31,6 +34,7 @@ public class ProjectApplyController {
 
     private final ProjectApplyService projectApplyService;
     private final ProjectService projectService;
+    private final ProjectMemberService projectMemberService;
 
     // 프로젝트 참가 신청
     @PostMapping("/{projectId}/application")
@@ -77,7 +81,28 @@ public class ProjectApplyController {
         @PathVariable("applicationId") Long applicationId
     ) {
         User user = principalDetails.getUser();
-        projectApplyService.accept(user, applicationId);
+        ProjectApply projectApply = projectApplyService.getProjectApplyById(applicationId);
+        Project project = projectApply.getProject();
+
+        // 프로젝트 작성자가 아닌 경우
+        if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
+            throw new CustomException(NOT_PROJECT_WRITER);
+        }
+
+        // 프로젝트 상태가 모집 완료된 상태인 경우
+        ProjectStatus status = project.getStatus();
+        if (status == ProjectStatus.COMPLETE || status == ProjectStatus.RECRUITMENT_COMPLETE) {
+            throw new CustomException(RECRUITMENT_ALREADY_COMPLETED);
+        }
+
+        // 승인 전 참가인원 체크, 이미 팀원이 다 찬 경우 예외
+        if (!projectMemberService.availableAccept(project)) {
+            throw new CustomException(RECRUITMENT_ALREADY_COMPLETED);
+        }
+        // 승인
+        projectApplyService.accept(projectApply);
+        // 프로젝트 멤버 저장
+        projectMemberService.saveProjectMember(projectApply.getUser(), project);
     }
 
     // 신청 거절
