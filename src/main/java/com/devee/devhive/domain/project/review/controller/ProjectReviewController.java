@@ -2,9 +2,13 @@ package com.devee.devhive.domain.project.review.controller;
 
 import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.dto.ReviewDto;
+import com.devee.devhive.domain.project.review.entity.ProjectReview;
+import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
+import com.devee.devhive.domain.project.review.evaluation.service.EvaluationService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.security.service.PrincipalDetails;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectReviewController {
 
   private final ProjectReviewService reviewService;
+  private final EvaluationService evaluationService;
 
   @PostMapping("{projectId}/review/{targetUserId}")
   public ResponseEntity<ReviewDto> submitReview(
@@ -32,6 +37,9 @@ public class ProjectReviewController {
   ) {
     User user = principalDetails.getUser();
 
-    return ResponseEntity.ok(reviewService.submitReview(user, projectId, targetUserId, form));
+    ProjectReview newReview = reviewService.submitReview(user, projectId, targetUserId, form);
+    List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, form);
+
+    return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
   }
 }
