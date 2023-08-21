@@ -10,11 +10,13 @@ import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.ProjectTechStack;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
+import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.repository.ProjectRepository;
 import com.devee.devhive.domain.project.repository.ProjectTechStackRepository;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.techstack.entity.TechStack;
+import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.techstack.repository.TechStackRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
@@ -83,12 +85,12 @@ public class ProjectService {
     projectTechStackRepository.saveAll(projectTechStacks);
   }
 
+  // 프로젝트 상태변경
   public void updateProjectStatus(
       PrincipalDetails principal,
       Long projectId,
       UpdateProjectStatusDto statusDto) {
-    Project project = projectRepository.findById(projectId)
-        .orElseThrow(() -> new CustomException(NOT_FOUND_PROJECT));
+    Project project = findById(projectId);
 
     User writerUser = project.getWriterUser();
 
@@ -109,5 +111,60 @@ public class ProjectService {
     } else {
       throw new CustomException(UNAUTHORIZED);
     }
+  }
+
+  // 프로젝트 수정
+  @Transactional
+  public void updateProject(
+      PrincipalDetails principal,
+      Long projectId,
+      UpdateProjectDto updateProjectDto) {
+
+    Project project = findById(projectId);
+
+    User writerUser = project.getWriterUser();
+    User currentUser = principal.getUser();
+
+    if (writerUser != null && writerUser.getId().equals(currentUser.getId())) {
+
+      updateProjectFields(updateProjectDto);
+      updateTechStacks(project, updateProjectDto.getTechStacks());
+      projectRepository.save(project);
+    } else {
+      throw new CustomException(UNAUTHORIZED);
+    }
+  }
+
+  // 프로젝트 필드 업데이트
+  private void updateProjectFields(UpdateProjectDto updateProjectDto) {
+
+    Project project = Project.builder()
+        .title(updateProjectDto.getTitle())
+        .name(updateProjectDto.getProjectName())
+        .teamSize(updateProjectDto.getTeamSize())
+        .recruitmentType(updateProjectDto.getRecruitmentType())
+        .developmentType(updateProjectDto.getDevelopmentType())
+        .deadline(updateProjectDto.getDeadline())
+        .build();
+
+    if (updateProjectDto.getRecruitmentType() == OFFLINE) {
+      project.setRegion(updateProjectDto.getRegion());
+    }
+  }
+
+  // 프로젝트 기술 삭제후 추가
+  private void updateTechStacks(Project project, List<TechStackDto> techStacks) {
+    List<ProjectTechStack> existingTechStacks = projectTechStackRepository.findByProject(project);
+    projectTechStackRepository.deleteAll(existingTechStacks);
+
+    List<ProjectTechStack> techStacksToAdd = techStacks.stream()
+        .map(techStackDto -> {
+          String techStackName = techStackDto.getName();
+          TechStack techStack = techStackRepository.findByName(techStackName);
+          return ProjectTechStack.of(project, techStack);
+        })
+        .collect(Collectors.toList());
+
+    projectTechStackRepository.saveAll(techStacksToAdd);
   }
 }

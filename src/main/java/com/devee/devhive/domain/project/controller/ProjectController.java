@@ -1,6 +1,7 @@
 package com.devee.devhive.domain.project.controller;
 
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
+import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.global.security.service.PrincipalDetails;
@@ -37,5 +38,15 @@ public class ProjectController {
       @RequestBody UpdateProjectStatusDto statusDto) {
 
     projectService.updateProjectStatus(principal, projectId, statusDto);
+  }
+
+  // 프로젝트 수정
+  @PutMapping("/{projectId}")
+  public void updateProject(
+      @AuthenticationPrincipal PrincipalDetails principal,
+      @PathVariable Long projectId,
+      @RequestBody UpdateProjectDto updateProjectDto) {
+
+    projectService.updateProject(principal, projectId, updateProjectDto);
   }
 }
