@@ -60,7 +60,7 @@ public class AuthController {
     User user = userOptional.get();
     log.info("user : {}", user);
     String reIssuedRefreshToken = reIssueRefreshToken(user);
-    String accessToken = tokenService.createAccessToken(user.getEmail(), user.getAuthorities());
+    String accessToken = tokenService.createAccessToken(user.getEmail());
     log.info("accessToken : {}", accessToken);
     log.info("reIssuedRefreshToken : {}", reIssuedRefreshToken);
     tokenService.sendAccessToken(response, accessToken);

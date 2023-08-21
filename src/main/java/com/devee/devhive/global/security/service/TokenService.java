@@ -9,20 +9,17 @@ import com.devee.devhive.global.exception.CustomException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @RequiredArgsConstructor
-@Component
+@Service
 @Getter
 @Slf4j
 public class TokenService {
@@ -36,6 +33,7 @@ public class TokenService {
   private static final String EMAIL_CLAIM = "email";
   private static final String ROLE_CLAIM = "role";
   private static final String BEARER = "Bearer ";
+
   private final UserRepository userRepository;
   //환경변수에 키값 지정
   @Value("${spring.jwt.secret-key}")
@@ -52,13 +50,8 @@ public class TokenService {
   /**
    * AccessToken 생성 메소드
    */
-  public String createAccessToken(String email,
-      Collection<? extends GrantedAuthority> authorities) {
+  public String createAccessToken(String email) {
     Date now = new Date();
-    List<String> authorityStrings = new ArrayList<>();
-    for (GrantedAuthority authority : authorities) {
-      authorityStrings.add(authority.getAuthority());
-    }
     return JWT.create() // JWT 토큰을 생성하는 빌더 반환
         .withSubject(ACCESS_TOKEN_SUBJECT) // JWT의 Subject 지정 -> AccessToken이므로 AccessToken
         .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod)) // 토큰 만료 시간 설정
@@ -67,9 +60,7 @@ public class TokenService {
         //추가적으로 식별자나, 이름 등의 정보를 더 추가하셔도 됩니다.
         //추가하실 경우 .withClaim(클래임 이름, 클래임 값) 으로 설정해주시면 됩니다
         .withClaim(EMAIL_CLAIM, email)
-        .withClaim(ROLE_CLAIM, authorityStrings)
-        .sign(Algorithm.HMAC512(
-            secretKey)); // HMAC512 알고리즘 사용, application-jwt.yml에서 지정한 secret 키로 암호화
+        .sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용, application-jwt.yml에서 지정한 secret 키로 암호화
   }
 
   /**
@@ -123,10 +114,12 @@ public class TokenService {
    * 헤더에서 AccessToken 추출 토큰 형식 : Bearer XXX에서 Bearer를 제외하고 순수 토큰만 가져오기 위해서 헤더를 가져온 후 "Bearer"를
    * 삭제(""로 replace)
    */
-  public Optional<String> extractAccessToken(HttpServletRequest request) {
-    return Optional.ofNullable(request.getHeader(accessHeader))
-        .filter(refreshToken -> refreshToken.startsWith(BEARER))
-        .map(refreshToken -> refreshToken.replace(BEARER, ""));
+  public String extractAccessToken(HttpServletRequest request) {
+    String bearerToken = request.getHeader(accessHeader);
+    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER)) {
+      return bearerToken.replace(BEARER, "");
+    }
+    return null;
   }
 
   /**
@@ -181,5 +174,4 @@ public class TokenService {
       throw new CustomException(INVALID_JWT);
     }
   }
-
 }

@@ -22,8 +22,8 @@ import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserBadgeService;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
+import com.devee.devhive.global.security.service.PrincipalDetails;
 import jakarta.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,7 +74,8 @@ public class UserController {
 
         if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
             // 로그인한 상태일 때 동작
-            User loggedInUser = userService.getUserByEmail(authentication.getName());
+            PrincipalDetails details = (PrincipalDetails) authentication.getPrincipal();
+            User loggedInUser = details.getUser();
             isFavorite = favoriteService.isFavorite(loggedInUser.getId(), targetUserId);
         }
 
@@ -82,8 +84,8 @@ public class UserController {
 
     // 내 정보 조회
     @GetMapping("/my-profile")
-    public ResponseEntity<MyInfoDto> getMyInfo(Principal principal){
-        User user = userService.getUserByEmail(principal.getName());
+    public ResponseEntity<MyInfoDto> getMyInfo(@AuthenticationPrincipal PrincipalDetails principal){
+        User user = principal.getUser();
         UserInformationDto informationDto = getUserInformation(user.getId());
 
         return ResponseEntity.ok(MyInfoDto.of(user, informationDto));
@@ -92,27 +94,30 @@ public class UserController {
     // 내 기본 정보 수정
     @PutMapping("/my-profile/basic")
     public void updateBasicInfo(
-        Principal principal,
+        @AuthenticationPrincipal PrincipalDetails principal,
         @RequestBody @Valid UpdateBasicInfoForm form
     ) {
-        User user = userService.getUserByEmail(principal.getName());
+        User user = principal.getUser();
         userService.updateBasicInfo(user, form);
     }
 
     // 비밀번호 변경
     @PutMapping("/password")
     public void updatePassword(
-        Principal principal,
+        @AuthenticationPrincipal PrincipalDetails principal,
         @RequestBody @Valid UpdatePasswordForm form
     ) {
-        User user = userService.getUserByEmail(principal.getName());
+        User user = principal.getUser();
         userService.updatePassword(user, form);
     }
 
     // 내 기타 정보 수정 (기술스택, 경력)
     @PutMapping("/my-profile/etc")
-    public void updateEtcInfo(Principal principal, @RequestBody UpdateEtcInfoForm form) {
-        User user = userService.getUserByEmail(principal.getName());
+    public void updateEtcInfo(
+        @AuthenticationPrincipal PrincipalDetails principal,
+        @RequestBody UpdateEtcInfoForm form
+    ) {
+        User user = principal.getUser();
         userTechStackService.updateTechStacks(user, form.getTechStacks());
         careerService.updateCareers(user, form.getCareerDtoList());
     }
@@ -121,16 +126,16 @@ public class UserController {
     @PutMapping("/my-profile/image")
     public void updateProfileImage(
         @RequestPart(value = "image", required = false) MultipartFile multipartFile,
-        Principal principal
+        @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        User user = userService.getUserByEmail(principal.getName());
+        User user = principal.getUser();
         userService.updateProfileImage(multipartFile, user);
     }
 
     // 내 프로필 사진 삭제
     @DeleteMapping("/my-profile/image")
-    public void deleteProfileImage(Principal principal) {
-        User user = userService.getUserByEmail(principal.getName());
+    public void deleteProfileImage(@AuthenticationPrincipal PrincipalDetails principal) {
+        User user = principal.getUser();
         userService.deleteProfileImage(user);
     }
 
