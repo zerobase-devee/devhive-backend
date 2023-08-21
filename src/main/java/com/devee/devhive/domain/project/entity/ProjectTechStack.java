@@ -19,15 +19,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 public class ProjectTechStack {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tech_stack_id")
-    private TechStack techStack;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "project_id")
+  private Project project;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "tech_stack_id")
+  private TechStack techStack;
+
+  public static ProjectTechStack of(Project project, TechStack techStack) {
+    return ProjectTechStack.builder()
+        .project(project)
+        .techStack(techStack)
+        .build();
+  }
 }
