@@ -106,7 +106,7 @@ public class ProjectApplyController {
     }
 
     // 신청 거절
-    @PutMapping("/application/{applicationId}/accept")
+    @PutMapping("/application/{applicationId}/reject")
     public void reject(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("applicationId") Long applicationId

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class RedisService {
 
   private final StringRedisTemplate template;
-  private final RedisTemplate<String, String> redisTemplate;
+  private final RedisTemplate<String, String> lockRedisTemplate;
 
   public String getData(String key) {
     ValueOperations<String, String> valueOperations = template.opsForValue();
@@ -32,12 +32,12 @@ public class RedisService {
 
   // 닉네임 락
   public boolean getLock(String key, long timeoutInSeconds) {
-    ValueOperations<String, String> ops = redisTemplate.opsForValue();
+    ValueOperations<String, String> ops = lockRedisTemplate.opsForValue();
     Boolean locked = ops.setIfAbsent(key, "locked", timeoutInSeconds, TimeUnit.SECONDS);
     return locked != null && locked;
   }
   // 닉네임 락 해제
   public void unLock(String key) {
-    redisTemplate.delete(key);
+    lockRedisTemplate.delete(key);
   }
 }
