@@ -11,15 +11,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class TechStackDto {
-    private Long id;
-    private String name;
-    private String image;
 
-    public static TechStackDto from(TechStack techStack) {
-        return TechStackDto.builder()
-            .id(techStack.getId())
-            .name(techStack.getName())
-            .image(techStack.getImage())
-            .build();
-    }
+  private Long id;
+  private String name;
+  private String image;
+
+  public TechStackDto(String name) {
+    this.name = name;
+  }
+
+  public static TechStackDto from(TechStack techStack) {
+    return TechStackDto.builder()
+        .id(techStack.getId())
+        .name(techStack.getName())
+        .image(techStack.getImage())
+        .build();
+  }
 }

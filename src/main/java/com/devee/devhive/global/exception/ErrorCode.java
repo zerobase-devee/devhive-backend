@@ -24,6 +24,19 @@ public enum ErrorCode {
     USER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "기존 비밀번호가 일치하지 않습니다."),
     USER_PASSWORD_EQUALS_NEW_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 새 비밀번호가 일치합니다."),
     NEW_PASSWORD_MISMATCH_RE_PASSWORD(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
+    PROJECT_CANNOT_DELETED(HttpStatus.BAD_REQUEST, "프로젝트 상태가 모집중이거나 완료상태인 경우 삭제할 수 없습니다. "),
+
+    // ProjectApply
+    NOT_FOUND_APPLICATION(HttpStatus.BAD_REQUEST, "해당 신청건을 찾을 수 없습니다."),
+    RECRUITMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 프로젝트 모집이 완료되었습니다."),
+    PROJECT_ALREADY_APPLIED(HttpStatus.BAD_REQUEST, "이미 프로젝트를 신청한 상태입니다."),
+    APPLICATION_ALREADY_ACCEPT(HttpStatus.BAD_REQUEST, "이미 신청하여 승인된 상태입니다."),
+    APPLICATION_ALREADY_REJECT(HttpStatus.BAD_REQUEST, "이미 신청하여 거절된 상태입니다."),
+    APPLICATION_STATUS_NOT_PENDING(HttpStatus.BAD_REQUEST, "신청이 승인/거절 되어 신청대기 상태가 아닙니다."),
+
+    // comment, reply
+    NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
+    NOT_FOUND_REPLY(HttpStatus.BAD_REQUEST, "해당 대댓글을 찾을 수 없습니다."),
 
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),

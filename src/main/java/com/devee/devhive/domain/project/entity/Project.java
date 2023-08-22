@@ -30,35 +30,37 @@ import org.springframework.data.annotation.LastModifiedDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Project extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_user_id")
-    private User writerUser;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    private String title;
-    private String name;
-    private int teamSize;
-    private int viewCount;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "writer_user_id")
+  private User writerUser;
 
-    @Enumerated(EnumType.STRING)
-    private ProjectStatus status;
+  private String title;
+  private String content;
+  private String name;
+  private int teamSize;
+  private int viewCount;
 
-    @Enumerated(EnumType.STRING)
-    private RecruitmentType recruitmentType;
+  @Enumerated(EnumType.STRING)
+  private ProjectStatus status;
 
-    private String region;
+  @Enumerated(EnumType.STRING)
+  private RecruitmentType recruitmentType;
 
-    @Enumerated(EnumType.STRING)
-    private DevelopmentType developmentType;
+  private String region;
 
-    private LocalDateTime startDate; // 프로젝트 시작일자
-    private LocalDateTime endDate;   // 프로젝트 종료일자
-    private LocalDateTime deadline;  // 모집 마감 종료일자
+  @Enumerated(EnumType.STRING)
+  private DevelopmentType developmentType;
 
-    @LastModifiedDate
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime modifiedDate;
+  private LocalDateTime startDate; // 프로젝트 시작일자
+  private LocalDateTime endDate;   // 프로젝트 종료일자
+  private LocalDateTime deadline;  // 모집 마감 종료일자
+
+  @LastModifiedDate
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+  private LocalDateTime modifiedDate;
 }
