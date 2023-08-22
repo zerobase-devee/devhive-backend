@@ -49,4 +49,13 @@ public class ProjectMemberService {
             .isLeader(false)
             .build());
     }
+
+    // 프로젝트 작성자 리더 저장
+    public void saveProjectLeader(User user, Project project) {
+        projectMemberRepository.save(ProjectMember.builder()
+            .user(user)
+            .project(project)
+            .isLeader(true)
+            .build());
+    }
 }
