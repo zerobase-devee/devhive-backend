@@ -1,5 +1,7 @@
 package com.devee.devhive.domain.project.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
+
 import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
@@ -9,8 +11,10 @@ import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -73,10 +77,14 @@ public class ProjectController {
       @PathVariable Long projectId
   ) {
     User user = principal.getUser();
+    Project project = projectService.findById(projectId);
+    if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
+      throw new CustomException(PROJECT_CANNOT_DELETED);
+    }
 
     List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
     replyService.deleteRepliesByCommentList(commentIdList);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
-    projectService.deleteProject(user, projectId);
+    projectService.deleteProject(projectId);
   }
 }
