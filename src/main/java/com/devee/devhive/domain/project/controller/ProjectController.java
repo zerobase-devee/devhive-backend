@@ -10,6 +10,7 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.security.service.PrincipalDetails;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -73,8 +74,8 @@ public class ProjectController {
   ) {
     User user = principal.getUser();
 
-    commentService.deleteCommentsByProjectId(projectId);
-    replyService.deleteRepliesByProjectId(projectId);
+    List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
+    replyService.deleteRepliesByCommentList(commentIdList);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
     projectService.deleteProject(user, projectId);
   }
