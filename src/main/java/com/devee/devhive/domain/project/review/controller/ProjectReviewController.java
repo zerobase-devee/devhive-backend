@@ -1,12 +1,15 @@
 package com.devee.devhive.domain.project.review.controller;
 
+import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.dto.ReviewDto;
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
 import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.project.review.evaluation.service.EvaluationService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
+import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,8 @@ public class ProjectReviewController {
 
   private final ProjectReviewService reviewService;
   private final EvaluationService evaluationService;
+  private final UserService userService;
+  private final ProjectService projectService;
 
   @PostMapping("{projectId}/review/{targetUserId}")
   public ResponseEntity<ReviewDto> submitReview(
@@ -36,8 +41,10 @@ public class ProjectReviewController {
       @RequestBody EvaluationForm form
   ) {
     User user = principalDetails.getUser();
+    User targetUser = userService.getUserById(targetUserId);
+    Project project = projectService.findById(projectId);
 
-    ProjectReview newReview = reviewService.submitReview(user, projectId, targetUserId, form);
+    ProjectReview newReview = reviewService.submitReview(user, project, targetUser, form);
     List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, form);
 
     return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
