@@ -7,11 +7,9 @@ import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.reply.entity.Reply;
 import com.devee.devhive.domain.project.comment.reply.entity.form.ReplyForm;
 import com.devee.devhive.domain.project.comment.reply.repository.ReplyRepository;
-import com.devee.devhive.domain.project.comment.repository.CommentRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +22,6 @@ public class ReplyService {
 
   private final ReplyRepository replyRepository;
   private final RedisService redisService;
-  private final CommentRepository commentRepository;
 
   public Reply getReplyById(Long replyId) {
     return replyRepository.findById(replyId)
