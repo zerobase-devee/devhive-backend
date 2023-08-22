@@ -4,7 +4,6 @@ import static com.devee.devhive.domain.project.type.ProjectStatus.COMPLETE;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITING;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITMENT_COMPLETE;
 import static com.devee.devhive.domain.project.type.RecruitmentType.OFFLINE;
-import static com.devee.devhive.domain.user.type.Role.ADMIN;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_PROJECT;
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
@@ -129,18 +128,26 @@ public class ProjectService {
 
   // 프로젝트 삭제
   @Transactional
-  public void deleteProject(User user, Long projectId) {
+  public void deleteProject(Long projectId) {
     Project project = findById(projectId);
 
-    User writerUser = project.getWriterUser();
-
-    if (user.getRole() == ADMIN || writerUser.getId().equals(user.getId())) {
-      if (project.getStatus() != ProjectStatus.RECRUITING) {
-        throw new CustomException(PROJECT_CANNOT_DELETED);
-      }
-      projectRepository.delete(project);
-    } else {
-      throw new CustomException(UNAUTHORIZED);
+    if (project.getStatus() != ProjectStatus.RECRUITING) {
+      throw new CustomException(PROJECT_CANNOT_DELETED);
     }
+    projectRepository.delete(project);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
