@@ -1,9 +1,14 @@
 package com.devee.devhive.domain.project.controller;
 
+import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
+import com.devee.devhive.domain.project.comment.service.CommentService;
+import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.project.service.ProjectTechStackService;
+import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
 
   private final ProjectService projectService;
+  private final CommentService commentService;
+  private final ReplyService replyService;
+  private final ProjectTechStackService projectTechStackService;
 
   // 프로젝트 작성
   @PostMapping
@@ -28,7 +36,10 @@ public class ProjectController {
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody CreateProjectDto createProjectDto) {
 
-    projectService.createProject(principal, createProjectDto);
+    User user = principal.getUser();
+
+    Project project = projectService.createProject(createProjectDto, user);
+    projectTechStackService.createProjectTechStacks(project, createProjectDto.getTechStacks());
   }
 
   // 상태변경
@@ -37,8 +48,9 @@ public class ProjectController {
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable Long projectId,
       @RequestBody UpdateProjectStatusDto statusDto) {
+    User user = principal.getUser();
 
-    projectService.updateProjectStatus(principal, projectId, statusDto);
+    projectService.updateProjectStatus(user, projectId, statusDto);
   }
 
   // 프로젝트 수정
@@ -48,7 +60,9 @@ public class ProjectController {
       @PathVariable Long projectId,
       @RequestBody UpdateProjectDto updateProjectDto) {
 
-    projectService.updateProject(principal, projectId, updateProjectDto);
+    User user = principal.getUser();
+    Project project = projectService.updateProject(user, projectId, updateProjectDto);
+    projectTechStackService.updateProjectTechStacks(project, updateProjectDto.getTechStacks());
   }
 
   // 프로젝트 삭제
@@ -56,8 +70,12 @@ public class ProjectController {
   public void deleteProject(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable Long projectId
-  ){
+  ) {
+    User user = principal.getUser();
 
-    projectService.deleteProject(principal, projectId);
+    commentService.deleteCommentsByProjectId(projectId);
+    replyService.deleteRepliesByProjectId(projectId);
+    projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
+    projectService.deleteProject(user, projectId);
   }
 }
