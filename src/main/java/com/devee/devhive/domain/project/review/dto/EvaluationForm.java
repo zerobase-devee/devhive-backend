@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.project.review.dto;
 
+import com.devee.devhive.domain.project.type.EvaluationItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +20,15 @@ public class EvaluationForm {
 
   public int getTotalScore() {
     return manner + contribution + communication + schedule + professionalism;
+  }
+
+  public int getValue(EvaluationItem item) {
+    return switch (item) {
+      case MANNER -> manner;
+      case CONTRIBUTION -> contribution;
+      case COMMUNICATION -> communication;
+      case SCHEDULE -> schedule;
+      case PROFESSIONALISM -> professionalism;
+    };
   }
 }

@@ -5,8 +5,9 @@ import com.devee.devhive.domain.project.review.entity.ProjectReview;
 import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.project.review.evaluation.repository.EvaluationRepository;
 import com.devee.devhive.domain.project.type.EvaluationItem;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,17 +28,15 @@ public class EvaluationService {
 
   private List<Evaluation> getAllEvaluations(ProjectReview review,
       EvaluationForm form) {
-    List<Evaluation> evaluationList = new ArrayList<>();
-
-    evaluationList.add(getEvaluation(review, EvaluationItem.MANNER, form.getManner()));
-    evaluationList.add(getEvaluation(review, EvaluationItem.CONTRIBUTION, form.getContribution()));
-    evaluationList.add(
-        getEvaluation(review, EvaluationItem.COMMUNICATION, form.getCommunication()));
-    evaluationList.add(getEvaluation(review, EvaluationItem.SCHEDULE, form.getSchedule()));
-    evaluationList.add(
-        getEvaluation(review, EvaluationItem.PROFESSIONALISM, form.getProfessionalism()));
-
-    return evaluationList;
+    return Stream.of(
+            EvaluationItem.MANNER,
+            EvaluationItem.CONTRIBUTION,
+            EvaluationItem.COMMUNICATION,
+            EvaluationItem.SCHEDULE,
+            EvaluationItem.PROFESSIONALISM
+        )
+        .map(item -> getEvaluation(review, item, form.getValue(item)))
+        .collect(Collectors.toList());
   }
 
   private Evaluation getEvaluation(ProjectReview review, EvaluationItem evaluationItem, int point) {
