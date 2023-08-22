@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TechStackRepository extends JpaRepository<TechStack, Long> {
 
+  TechStack findByName(String techStackName);
 }
