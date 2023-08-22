@@ -28,21 +28,15 @@ public enum ErrorCode {
 
     // ProjectApply
     NOT_FOUND_APPLICATION(HttpStatus.BAD_REQUEST, "해당 신청건을 찾을 수 없습니다."),
-    CAN_NOT_APPLY_YOUR_PROJECT(HttpStatus.BAD_REQUEST, "자신이 작성한 프로젝트에는 신청할 수 없습니다."),
-    NOT_YOUR_APPLICATION(HttpStatus.BAD_REQUEST, "유저의 프로젝트 신청건이 아닙니다."),
     RECRUITMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 프로젝트 모집이 완료되었습니다."),
     PROJECT_ALREADY_APPLIED(HttpStatus.BAD_REQUEST, "이미 프로젝트를 신청한 상태입니다."),
     APPLICATION_ALREADY_ACCEPT(HttpStatus.BAD_REQUEST, "이미 신청하여 승인된 상태입니다."),
     APPLICATION_ALREADY_REJECT(HttpStatus.BAD_REQUEST, "이미 신청하여 거절된 상태입니다."),
     APPLICATION_STATUS_NOT_PENDING(HttpStatus.BAD_REQUEST, "신청이 승인/거절 되어 신청대기 상태가 아닙니다."),
-    NOT_PROJECT_WRITER(HttpStatus.BAD_REQUEST, "프로젝트 작성자만 접근 가능합니다."),
 
     // comment, reply
     NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
     NOT_FOUND_REPLY(HttpStatus.BAD_REQUEST, "해당 대댓글을 찾을 수 없습니다."),
-    NOT_YOUR_COMMENT(HttpStatus.BAD_REQUEST, "유저가 작성한 댓글이 아닙니다."),
-    NOT_YOUR_REPLY(HttpStatus.BAD_REQUEST, "유저가 작성한 대댓글이 아닙니다."),
-
 
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),

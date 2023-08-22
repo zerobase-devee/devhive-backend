@@ -1,7 +1,7 @@
 package com.devee.devhive.domain.project.comment.service;
 
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_COMMENT;
-import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_COMMENT;
+import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.entity.form.CommentForm;
@@ -61,7 +61,7 @@ public class CommentService {
         Comment comment = getCommentById(commentId);
 
         if (!Objects.equals(comment.getUser().getId(), user.getId())) {
-            throw new CustomException(NOT_YOUR_COMMENT);
+            throw new CustomException(UNAUTHORIZED);
         }
         comment.setContent(form.getContent());
         return commentRepository.save(comment);
@@ -72,7 +72,7 @@ public class CommentService {
         Comment comment = getCommentById(commentId);
 
         if (!Objects.equals(comment.getUser().getId(), user.getId())) {
-            throw new CustomException(NOT_YOUR_COMMENT);
+            throw new CustomException(UNAUTHORIZED);
         }
         commentRepository.delete(comment);
     }

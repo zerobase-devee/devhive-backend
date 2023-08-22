@@ -1,7 +1,7 @@
 package com.devee.devhive.domain.project.comment.reply.service;
 
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_REPLY;
-import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_REPLY;
+import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.reply.entity.Reply;
@@ -61,7 +61,7 @@ public class ReplyService {
         Reply reply = getReplyById(replyId);
 
         if (!Objects.equals(reply.getUser().getId(), user.getId())) {
-            throw new CustomException(NOT_YOUR_REPLY);
+            throw new CustomException(UNAUTHORIZED);
         }
         reply.setContent(form.getContent());
         return replyRepository.save(reply);
@@ -72,7 +72,7 @@ public class ReplyService {
         Reply reply = getReplyById(commentId);
 
         if (!Objects.equals(reply.getUser().getId(), user.getId())) {
-            throw new CustomException(NOT_YOUR_REPLY);
+            throw new CustomException(UNAUTHORIZED);
         }
         replyRepository.delete(reply);
     }
