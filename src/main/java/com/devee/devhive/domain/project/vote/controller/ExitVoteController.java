@@ -37,11 +37,11 @@ public class ExitVoteController {
       @PathVariable Long projectId,
       @PathVariable Long targetUserId
   ) {
-    Long registeringUserId = principalDetails.getUser().getId();
+    User registeringUser = principalDetails.getUser();
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 
-    if (!projectMemberService.isMemberofProject(projectId, registeringUserId)) {
+    if (!projectMemberService.isMemberofProject(projectId, registeringUser.getId())) {
       throw new CustomException(ErrorCode.NOT_YOUR_PROJECT);
     }
 
@@ -51,6 +51,7 @@ public class ExitVoteController {
         .filter(member -> !Objects.equals(member.getUser().getId(), targetUser.getId()))
         .collect(Collectors.toList());
 
-    return ResponseEntity.ok(exitVoteService.createExitVote(project, targetUser, votingUsers));
+    return ResponseEntity.ok(
+        exitVoteService.createExitVote(project, registeringUser, targetUser, votingUsers));
   }
 }
