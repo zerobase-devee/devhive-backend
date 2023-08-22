@@ -88,6 +88,7 @@ public class ProjectController {
     List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
     replyService.deleteRepliesByCommentList(commentIdList);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
+    projectMemberService.deleteProjectMembers(projectId);
     projectService.deleteProject(project);
   }
 }

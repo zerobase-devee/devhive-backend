@@ -58,4 +58,9 @@ public class ProjectMemberService {
             .isLeader(true)
             .build());
     }
+
+    public void deleteProjectMembers(Long projectId){
+        List<ProjectMember> projectMembers = projectMemberRepository.findAllByProjectId(projectId);
+        projectMemberRepository.deleteAll(projectMembers);
+    }
 }
