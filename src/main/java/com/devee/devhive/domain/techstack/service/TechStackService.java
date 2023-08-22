@@ -4,6 +4,8 @@ import com.devee.devhive.domain.techstack.entity.TechStack;
 import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
 import com.devee.devhive.domain.techstack.repository.TechStackRepository;
 import com.devee.devhive.global.s3.S3Service;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,5 +31,15 @@ public class TechStackService {
         .build();
 
     techStackRepository.save(techStack);
+  }
+
+  public void deleteTechStack(Long techStackId) {
+    TechStack techStack = techStackRepository.findById(techStackId).orElseThrow();
+    String imageUrl = URLDecoder.decode(techStack.getImage(), StandardCharsets.UTF_8);
+    String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+
+    s3Service.delete(filename);
+
+    techStackRepository.delete(techStack);
   }
 }

@@ -10,6 +10,8 @@ import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -34,5 +36,17 @@ public class AdminController {
       throw new CustomException(UNAUTHORIZED);
     }
     techStackService.createTechStack(techStackDto, imageFile);
+  }
+
+  @DeleteMapping("/tech-stack/{techStackId}")
+  public void deleteTechStack(
+      @AuthenticationPrincipal PrincipalDetails principal,
+      @PathVariable Long techStackId) {
+    User user = principal.getUser();
+    if (user.getRole() != ADMIN) {
+      throw new CustomException(UNAUTHORIZED);
+    }
+
+    techStackService.deleteTechStack(techStackId);
   }
 }
