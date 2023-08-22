@@ -81,17 +81,6 @@ public class ReplyService {
     replyRepository.delete(reply);
   }
 
-  public void deleteRepliesByProjectId(Long projectId) {
-    List<Reply> repliesToDelete = new ArrayList<>();
-
-    List<Comment> commentList = commentRepository.findAllByProjectId(projectId);
-    for (Comment comment : commentList) {
-      repliesToDelete.addAll(comment.getReplies());
-    }
-
-    replyRepository.deleteAll(repliesToDelete);
-  }
-
   public void deleteRepliesByCommentList(List<Long> commentIdList) {
     for (Long commentId : commentIdList) {
       List<Reply> repliesToDelete = replyRepository.findAllByCommentId(commentId);
