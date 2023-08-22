@@ -51,7 +51,9 @@ public enum ErrorCode {
     ALREADY_SUBMIT_TARGETUSER(HttpStatus.BAD_REQUEST, "해당 유저에 대한 리뷰가 이미 존재합니다."),
 
     NOT_FOUND_TECH_STACK(HttpStatus.NOT_FOUND, "테크스택을 찾을 수 없습니다. "),
+    DUPLICATE_TECH_STACK(HttpStatus.BAD_REQUEST, "이미 등록된 테크스택입니다. "),
     NOT_FOUND_BADGE(HttpStatus.NOT_FOUND, "뱃지를 찾을 수 없습니다. "),
+    DUPLICATE_BADGE(HttpStatus.BAD_REQUEST, "이미 등록된 뱃지입니다. "),
     ;
     private final HttpStatus httpStatus;
     private final String detail;

@@ -1,5 +1,7 @@
 package com.devee.devhive.domain.user.badge.service;
 
+import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_BADGE;
+import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_TECH_STACK;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_BADGE;
 
 import com.devee.devhive.domain.user.badge.entity.Badge;
@@ -21,6 +23,9 @@ public class BadgeService {
   private final S3Service s3Service;
 
   public void createBadge(CreateBadgeDto badgeDto, MultipartFile imageFile) {
+    if (badgeRepository.existsByName(badgeDto.getName())) {
+      throw new CustomException(DUPLICATE_BADGE);
+    }
     String imageUrl = s3Service.upload(imageFile);
 
     Badge badge = Badge.builder()
