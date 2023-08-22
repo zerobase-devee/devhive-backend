@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.techstack.service;
 
+import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_TECH_STACK;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_TECH_STACK;
 
 import com.devee.devhive.domain.techstack.entity.TechStack;
@@ -26,6 +27,10 @@ public class TechStackService {
   }
 
   public void createTechStack(CreateTechStackDto techStackDto, MultipartFile imageFile) {
+    if (techStackRepository.existsByName(techStackDto.getName())) {
+      throw new CustomException(DUPLICATE_TECH_STACK);
+    }
+
     String imageUrl = s3Service.upload(imageFile);
 
     TechStack techStack = TechStack.builder()
