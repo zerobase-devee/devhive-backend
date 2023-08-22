@@ -1,7 +1,7 @@
 package com.devee.devhive.domain.project.apply.controller;
 
-import static com.devee.devhive.global.exception.ErrorCode.NOT_PROJECT_WRITER;
 import static com.devee.devhive.global.exception.ErrorCode.RECRUITMENT_ALREADY_COMPLETED;
+import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.apply.entity.ProjectApply;
 import com.devee.devhive.domain.project.apply.entity.dto.ApplicantUserDto;
@@ -66,7 +66,7 @@ public class ProjectApplyController {
         User user = principalDetails.getUser();
         Project project = projectService.findById(projectId);
         if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
-            throw new CustomException(NOT_PROJECT_WRITER);
+            throw new CustomException(UNAUTHORIZED);
         }
         List<ProjectApply> projectApplies = projectApplyService.getProjectApplies(projectId);
         return ResponseEntity.ok(projectApplies.stream()
@@ -86,7 +86,7 @@ public class ProjectApplyController {
 
         // 프로젝트 작성자가 아닌 경우
         if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
-            throw new CustomException(NOT_PROJECT_WRITER);
+            throw new CustomException(UNAUTHORIZED);
         }
 
         // 프로젝트 상태가 모집 완료된 상태인 경우
@@ -106,7 +106,7 @@ public class ProjectApplyController {
     }
 
     // 신청 거절
-    @PutMapping("/application/{applicationId}/accept")
+    @PutMapping("/application/{applicationId}/reject")
     public void reject(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("applicationId") Long applicationId
