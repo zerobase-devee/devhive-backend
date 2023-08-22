@@ -10,11 +10,9 @@ import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.exception.ErrorCode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -52,5 +50,25 @@ public class ExitVoteService {
     exitVoteRepository.saveAllAndFlush(exitVoteList);
 
     return targetUser.getNickName() + " 유저에 대한 퇴출 투표 생성이 완료되었습니다.";
+  }
+
+  // 투표 제출 및 결과 저장
+  public ProjectMemberExitVote submitExitVote(Project project, User votingUser, User targetUser,
+      boolean vote) {
+    ProjectMemberExitVote myVote = getMyVote(project.getId(), votingUser.getId(),
+        targetUser.getId());
+
+    if (myVote.isVoted()) {
+      throw new CustomException(ALREADY_SUBMIT_VOTE);
+    }
+
+    myVote.setVoted(true);
+    myVote.setAccept(vote);
+    return exitVoteRepository.save(myVote);
+  }
+
+  public ProjectMemberExitVote getMyVote(Long projectId, Long votingUserId, Long targetUserId) {
+    return exitVoteRepository.findByProjectIdAndVoterUserIdAndTargetUserId(projectId, votingUserId,
+        targetUserId).orElseThrow(() -> new CustomException(NOT_FOUND_VOTE));
   }
 }
