@@ -46,7 +46,7 @@ public class ProjectMemberService {
         projectMemberRepository.save(ProjectMember.builder()
             .user(user)
             .project(project)
-            .isReader(false)
+            .isLeader(false)
             .build());
     }
 }

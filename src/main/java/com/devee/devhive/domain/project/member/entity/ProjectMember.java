@@ -35,5 +35,5 @@ public class ProjectMember extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private boolean isReader;
+    private boolean isLeader;
 }
