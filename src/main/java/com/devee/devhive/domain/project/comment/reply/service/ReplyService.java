@@ -7,6 +7,7 @@ import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.reply.entity.Reply;
 import com.devee.devhive.domain.project.comment.reply.entity.form.ReplyForm;
 import com.devee.devhive.domain.project.comment.reply.repository.ReplyRepository;
+import com.devee.devhive.domain.project.comment.repository.CommentRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
@@ -23,6 +24,7 @@ public class ReplyService {
 
   private final ReplyRepository replyRepository;
   private final RedisService redisService;
+  private final CommentRepository commentRepository;
 
   public Reply getReplyById(Long replyId) {
     return replyRepository.findById(replyId)
@@ -82,16 +84,18 @@ public class ReplyService {
   public void deleteRepliesByProjectId(Long projectId) {
     List<Reply> repliesToDelete = new ArrayList<>();
 
-    List<Reply> allReplies = replyRepository.findAll();
-    for (Reply reply : allReplies) {
-      Comment comment = reply.getComment();
-      if (comment != null && comment.getProject() != null && comment.getProject().getId()
-          .equals(projectId)) {
-        repliesToDelete.add(reply);
-      }
+    List<Comment> commentList = commentRepository.findAllByProjectId(projectId);
+    for (Comment comment : commentList) {
+      repliesToDelete.addAll(comment.getReplies());
     }
 
     replyRepository.deleteAll(repliesToDelete);
   }
 
+  public void deleteRepliesByCommentList(List<Long> commentIdList) {
+    for (Long commentId : commentIdList) {
+      List<Reply> repliesToDelete = replyRepository.findAllByCommentId(commentId);
+      replyRepository.deleteAll(repliesToDelete);
+    }
+  }
 }

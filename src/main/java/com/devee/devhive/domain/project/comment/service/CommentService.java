@@ -12,6 +12,7 @@ import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,9 +79,10 @@ public class CommentService {
     commentRepository.delete(comment);
   }
 
-  public void deleteCommentsByProjectId(Long projectId) {
+  public List<Long> deleteCommentsByProjectId(Long projectId) {
     List<Comment> comments = commentRepository.findAllByProjectId(projectId);
     commentRepository.deleteAll(comments);
-  }
 
+    return comments.stream().map(Comment::getId).collect(Collectors.toList());
+  }
 }
