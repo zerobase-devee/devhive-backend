@@ -7,11 +7,15 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
+import com.devee.devhive.global.exception.CustomException;
+import com.devee.devhive.global.exception.ErrorCode;
+import com.devee.devhive.global.security.service.PrincipalDetails;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,11 +33,19 @@ public class ExitVoteController {
 
   @PostMapping("{projectId}/vote/{targetUserId}")
   public ResponseEntity<String> createExitVote(
+      @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId,
       @PathVariable Long targetUserId
   ) {
+    Long registeringUserId = principalDetails.getUser().getId();
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
+
+    if (!projectMemberService.isMemberofProject(projectId, registeringUserId)) {
+      throw new CustomException(ErrorCode.NOT_YOUR_PROJECT);
+    }
+
+    // 투표 대상 유저를 제외한 모든 유저
     List<ProjectMember> votingUsers = projectMemberService.getProjectMemberByProjectId(projectId)
         .stream()
         .filter(member -> !Objects.equals(member.getUser().getId(), targetUser.getId()))

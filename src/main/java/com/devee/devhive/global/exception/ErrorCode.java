@@ -47,6 +47,7 @@ public enum ErrorCode {
 
     // Project
     NOT_FOUND_PROJECT(HttpStatus.BAD_REQUEST, "프로젝트 모집 게시글을 찾을 수 없습니다. "),
+    NOT_YOUR_PROJECT(HttpStatus.BAD_REQUEST, "해당 프로젝트에 참여하고 있지 않습니다."),
     PROJECT_NOT_COMPLETE(HttpStatus.BAD_REQUEST, "해당 프로젝트는 이미 완료되었습니다."),
     ALREADY_SUBMIT_TARGETUSER(HttpStatus.BAD_REQUEST, "해당 유저에 대한 리뷰가 이미 존재합니다.")
     ;

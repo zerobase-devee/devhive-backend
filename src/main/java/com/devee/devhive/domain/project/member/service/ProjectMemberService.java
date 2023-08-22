@@ -49,4 +49,9 @@ public class ProjectMemberService {
             .isReader(false)
             .build());
     }
+
+    // 해당 프로젝트에 유저가 참가해있는지 체크
+    public boolean isMemberofProject(Long projectId, Long userId) {
+        return projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+    }
 }
