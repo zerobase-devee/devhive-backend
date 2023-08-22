@@ -25,6 +25,7 @@ public enum ErrorCode {
     USER_PASSWORD_EQUALS_NEW_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 새 비밀번호가 일치합니다."),
     NEW_PASSWORD_MISMATCH_RE_PASSWORD(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
     NOT_FOUND_PROJECT(HttpStatus.BAD_REQUEST, "프로젝트 모집 게시글을 찾을 수 없습니다. "),
+    PROJECT_CANNOT_DELETED(HttpStatus.BAD_REQUEST, "프로젝트 상태가 모집중이거나 완료상태인 경우 삭제할 수 없습니다. "),
 
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),

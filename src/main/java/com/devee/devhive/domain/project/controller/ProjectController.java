@@ -7,6 +7,7 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -48,5 +49,15 @@ public class ProjectController {
       @RequestBody UpdateProjectDto updateProjectDto) {
 
     projectService.updateProject(principal, projectId, updateProjectDto);
+  }
+
+  // 프로젝트 삭제
+  @DeleteMapping("/{projectId}")
+  public void deleteProject(
+      @AuthenticationPrincipal PrincipalDetails principal,
+      @PathVariable Long projectId
+  ){
+
+    projectService.deleteProject(principal, projectId);
   }
 }
