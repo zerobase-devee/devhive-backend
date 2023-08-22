@@ -5,6 +5,8 @@ import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
 import com.devee.devhive.domain.techstack.service.TechStackService;
+import com.devee.devhive.domain.user.badge.entity.dto.CreateBadgeDto;
+import com.devee.devhive.domain.user.badge.service.BadgeService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AdminController {
 
   private final TechStackService techStackService;
+  private final BadgeService badgeService;
 
   @PostMapping("/tech-stack")
   public void createTechStack(
@@ -48,5 +51,18 @@ public class AdminController {
     }
 
     techStackService.deleteTechStack(techStackId);
+  }
+
+  @PostMapping("/tech-stack")
+  public void createBadge(
+      @AuthenticationPrincipal PrincipalDetails principal,
+      @RequestPart(value = "techStackDto") CreateBadgeDto badgeDto,
+      @RequestPart(value = "image") MultipartFile imageFile) {
+
+    User user = principal.getUser();
+    if (user.getRole() != ADMIN) {
+      throw new CustomException(UNAUTHORIZED);
+    }
+    badgeService.createBadge(badgeDto, imageFile);
   }
 }
