@@ -1,8 +1,11 @@
 package com.devee.devhive.domain.techstack.service;
 
+import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_TECH_STACK;
+
 import com.devee.devhive.domain.techstack.entity.TechStack;
 import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
 import com.devee.devhive.domain.techstack.repository.TechStackRepository;
+import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +37,8 @@ public class TechStackService {
   }
 
   public void deleteTechStack(Long techStackId) {
-    TechStack techStack = techStackRepository.findById(techStackId).orElseThrow();
+    TechStack techStack = techStackRepository.findById(techStackId)
+        .orElseThrow(() -> new CustomException(NOT_FOUND_TECH_STACK));
     String imageUrl = URLDecoder.decode(techStack.getImage(), StandardCharsets.UTF_8);
     String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
 

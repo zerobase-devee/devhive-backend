@@ -53,10 +53,10 @@ public class AdminController {
     techStackService.deleteTechStack(techStackId);
   }
 
-  @PostMapping("/tech-stack")
+  @PostMapping("/badge")
   public void createBadge(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @RequestPart(value = "techStackDto") CreateBadgeDto badgeDto,
+      @RequestPart(value = "badgeDto") CreateBadgeDto badgeDto,
       @RequestPart(value = "image") MultipartFile imageFile) {
 
     User user = principal.getUser();
@@ -64,5 +64,17 @@ public class AdminController {
       throw new CustomException(UNAUTHORIZED);
     }
     badgeService.createBadge(badgeDto, imageFile);
+  }
+
+  @DeleteMapping("/badge/{badgeId}")
+  public void deleteBadge(
+      @AuthenticationPrincipal PrincipalDetails principal,
+      @PathVariable Long badgeId) {
+    User user = principal.getUser();
+    if (user.getRole() != ADMIN) {
+      throw new CustomException(UNAUTHORIZED);
+    }
+
+    badgeService.deleteBadge(badgeId);
   }
 }

@@ -1,9 +1,14 @@
 package com.devee.devhive.domain.user.badge.service;
 
+import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_BADGE;
+
 import com.devee.devhive.domain.user.badge.entity.Badge;
 import com.devee.devhive.domain.user.badge.entity.dto.CreateBadgeDto;
 import com.devee.devhive.domain.user.badge.repository.BadgeRepository;
+import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,5 +29,17 @@ public class BadgeService {
         .build();
 
     badgeRepository.save(badge);
+  }
+
+
+  public void deleteBadge(Long badgeId) {
+    Badge badge = badgeRepository.findById(badgeId)
+        .orElseThrow(() -> new CustomException(NOT_FOUND_BADGE));
+    String imageUrl = URLDecoder.decode(badge.getImageUrl(), StandardCharsets.UTF_8);
+    String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+
+    s3Service.delete(filename);
+
+    badgeRepository.delete(badge);
   }
 }
