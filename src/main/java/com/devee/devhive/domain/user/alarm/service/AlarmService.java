@@ -5,6 +5,7 @@ import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.alarm.repository.AlarmRepository;
 import com.devee.devhive.domain.user.alarm.repository.emitter.EmitterRepository;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -81,5 +82,9 @@ public class AlarmService {
         eventCaches.entrySet().stream()
             .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
             .forEach(entry -> sendAlarm(emitter, entry.getKey(), emitterId, entry.getValue()));
+    }
+
+    public List<Alarm> getAlarms(Long userId) {
+        return alarmRepository.findAllByUserId(userId);
     }
 }
