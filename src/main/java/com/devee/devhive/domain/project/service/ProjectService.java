@@ -64,7 +64,7 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
-  public void updateProjectStatus(
+  public Project updateProjectStatus(
       User user,
       Long projectId,
       UpdateProjectStatusDto statusDto) {
@@ -83,7 +83,7 @@ public class ProjectService {
 
       project.setStatus(status);
 
-      projectRepository.save(project);
+      return projectRepository.save(project);
     } else {
       throw new CustomException(UNAUTHORIZED);
     }
