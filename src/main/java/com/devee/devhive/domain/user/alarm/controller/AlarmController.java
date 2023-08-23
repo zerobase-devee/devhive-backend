@@ -60,7 +60,10 @@ public class AlarmController {
         AlarmDto alarmDto = AlarmDto.from(alarm);
         AlarmContent content = alarm.getContent();
 
-        if (content == AlarmContent.FAVORITE_USER || content == AlarmContent.EXIT_RESULT) {
+        if (content == AlarmContent.FAVORITE_USER ||
+            content == AlarmContent.VOTE_RESULT_EXIT ||
+            content == AlarmContent.EXIT_LEADER_DELETE_PROJECT ||
+            content == AlarmContent.EXIT_VOTE) {
             User targetUser = userService.getUserById(alarm.getArgs());
             alarmDto.setUserDto(AlarmUserDto.of(targetUser, RelatedUrlType.USER_INFO));
         } else {
