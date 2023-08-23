@@ -24,5 +24,5 @@ public interface ProjectMemberRepository extends
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
 
-    boolean existsByProjectIdAndUserIdAndIsReaderIsTrue(Long projectId, Long userId);
+    boolean existsByProjectIdAndUserIdAndLeaderIsTrue(Long projectId, Long userId);
 }

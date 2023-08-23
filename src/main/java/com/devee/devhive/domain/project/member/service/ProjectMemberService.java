@@ -52,7 +52,7 @@ public class ProjectMemberService {
         projectMemberRepository.save(ProjectMember.builder()
             .user(user)
             .project(project)
-            .isLeader(false)
+            .leader(false)
             .build());
     }
 
@@ -61,7 +61,7 @@ public class ProjectMemberService {
         projectMemberRepository.save(ProjectMember.builder()
             .user(user)
             .project(project)
-            .isLeader(true)
+            .leader(true)
             .build());
     }
 
@@ -77,7 +77,7 @@ public class ProjectMemberService {
 
     public boolean isLeaderOfProject(Long projectId, Long userId) {
         return projectMemberRepository
-            .existsByProjectIdAndUserIdAndIsReaderIsTrue(projectId, userId);
+            .existsByProjectIdAndUserIdAndLeaderIsTrue(projectId, userId);
     }
 
     @Transactional
