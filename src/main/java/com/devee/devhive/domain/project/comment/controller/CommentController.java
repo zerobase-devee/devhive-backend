@@ -1,14 +1,19 @@
 package com.devee.devhive.domain.project.comment.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
+
 import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.entity.dto.CommentDto;
 import com.devee.devhive.domain.project.comment.entity.form.CommentForm;
+import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +32,7 @@ public class CommentController {
 
     private final CommentService commentService;
     private final ProjectService projectService;
+    private final ReplyService replyService;
 
     // 댓글 생성
     @PostMapping("/projects/{projectId}")
@@ -60,6 +66,12 @@ public class CommentController {
         @PathVariable("commentId") Long commentId
     ) {
         User user = principalDetails.getUser();
-        commentService.delete(user, commentId);
+        Comment comment = commentService.getCommentById(commentId);
+        if (!Objects.equals(comment.getUser().getId(), user.getId())) {
+            throw new CustomException(UNAUTHORIZED);
+        }
+        // 댓글 관련 대댓글 먼저 모두 삭제
+        replyService.deleteRepliesByCommentId(commentId);
+        commentService.delete(comment);
     }
 }

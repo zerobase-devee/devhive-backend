@@ -70,12 +70,7 @@ public class CommentService {
   }
 
   // 댓글 삭제
-  public void delete(User user, Long commentId) {
-    Comment comment = getCommentById(commentId);
-
-    if (!Objects.equals(comment.getUser().getId(), user.getId())) {
-      throw new CustomException(UNAUTHORIZED);
-    }
+  public void delete(Comment comment) {
     commentRepository.delete(comment);
   }
 

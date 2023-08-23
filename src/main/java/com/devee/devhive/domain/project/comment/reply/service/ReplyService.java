@@ -69,13 +69,18 @@ public class ReplyService {
   }
 
   // 대댓글 삭제
-  public void delete(User user, Long commentId) {
-    Reply reply = getReplyById(commentId);
+  public void delete(User user, Long replyId) {
+    Reply reply = getReplyById(replyId);
 
     if (!Objects.equals(reply.getUser().getId(), user.getId())) {
       throw new CustomException(UNAUTHORIZED);
     }
     replyRepository.delete(reply);
+  }
+
+  public void deleteRepliesByCommentId(Long commentId) {
+    List<Reply> repliesToDelete = replyRepository.findAllByCommentId(commentId);
+    replyRepository.deleteAll(repliesToDelete);
   }
 
   public void deleteRepliesByCommentList(List<Long> commentIdList) {
