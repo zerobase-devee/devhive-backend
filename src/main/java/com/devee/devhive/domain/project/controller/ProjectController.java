@@ -13,11 +13,13 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
 import com.devee.devhive.domain.project.type.ProjectStatus;
+import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
 import com.devee.devhive.domain.user.alarm.entity.dto.AlarmUserDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
+import com.devee.devhive.domain.user.service.UserTechStackService;
 import com.devee.devhive.domain.user.type.RelatedUrlType;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
@@ -46,6 +48,7 @@ public class ProjectController {
   private final ProjectTechStackService projectTechStackService;
   private final ProjectMemberService projectMemberService;
   private final FavoriteService favoriteService;
+  private final UserTechStackService userTechStackService;
 
   // 프로젝트 작성
   @PostMapping
@@ -56,10 +59,13 @@ public class ProjectController {
     User user = principal.getUser();
 
     Project project = projectService.createProject(createProjectDto, user);
-    projectTechStackService.createProjectTechStacks(project, createProjectDto.getTechStacks());
+    List<TechStackDto> techStacks = createProjectDto.getTechStacks();
+    projectTechStackService.createProjectTechStacks(project, techStacks);
     projectMemberService.saveProjectLeader(user, project);
     // 관심유저로 등록한 유저들에게 알림 발행
     favoriteService.favoriteUserUploadProject(user, user.getId(), project);
+    // 프로젝트에 등록되는 기술, 지역이 포함된 유저들에게 알림 발행
+    userTechStackService.recommendProject(project,techStacks);
   }
 
   // 상태변경
