@@ -8,11 +8,9 @@ import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
 import com.devee.devhive.domain.project.review.repository.ProjectReviewRepository;
 import com.devee.devhive.domain.project.type.ProjectStatus;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmUserDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -58,8 +56,8 @@ public class ProjectReviewService {
       // 타겟 유저에 대한 팀원 평가가 모두 완료된 경우 알림 이벤트 발행
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(targetUser)
-          .projectDto(AlarmProjectDto.of(project, RelatedUrlType.PROJECT_INFO))
-          .userDto(AlarmUserDto.of(targetUser, RelatedUrlType.MY_INFO))
+          .project(project)
+          .content(AlarmContent.REVIEW_RESULT)
           .build();
       eventPublisher.publishEvent(alarmForm);
     }

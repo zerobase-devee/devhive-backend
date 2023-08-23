@@ -13,10 +13,9 @@ import com.devee.devhive.domain.project.apply.repository.ProjectApplyRepository;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.project.type.ProjectStatus;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
@@ -104,8 +103,8 @@ public class ProjectApplyService {
         // 프로젝트 작성자에게 신청자 알림 이벤트 발행
         AlarmForm alarmForm = AlarmForm.builder()
             .receiverUser(project.getWriterUser())
-            .projectDto(
-                AlarmProjectDto.of(project, RelatedUrlType.PROJECT_APPLICANTS))
+            .project(project)
+            .content(AlarmContent.PROJECT_APPLY)
             .build();
         eventPublisher.publishEvent(alarmForm);
     }
@@ -143,8 +142,8 @@ public class ProjectApplyService {
         // 프로젝트 신청자에게 승인 알림 이벤트 발행
         AlarmForm alarmForm = AlarmForm.builder()
             .receiverUser(projectApply.getUser())
-            .projectDto(
-                AlarmProjectDto.of(projectApply.getProject(), RelatedUrlType.PROJECT_POST))
+            .project(projectApply.getProject())
+            .content(AlarmContent.APPLICANT_ACCEPT)
             .build();
         eventPublisher.publishEvent(alarmForm);
     }
@@ -167,8 +166,8 @@ public class ProjectApplyService {
         // 프로젝트 신청자에게 거절 알림 이벤트 발행
         AlarmForm alarmForm = AlarmForm.builder()
             .receiverUser(projectApply.getUser())
-            .projectDto(
-                AlarmProjectDto.of(projectApply.getProject(), RelatedUrlType.PROJECT_POST))
+            .project(projectApply.getProject())
+            .content(AlarmContent.APPLICANT_REJECT)
             .build();
         eventPublisher.publishEvent(alarmForm);
     }

@@ -7,10 +7,9 @@ import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.reply.entity.Reply;
 import com.devee.devhive.domain.project.comment.reply.entity.form.ReplyForm;
 import com.devee.devhive.domain.project.comment.reply.repository.ReplyRepository;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
@@ -52,7 +51,8 @@ public class ReplyService {
           // 댓글 작성자에게 대댓글 알림 이벤트 발행
           AlarmForm alarmForm = AlarmForm.builder()
               .receiverUser(comment.getUser())
-              .projectDto(AlarmProjectDto.of(comment.getProject(), RelatedUrlType.PROJECT_POST))
+              .project(comment.getProject())
+              .content(AlarmContent.REPLY)
               .build();
           eventPublisher.publishEvent(alarmForm);
 

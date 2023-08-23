@@ -14,13 +14,11 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmUserDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import java.util.List;
@@ -85,8 +83,8 @@ public class ProjectController {
 
         AlarmForm alarmForm = AlarmForm.builder()
             .receiverUser(member)
-            .projectDto(AlarmProjectDto.of(saveProject, RelatedUrlType.PROJECT_INFO))
-            .userDto(AlarmUserDto.of(member, RelatedUrlType.MY_INFO))
+            .project(saveProject)
+            .content(AlarmContent.REVIEW_REQUEST)
             .build();
         eventPublisher.publishEvent(alarmForm);
       }

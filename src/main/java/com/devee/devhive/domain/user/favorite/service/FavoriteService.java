@@ -1,13 +1,11 @@
 package com.devee.devhive.domain.user.favorite.service;
 
 import com.devee.devhive.domain.project.entity.Project;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmUserDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.favorite.repository.FavoriteRepository;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -53,8 +51,9 @@ public class FavoriteService {
                 // 관심 유저가 프로젝트 업로드한 경우 관심유저로 등록한 유저들에게 알림 이벤트 발행
                 AlarmForm alarmForm = AlarmForm.builder()
                     .receiverUser(user)
-                    .projectDto(AlarmProjectDto.of(project, RelatedUrlType.PROJECT_POST))
-                    .userDto(AlarmUserDto.of(favoriteUser, RelatedUrlType.USER_INFO))
+                    .project(project)
+                    .content(AlarmContent.FAVORITE_USER)
+                    .user(favoriteUser)
                     .build();
                 eventPublisher.publishEvent(alarmForm);
             }

@@ -5,12 +5,11 @@ import com.devee.devhive.domain.project.type.RecruitmentType;
 import com.devee.devhive.domain.techstack.entity.TechStack;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.techstack.service.TechStackService;
-import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.UserTechStack;
 import com.devee.devhive.domain.user.repository.UserTechStackRepository;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +44,8 @@ public class UserTechStackService {
             if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
                 AlarmForm alarmForm = AlarmForm.builder()
                     .receiverUser(user)
-                    .projectDto(AlarmProjectDto.of(project, RelatedUrlType.PROJECT_POST))
+                    .project(project)
+                    .content(AlarmContent.RECOMMEND)
                     .build();
                 eventPublisher.publishEvent(alarmForm);
             } else {
@@ -54,7 +54,8 @@ public class UserTechStackService {
                     // 댓글 작성자에게 대댓글 알림 이벤트 발행
                     AlarmForm alarmForm = AlarmForm.builder()
                         .receiverUser(user)
-                        .projectDto(AlarmProjectDto.of(project, RelatedUrlType.PROJECT_POST))
+                        .project(project)
+                        .content(AlarmContent.RECOMMEND)
                         .build();
                     eventPublisher.publishEvent(alarmForm);
                 }
