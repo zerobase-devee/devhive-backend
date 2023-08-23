@@ -47,9 +47,23 @@ public class ProjectMemberService {
         projectMemberRepository.save(ProjectMember.builder()
             .user(user)
             .project(project)
-            .isReader(false)
+            .isLeader(false)
             .build());
     }
+  
+    // 프로젝트 작성자 리더 저장
+    public void saveProjectLeader(User user, Project project) {
+        projectMemberRepository.save(ProjectMember.builder()
+            .user(user)
+            .project(project)
+            .isLeader(true)
+            .build());
+    }
+
+    public void deleteProjectMembers(Long projectId){
+        List<ProjectMember> projectMembers = projectMemberRepository.findAllByProjectId(projectId);
+        projectMemberRepository.deleteAll(projectMembers);
+
 
     // 해당 프로젝트에 유저가 참가해있는지 체크
     public boolean isMemberofProject(Long projectId, Long userId) {

@@ -8,6 +8,7 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
+import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
 import com.devee.devhive.domain.user.entity.User;
@@ -34,6 +35,7 @@ public class ProjectController {
   private final CommentService commentService;
   private final ReplyService replyService;
   private final ProjectTechStackService projectTechStackService;
+  private final ProjectMemberService projectMemberService;
 
   // 프로젝트 작성
   @PostMapping
@@ -45,6 +47,7 @@ public class ProjectController {
 
     Project project = projectService.createProject(createProjectDto, user);
     projectTechStackService.createProjectTechStacks(project, createProjectDto.getTechStacks());
+    projectMemberService.saveProjectLeader(user, project);
   }
 
   // 상태변경
@@ -85,6 +88,7 @@ public class ProjectController {
     List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
     replyService.deleteRepliesByCommentList(commentIdList);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
-    projectService.deleteProject(projectId);
+    projectMemberService.deleteProjectMembers(projectId);
+    projectService.deleteProject(project);
   }
 }

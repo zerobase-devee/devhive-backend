@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProjectMemberDto {
 
-    private boolean isReader;
+    private boolean isLeader;
     private Long userId;
     private String nickName;
     private String profileImage;
 
     public static ProjectMemberDto from(ProjectMember member) {
         return ProjectMemberDto.builder()
-            .isReader(member.isReader())
+            .isLeader(member.isLeader())
             .userId(member.getUser().getId())
             .nickName(member.getUser().getNickName())
             .profileImage(member.getUser().getProfileImage())

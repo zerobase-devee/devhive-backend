@@ -128,8 +128,7 @@ public class ProjectService {
 
   // 프로젝트 삭제
   @Transactional
-  public void deleteProject(Long projectId) {
-    Project project = findById(projectId);
+  public void deleteProject(Project project) {
 
     if (project.getStatus() != ProjectStatus.RECRUITING) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
