@@ -19,4 +19,10 @@ public interface ProjectMemberRepository extends
     Page<ProjectMember> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
 
     int countAllByProjectId(Long projectId);
+
+    ProjectMember findByProjectIdAndUserId(Long projectId, Long userId);
+
+    boolean existsByProjectIdAndUserId(Long projectId, Long userId);
+
+    boolean existsByProjectIdAndUserIdAndIsReaderIsTrue(Long projectId, Long userId);
 }

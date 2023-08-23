@@ -57,6 +57,9 @@ dependencies {
     // S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     testImplementation 'io.findify:s3mock_2.12:0.2.4'
+
+    // batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
 }
 
 tasks.named('test') {
