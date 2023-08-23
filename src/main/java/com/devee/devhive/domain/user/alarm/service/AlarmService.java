@@ -1,12 +1,16 @@
 package com.devee.devhive.domain.user.alarm.service;
 
+import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_ALARM;
+
 import com.devee.devhive.domain.user.alarm.entity.Alarm;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.alarm.repository.AlarmRepository;
 import com.devee.devhive.domain.user.alarm.repository.emitter.EmitterRepository;
+import com.devee.devhive.global.exception.CustomException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -85,6 +89,14 @@ public class AlarmService {
     }
 
     public List<Alarm> getAlarms(Long userId) {
-        return alarmRepository.findAllByUserId(userId);
+        return alarmRepository.findAllByUserIdOrderByCreatedDateDesc(userId);
+    }
+
+    public void delete(Long userId, Long alarmId) {
+        Alarm alarm = alarmRepository.findById(alarmId)
+            .orElseThrow(() -> new CustomException(NOT_FOUND_ALARM));
+        if (Objects.equals(userId, alarm.getUser().getId())) {
+            alarmRepository.delete(alarm);
+        }
     }
 }

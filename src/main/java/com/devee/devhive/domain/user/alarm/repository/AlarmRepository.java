@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
-    List<Alarm> findAllByUserId(Long userId);
+    List<Alarm> findAllByUserIdOrderByCreatedDateDesc(Long userId);
 }

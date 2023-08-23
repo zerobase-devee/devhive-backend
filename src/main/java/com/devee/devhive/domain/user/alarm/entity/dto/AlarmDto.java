@@ -3,6 +3,7 @@ package com.devee.devhive.domain.user.alarm.entity.dto;
 import com.devee.devhive.domain.user.alarm.entity.Alarm;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.domain.user.type.RelatedUrlType;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,12 +21,14 @@ public class AlarmDto {
     private AlarmUserDto userDto;
     private AlarmProjectDto projectDto;
     private String content;
+    private LocalDateTime createDate;
 
     public static AlarmDto from(Alarm alarm) {
         AlarmContent alarmContent = alarm.getContent();
         AlarmDto alarmDto = AlarmDto.builder()
             .alarmId(alarm.getId())
             .content(alarmContent.getValue())
+            .createDate(alarm.getCreatedDate())
             .build();
 
         switch (alarmContent) {
