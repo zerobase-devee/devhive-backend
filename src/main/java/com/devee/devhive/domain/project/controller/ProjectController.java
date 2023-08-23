@@ -17,6 +17,7 @@ import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
 import com.devee.devhive.domain.user.alarm.entity.dto.AlarmUserDto;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.type.RelatedUrlType;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
@@ -44,6 +45,7 @@ public class ProjectController {
   private final ReplyService replyService;
   private final ProjectTechStackService projectTechStackService;
   private final ProjectMemberService projectMemberService;
+  private final FavoriteService favoriteService;
 
   // 프로젝트 작성
   @PostMapping
@@ -56,6 +58,8 @@ public class ProjectController {
     Project project = projectService.createProject(createProjectDto, user);
     projectTechStackService.createProjectTechStacks(project, createProjectDto.getTechStacks());
     projectMemberService.saveProjectLeader(user, project);
+    // 관심유저로 등록한 유저들에게 알림 발행
+    favoriteService.favoriteUserUploadProject(user, user.getId(), project);
   }
 
   // 상태변경

@@ -59,7 +59,7 @@ public class ProjectReviewService {
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(targetUser)
           .projectDto(AlarmProjectDto.of(project, RelatedUrlType.PROJECT_INFO))
-          .userDto(AlarmUserDto.of(user, RelatedUrlType.MY_INFO))
+          .userDto(AlarmUserDto.of(targetUser, RelatedUrlType.MY_INFO))
           .build();
       eventPublisher.publishEvent(alarmForm);
     }
