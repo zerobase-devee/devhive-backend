@@ -6,6 +6,7 @@ import com.devee.devhive.domain.user.alarm.repository.AlarmRepository;
 import com.devee.devhive.domain.user.alarm.repository.emitter.EmitterRepository;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class AlarmService {
     }
 
     private String makeTimeIncludeId(Long userId) {
-        return userId + "_" + System.currentTimeMillis();
+        return userId + "_" + UUID.randomUUID();
     }
 
     // 클라이언트에게 알림 전달하는 부분
