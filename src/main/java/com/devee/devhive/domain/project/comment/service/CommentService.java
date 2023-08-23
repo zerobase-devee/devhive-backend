@@ -7,19 +7,24 @@ import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.entity.form.CommentForm;
 import com.devee.devhive.domain.project.comment.repository.CommentRepository;
 import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.type.RelatedUrlType;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class CommentService {
+  private final ApplicationEventPublisher eventPublisher;
 
   private final CommentRepository commentRepository;
   private final RedisService redisService;
@@ -39,11 +44,20 @@ public class CommentService {
       boolean locked = redisService.getLock(KEY, 5);
       if (locked) {
         try {
-          return commentRepository.save(Comment.builder()
+            Comment comment = commentRepository.save(Comment.builder()
               .project(project)
               .user(user)
               .content(form.getContent())
               .build());
+
+            // 게시글 작성자에게 댓글 알림 이벤트 발행
+            AlarmForm alarmForm = AlarmForm.builder()
+                .receiverUser(project.getWriterUser())
+                .projectDto(AlarmProjectDto.of(project, RelatedUrlType.PROJECT_POST))
+                .build();
+            eventPublisher.publishEvent(alarmForm);
+
+          return comment;
         } finally {
           redisService.unLock(KEY);
         }

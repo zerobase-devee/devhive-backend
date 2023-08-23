@@ -43,8 +43,9 @@ public class CommentController {
     ) {
         User user = principalDetails.getUser();
         Project project = projectService.findById(projectId);
-        Comment comment = commentService.create(user, project, form);
-        return ResponseEntity.ok(CommentDto.of(comment, user));
+        Comment saveComment = commentService.create(user, project, form);
+
+        return ResponseEntity.ok(CommentDto.of(saveComment, user));
     }
 
     // 댓글 수정
