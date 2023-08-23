@@ -12,10 +12,10 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class VoteProcessingScheduler {
 
@@ -24,9 +24,9 @@ public class VoteProcessingScheduler {
   private final JobRepository jobRepository;
   private final Step step;
 
-  @Scheduled(cron = "0/5 * * * * *")
+  // 매 0분마다 처리
+  @Scheduled(cron = "* 0 * * * *")
   public void processVote() {
-    log.info("5초에 한 번씩 실행");
     Map<String, JobParameter<?>> confMap = new HashMap<>();
     confMap.put("time", new JobParameter<>(System.currentTimeMillis(), Long.class));
     JobParameters jobParameters = new JobParameters(confMap);

@@ -9,6 +9,7 @@ import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRepository;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -97,16 +98,38 @@ public class ExitVoteService {
     return sortedVotesMap;
   }
 
-  public void processVotes(Map<Long, List<ProjectMemberExitVote>> sortedVotesMap) {
+  // 투표 결과 처리
+  public Map<Long, ExitHistory> processVotes(Map<Long, List<ProjectMemberExitVote>> sortedVotesMap) {
+    Map<Long, ExitHistory> exitHistoryMap = new HashMap<>();
     for (long projectId : sortedVotesMap.keySet()) {
       List<ProjectMemberExitVote> currentVotes = sortedVotesMap.get(projectId);
+      User targetUser = currentVotes.get(0).getTargetUser();
       int teamSize = currentVotes.get(0).getProject().getTeamSize();
-      int votedSize = currentVotes.size();
+      int votedCount = currentVotes.size();
 
-      if (votedSize < teamSize - 1) {
+      if (votedCount == teamSize - 1) {
+        int agreedCount = (int) currentVotes.stream()
+            .filter(ProjectMemberExitVote::isAccept)
+            .count();
+        if (isOverHalf(votedCount, agreedCount)) {
+          log.info("투표가 과반수를 넘었으므로 해당 유저를 퇴출 처리합니다.");
+          ExitHistory exitHistory = ExitHistory.builder()
+              .user(targetUser)
+              .exitDate(Instant.now())
+              .build();
+          exitHistoryMap.put(projectId, exitHistory);
+        }
+      } else {
         log.info("투표에 전부 참여하지 않아 처리할 수 없습니다.");
       }
-      log.info("{} 프로젝트 전체 인원 : {}, 투표 참여 인원 : {}", projectId, teamSize, votedSize);
+
+      log.info("{} 프로젝트 전체 인원 : {}, 투표 참여 인원 : {}", projectId, teamSize, votedCount);
+      exitVoteRepository.deleteAll(currentVotes);
     }
+    return exitHistoryMap;
+  }
+  // 과반수를 넘었는지 확인
+  private boolean isOverHalf(int a, int b) {
+    return Math.round(a / 2.0) <= b;
   }
 }

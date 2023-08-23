@@ -20,5 +20,9 @@ public interface ProjectMemberRepository extends
 
     int countAllByProjectId(Long projectId);
 
+    ProjectMember findByProjectIdAndUserId(Long projectId, Long userId);
+
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
+
+    boolean existsByProjectIdAndUserIdAndIsReaderIsTrue(Long projectId, Long userId);
 }

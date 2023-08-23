@@ -1,8 +1,12 @@
 package com.devee.devhive.global.config;
 
 
+import com.devee.devhive.domain.project.member.service.ProjectMemberService;
+import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
+import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
+import com.devee.devhive.domain.user.exithistory.service.ExitHistoryService;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class BatchConfig {
 
   private final ExitVoteService exitVoteService;
+  private final ProjectMemberService projectMemberService;
+  private final ExitHistoryService exitHistoryService;
+  private final ProjectService projectService;
 
   @Bean
   public Job voteProcessJob(JobRepository jobRepository, Step step) {
@@ -46,7 +53,30 @@ public class BatchConfig {
       Map<Long, List<ProjectMemberExitVote>> sortedVotesMap
           = exitVoteService.getSortedVotes();
 
-      exitVoteService.processVotes(sortedVotesMap);
+      Map<Long, ExitHistory> exitHistoryMap = exitVoteService
+          .processVotes(sortedVotesMap);
+
+      for (Long projectId : exitHistoryMap.keySet()) {
+        ExitHistory currentExitHistory = exitHistoryMap.get(projectId);
+        Long exitedUserId = currentExitHistory.getUser().getId();
+
+        // 해당 프로젝트의 리더인 경우
+        if (projectMemberService.isLeaderOfProject(
+            projectId, exitedUserId)) {
+          log.info("해당 프로젝트의 리더입니다. 프로젝트를 삭제합니다.");
+
+          projectService.deleteLeadersProject(projectId);
+          projectMemberService.deleteAllOfMembersFromProject(projectId);
+        } else {
+          projectMemberService.deleteMemberFromProject(projectId, exitedUserId);
+        }
+
+        ExitHistory savedExitHistory = exitHistoryService.saveExitHistory(currentExitHistory);
+
+        String exitedUserName = savedExitHistory.getUser().getNickName();
+        int exitCount = exitHistoryService.countExitHistoryByUserId(exitedUserId);
+        log.info("{} 유저 퇴출 완료. 누적 {}회", exitedUserName, exitCount);
+      }
 
       return RepeatStatus.FINISHED;
     });

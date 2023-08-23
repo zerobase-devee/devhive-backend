@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -53,5 +54,24 @@ public class ProjectMemberService {
     // 해당 프로젝트에 유저가 참가해있는지 체크
     public boolean isMemberofProject(Long projectId, Long userId) {
         return projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+    }
+
+    public boolean isLeaderOfProject(Long projectId, Long userId) {
+        return projectMemberRepository
+            .existsByProjectIdAndUserIdAndIsReaderIsTrue(projectId, userId);
+    }
+
+    @Transactional
+    public void deleteAllOfMembersFromProject(Long projectId) {
+        projectMemberRepository
+            .deleteAll(projectMemberRepository.findAllByProjectId(projectId));
+    }
+
+    @Transactional
+    public void deleteMemberFromProject(Long projectId, Long userId) {
+      ProjectMember projectMember = projectMemberRepository
+          .findByProjectIdAndUserId(projectId, userId);
+
+      projectMemberRepository.delete(projectMember);
     }
 }
