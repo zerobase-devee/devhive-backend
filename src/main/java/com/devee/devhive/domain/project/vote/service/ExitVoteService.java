@@ -11,11 +11,16 @@ import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRep
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExitVoteService {
@@ -70,5 +75,38 @@ public class ExitVoteService {
   public ProjectMemberExitVote getMyVote(Long projectId, Long votingUserId, Long targetUserId) {
     return exitVoteRepository.findByProjectIdAndVoterUserIdAndTargetUserId(projectId, votingUserId,
         targetUserId).orElseThrow(() -> new CustomException(NOT_FOUND_VOTE));
+  }
+
+  // 열린지 24시간이 지난 투표 찾기
+  private List<ProjectMemberExitVote> findAllClosedVotes() {
+    return exitVoteRepository.findAllByCreatedDateBefore(
+        Instant.now().minus(1, ChronoUnit.DAYS));
+  }
+
+  // 각 프로젝트 별로 진행중인 투표 묶기
+  public Map<Long, List<ProjectMemberExitVote>> getSortedVotes() {
+    List<ProjectMemberExitVote> closedVotes = findAllClosedVotes();
+    Map<Long, List<ProjectMemberExitVote>> sortedVotesMap = new HashMap<>();
+    closedVotes.forEach(vote -> {
+      if (sortedVotesMap.get(vote.getProject().getId()) == null) {
+        sortedVotesMap.put(vote.getProject().getId(), new ArrayList<>());
+      }
+      sortedVotesMap.get(vote.getProject().getId()).add(vote);
+    });
+
+    return sortedVotesMap;
+  }
+
+  public void processVotes(Map<Long, List<ProjectMemberExitVote>> sortedVotesMap) {
+    for (long projectId : sortedVotesMap.keySet()) {
+      List<ProjectMemberExitVote> currentVotes = sortedVotesMap.get(projectId);
+      int teamSize = currentVotes.get(0).getProject().getTeamSize();
+      int votedSize = currentVotes.size();
+
+      if (votedSize < teamSize - 1) {
+        log.info("투표에 전부 참여하지 않아 처리할 수 없습니다.");
+      }
+      log.info("{} 프로젝트 전체 인원 : {}, 투표 참여 인원 : {}", projectId, teamSize, votedSize);
+    }
   }
 }
