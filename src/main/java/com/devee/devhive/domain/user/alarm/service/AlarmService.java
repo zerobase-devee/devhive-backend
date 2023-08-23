@@ -42,7 +42,7 @@ public class AlarmService {
     // 알림 저장하고 클라이언트에게 전송
     public void send(AlarmForm form) {
         Alarm saveAlarm = alarmRepository.save(Alarm.from(form));
-
+        log.info("알림 저장 완료");
         Long userId = form.getReceiverUser().getId();
         String eventId = makeTimeIncludeId(userId);
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserId(userId + "_");
@@ -64,6 +64,7 @@ public class AlarmService {
             emitter.send(SseEmitter.event()
                 .id(eventId)
                 .data(data));
+            log.info("알림 전송 완료");
         } catch (IOException exception) {
             emitterRepository.deleteById(emitterId);
             log.error("SSE 연결이 올바르지 않습니다. 해당 userId={}", eventId);

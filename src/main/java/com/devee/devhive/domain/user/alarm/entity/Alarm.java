@@ -1,10 +1,13 @@
 package com.devee.devhive.domain.user.alarm.entity;
 
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
-import com.devee.devhive.global.entity.BaseEntity;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.type.AlarmContent;
+import com.devee.devhive.global.entity.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,8 +33,13 @@ public class Alarm extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(nullable = false)
     private Long args; // 프로젝트아이디
+
     private Long args2; // 보낸유저아이디 or 타겟유저아이디
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AlarmContent content;
 
     public static Alarm from(AlarmForm form) {
