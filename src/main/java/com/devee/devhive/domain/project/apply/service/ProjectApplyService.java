@@ -13,19 +13,24 @@ import com.devee.devhive.domain.project.apply.repository.ProjectApplyRepository;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.project.type.ProjectStatus;
+import com.devee.devhive.domain.user.alarm.entity.dto.AlarmProjectDto;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.type.RelatedUrlType;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class ProjectApplyService {
+    private final ApplicationEventPublisher eventPublisher;
 
     private final ProjectApplyRepository projectApplyRepository;
     private final RedisService redisService;
@@ -95,6 +100,14 @@ public class ProjectApplyService {
                 }
             }
         }
+
+        // 프로젝트 작성자에게 신청자 알림 이벤트 발행
+        AlarmForm alarmForm = AlarmForm.builder()
+            .receiverUser(project.getWriterUser())
+            .projectDto(
+                AlarmProjectDto.of(project, RelatedUrlType.PROJECT_APPLICANTS))
+            .build();
+        eventPublisher.publishEvent(alarmForm);
     }
 
     // 신청 취소
@@ -126,6 +139,14 @@ public class ProjectApplyService {
         }
         projectApply.setStatus(ApplyStatus.ACCEPT);
         projectApplyRepository.save(projectApply);
+
+        // 프로젝트 신청자에게 승인 알림 이벤트 발행
+        AlarmForm alarmForm = AlarmForm.builder()
+            .receiverUser(projectApply.getUser())
+            .projectDto(
+                AlarmProjectDto.of(projectApply.getProject(), RelatedUrlType.PROJECT_POST))
+            .build();
+        eventPublisher.publishEvent(alarmForm);
     }
 
     // 신청 거절
@@ -142,5 +163,13 @@ public class ProjectApplyService {
 
         projectApply.setStatus(ApplyStatus.REJECT);
         projectApplyRepository.save(projectApply);
+
+        // 프로젝트 신청자에게 거절 알림 이벤트 발행
+        AlarmForm alarmForm = AlarmForm.builder()
+            .receiverUser(projectApply.getUser())
+            .projectDto(
+                AlarmProjectDto.of(projectApply.getProject(), RelatedUrlType.PROJECT_POST))
+            .build();
+        eventPublisher.publishEvent(alarmForm);
     }
 }

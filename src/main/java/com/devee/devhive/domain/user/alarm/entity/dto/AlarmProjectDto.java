@@ -22,7 +22,7 @@ public class AlarmProjectDto {
         return AlarmProjectDto.builder()
             .projectId(projectId)
             .projectName(project.getName())
-            .relatedProjectUrl(urlType.getValue() + projectId)
+            .relatedProjectUrl(String.format(urlType.getValue(), projectId))
             .build();
     }
 }
