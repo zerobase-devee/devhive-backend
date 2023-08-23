@@ -12,12 +12,17 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
+import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.repository.ProjectRepository;
 import com.devee.devhive.domain.project.type.ProjectStatus;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
+
+  private final ApplicationEventPublisher eventPublisher;
 
   private final ProjectRepository projectRepository;
 
@@ -64,10 +71,11 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
-  public Project updateProjectStatus(
+  public void updateProjectStatus(
       User user,
       Long projectId,
-      UpdateProjectStatusDto statusDto) {
+      UpdateProjectStatusDto statusDto,
+      List<ProjectMember> members) {
     Project project = findById(projectId);
 
     User writerUser = project.getWriterUser();
@@ -83,7 +91,21 @@ public class ProjectService {
 
       project.setStatus(status);
 
-      return projectRepository.save(project);
+      Project saveProject = projectRepository.save(project);
+
+      if (saveProject.getStatus() == COMPLETE) {
+        // 프로젝트 멤버들에게 팀원 평가 권유 알림 이벤트 발행
+        for (ProjectMember projectMember : members) {
+          User member = projectMember.getUser();
+
+          AlarmForm alarmForm = AlarmForm.builder()
+              .receiverUser(member)
+              .project(saveProject)
+              .content(AlarmContent.REVIEW_REQUEST)
+              .build();
+          eventPublisher.publishEvent(alarmForm);
+        }
+      }
     } else {
       throw new CustomException(UNAUTHORIZED);
     }

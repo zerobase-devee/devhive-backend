@@ -12,19 +12,15 @@ import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
-import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
-import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
-import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/projects")
 public class ProjectController {
-  private final ApplicationEventPublisher eventPublisher;
 
   private final ProjectService projectService;
   private final CommentService commentService;
@@ -73,22 +68,8 @@ public class ProjectController {
       @PathVariable Long projectId,
       @RequestBody UpdateProjectStatusDto statusDto) {
     User user = principal.getUser();
-
-    Project saveProject = projectService.updateProjectStatus(user, projectId, statusDto);
-    if (saveProject.getStatus() == ProjectStatus.COMPLETE) {
-      List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
-      // 프로젝트 멤버들에게 팀원 평가 권유 알림 이벤트 발행
-      for (ProjectMember projectMember : members) {
-        User member = projectMember.getUser();
-
-        AlarmForm alarmForm = AlarmForm.builder()
-            .receiverUser(member)
-            .project(saveProject)
-            .content(AlarmContent.REVIEW_REQUEST)
-            .build();
-        eventPublisher.publishEvent(alarmForm);
-      }
-    }
+    List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
+    projectService.updateProjectStatus(user, projectId, statusDto, members);
   }
 
   // 프로젝트 수정
