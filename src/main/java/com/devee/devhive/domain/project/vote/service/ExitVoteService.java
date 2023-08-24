@@ -8,8 +8,10 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRepository;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -17,14 +19,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExitVoteService {
+
+  private final ApplicationEventPublisher eventPublisher;
 
   private final ProjectMemberExitVoteRepository exitVoteRepository;
 
@@ -49,11 +55,22 @@ public class ExitVoteService {
       exitVoteList.add(exitVote);
     }
 
-//    List<ProjectMemberExitVote> exitVoteList = votingUsers.stream()
-//        .map(member -> ProjectMemberExitVote.of(project, targetUser, member.getUser(), currentTime))
-//        .collect(Collectors.toList());
-
     exitVoteRepository.saveAllAndFlush(exitVoteList);
+
+    for (ProjectMember projectMember : votingUsers) {
+      if (Objects.equals(registeringUser.getId(), projectMember.getUser().getId())) {
+        continue; // 등록자 알림 제외
+      }
+
+      // 팀원(퇴출 대상자와 등록자 제외한)들에게 퇴출 투표 생성 알림 이벤트 발행
+      AlarmForm alarmForm = AlarmForm.builder()
+          .receiverUser(projectMember.getUser()) // 팀원들
+          .project(project)
+          .content(AlarmContent.EXIT_VOTE)
+          .user(targetUser) // 퇴출 대상자
+          .build();
+      eventPublisher.publishEvent(alarmForm);
+    }
 
     return targetUser.getNickName() + " 유저에 대한 퇴출 투표 생성이 완료되었습니다.";
   }
@@ -88,12 +105,11 @@ public class ExitVoteService {
   public Map<Long, List<ProjectMemberExitVote>> getSortedVotes() {
     List<ProjectMemberExitVote> closedVotes = findAllClosedVotes();
     Map<Long, List<ProjectMemberExitVote>> sortedVotesMap = new HashMap<>();
-    closedVotes.forEach(vote -> {
-      if (sortedVotesMap.get(vote.getProject().getId()) == null) {
-        sortedVotesMap.put(vote.getProject().getId(), new ArrayList<>());
-      }
-      sortedVotesMap.get(vote.getProject().getId()).add(vote);
-    });
+
+    for (ProjectMemberExitVote vote : closedVotes) {
+      Long projectId = vote.getProject().getId();
+      sortedVotesMap.computeIfAbsent(projectId, key -> new ArrayList<>()).add(vote);
+    }
 
     return sortedVotesMap;
   }
@@ -121,6 +137,7 @@ public class ExitVoteService {
         }
       } else {
         log.info("투표에 전부 참여하지 않아 처리할 수 없습니다.");
+
       }
 
       log.info("{} 프로젝트 전체 인원 : {}, 투표 참여 인원 : {}", projectId, teamSize, votedCount);

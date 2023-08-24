@@ -61,12 +61,12 @@ public class BatchConfig {
         Long exitedUserId = currentExitHistory.getUser().getId();
 
         // 해당 프로젝트의 리더인 경우
-        if (projectMemberService.isLeaderOfProject(
-            projectId, exitedUserId)) {
+        if (projectMemberService.isLeaderOfProject(projectId, exitedUserId)) {
           log.info("해당 프로젝트의 리더입니다. 프로젝트를 삭제합니다.");
 
-          projectService.deleteLeadersProject(projectId);
           projectMemberService.deleteAllOfMembersFromProject(projectId);
+          projectService.deleteLeadersProject(projectId);
+
         } else {
           projectMemberService.deleteMemberFromProject(projectId, exitedUserId);
         }

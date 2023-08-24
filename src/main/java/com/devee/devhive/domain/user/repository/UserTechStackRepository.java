@@ -10,4 +10,6 @@ public interface UserTechStackRepository extends JpaRepository<UserTechStack, Lo
     List<UserTechStack> findAllByUserId(Long userId);
 
     void deleteAllByUserIdAndTechStackIdIn(Long userId, List<Long> techStackIds);
+
+    List<UserTechStack> findAllByTechStackIdIn(List<Long> techStackIds);
 }

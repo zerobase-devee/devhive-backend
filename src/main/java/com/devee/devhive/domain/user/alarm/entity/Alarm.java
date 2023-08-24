@@ -1,9 +1,14 @@
 package com.devee.devhive.domain.user.alarm.entity;
 
-import com.devee.devhive.global.entity.BaseEntity;
+import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.type.AlarmContent;
+import com.devee.devhive.global.entity.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,8 +34,23 @@ public class Alarm extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private Long senderUserId;
-    private Long args;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
+    private Long args; // 관심유저아이디 or 타겟유저아이디
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AlarmContent content;
-    private boolean isRead;
+
+    public static Alarm from(AlarmForm form) {
+        User otherUser = form.getUser();
+        return Alarm.builder()
+            .user(form.getReceiverUser())
+            .project(form.getProject())
+            .args(otherUser == null ? null : otherUser.getId())
+            .content(form.getContent())
+            .build();
+    }
 }

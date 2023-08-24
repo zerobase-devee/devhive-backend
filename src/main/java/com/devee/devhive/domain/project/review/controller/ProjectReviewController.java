@@ -44,7 +44,7 @@ public class ProjectReviewController {
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 
-    ProjectReview newReview = reviewService.submitReview(user, project, targetUser, form);
+    ProjectReview newReview = reviewService.submitReview(projectId, targetUserId, user, project, targetUser, form);
     List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, form);
 
     return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
