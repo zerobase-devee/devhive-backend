@@ -1,7 +1,9 @@
 package com.devee.devhive.domain.project.chat.entity;
 
+import com.devee.devhive.domain.project.type.ChatMessageType;
 import com.devee.devhive.global.entity.BaseEntity;
 import com.devee.devhive.domain.user.entity.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,4 +33,9 @@ public class ProjectChatMessage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name = "sender_user_id")
     private User senderUser;
+
+    @Column(nullable = false)
+    private String text;
+
+    private ChatMessageType messageType;
 }
