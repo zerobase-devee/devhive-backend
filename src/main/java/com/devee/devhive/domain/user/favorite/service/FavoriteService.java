@@ -17,46 +17,44 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FavoriteService {
 
-    private final ApplicationEventPublisher eventPublisher;
+  private final ApplicationEventPublisher eventPublisher;
+  private final FavoriteRepository favoriteRepository;
 
-    private final FavoriteRepository favoriteRepository;
+  public boolean isFavorite(Long userId, Long targetUserId) {
+    return favoriteRepository.findByUserIdAndFavoriteUserId(userId, targetUserId).isPresent();
+  }
 
-    public boolean isFavorite(Long userId, Long targetUserId) {
-        return favoriteRepository.findByUserIdAndFavoriteUserId(
-            userId, targetUserId).isPresent();
+  public void register(User user, User favoriteUser) {
+    favoriteRepository.save(Favorite.builder()
+        .user(user)
+        .favoriteUser(favoriteUser)
+        .build());
+  }
+
+  public void delete(Long userId, Long targetUserId) {
+    favoriteRepository.findByUserIdAndFavoriteUserId(userId, targetUserId)
+        .ifPresent(favoriteRepository::delete);
+  }
+
+  public Page<Favorite> getFavoriteUsers(Long userId, Pageable pageable) {
+    return favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
+  }
+
+  public void favoriteUserUploadProject(User favoriteUser, Long favoriteUserId, Project project) {
+    List<Favorite> users = favoriteRepository.findAllByFavoriteUserId(favoriteUserId);
+    if (!users.isEmpty()) {
+      for (Favorite favorite : users) {
+        User user = favorite.getUser();
+
+        // 관심 유저가 프로젝트 업로드한 경우 관심유저로 등록한 유저들에게 알림 이벤트 발행
+        AlarmForm alarmForm = AlarmForm.builder()
+            .receiverUser(user)
+            .project(project)
+            .content(AlarmContent.FAVORITE_USER)
+            .user(favoriteUser)
+            .build();
+        eventPublisher.publishEvent(alarmForm);
+      }
     }
-
-    public void register(User user, User favoriteUser) {
-        favoriteRepository.save(Favorite.builder()
-                .user(user)
-                .favoriteUser(favoriteUser)
-                .build());
-    }
-
-    public void delete(Long userId, Long targetUserId) {
-        favoriteRepository.findByUserIdAndFavoriteUserId(userId, targetUserId)
-            .ifPresent(favoriteRepository::delete);
-    }
-
-    public Page<Favorite> getFavoriteUsers(Long userId, Pageable pageable) {
-        return favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
-    }
-
-    public void favoriteUserUploadProject(User favoriteUser, Long favoriteUserId, Project project) {
-        List<Favorite> users = favoriteRepository.findAllByFavoriteUserId(favoriteUserId);
-        if (!users.isEmpty()) {
-            for (Favorite favorite : users) {
-                User user = favorite.getUser();
-
-                // 관심 유저가 프로젝트 업로드한 경우 관심유저로 등록한 유저들에게 알림 이벤트 발행
-                AlarmForm alarmForm = AlarmForm.builder()
-                    .receiverUser(user)
-                    .project(project)
-                    .content(AlarmContent.FAVORITE_USER)
-                    .user(favoriteUser)
-                    .build();
-                eventPublisher.publishEvent(alarmForm);
-            }
-        }
-    }
+  }
 }

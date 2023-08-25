@@ -35,14 +35,12 @@ public class AuthController {
   // 인증 코드
   @PostMapping("/verify")
   public void sendVerificationCode(@RequestBody @Valid EmailDto emailDto) throws Exception {
-
     authService.getVerificationCode(emailDto);
   }
 
   // 유저 회원가입
   @PostMapping("/signup")
   public void signUp(@RequestBody @Valid JoinDto joinDto) {
-
     authService.signUp(joinDto);
   }
 

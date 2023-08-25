@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProjectReviewRepository extends
-    JpaRepository<ProjectReview, Long>, CustomProjectReviewRepository {
+public interface ProjectReviewRepository extends JpaRepository<ProjectReview, Long>, CustomProjectReviewRepository {
 
   boolean existsByProjectIdAndTargetUserId(Long projectId, Long targetUserId);
 

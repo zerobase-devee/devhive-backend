@@ -8,7 +8,7 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.domain.user.type.RelatedUrlType;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +37,17 @@ public class AlarmController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
     ) {
+        User user = userService.getUserByEmail(principalDetails.getEmail());
+
         return ResponseEntity.ok(
-            alarmService.subscribe(principalDetails.getUser().getId(), lastEventId)
+            alarmService.subscribe(user.getId(), lastEventId)
         );
     }
 
     // 내 알림 목록 조회
     @GetMapping
-    public ResponseEntity<List<AlarmDto>> alarms(
-        @AuthenticationPrincipal PrincipalDetails principalDetails
-    ) {
-        User user = principalDetails.getUser();
+    public ResponseEntity<List<AlarmDto>> alarms(@AuthenticationPrincipal PrincipalDetails principal) {
+        User user = userService.getUserByEmail(principal.getEmail());
         List<Alarm> alarms = alarmService.getAlarms(user.getId());
         List<AlarmDto> alarmDtoList = alarms.stream()
             .map(this::mapToAlarmDto)
@@ -75,10 +75,10 @@ public class AlarmController {
 
     @DeleteMapping("/{alarmId}")
     public void delete(
-        @AuthenticationPrincipal PrincipalDetails principalDetails,
+        @AuthenticationPrincipal PrincipalDetails principal,
         @PathVariable("alarmId") Long alarmId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principal.getEmail());
         alarmService.delete(user.getId(), alarmId);
     }
 }

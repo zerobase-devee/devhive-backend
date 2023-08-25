@@ -21,89 +21,86 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserTechStackService {
-    private final ApplicationEventPublisher eventPublisher;
 
-    private final UserTechStackRepository userTechStackRepository;
-    private final TechStackService techStackService;
+  private final ApplicationEventPublisher eventPublisher;
 
-    public List<UserTechStack> getUserTechStacks(Long userId) {
-        return userTechStackRepository.findAllByUserId(userId);
-    }
+  private final UserTechStackRepository userTechStackRepository;
+  private final TechStackService techStackService;
 
-    public List<UserTechStack> findUsersWithTechStacks(List<Long> techStackIds) {
-        return userTechStackRepository.findAllByTechStackIdIn(techStackIds);
-    }
+  public List<UserTechStack> getUserTechStacks(Long userId) {
+    return userTechStackRepository.findAllByUserId(userId);
+  }
 
-    public void recommendProject(Project project, List<TechStackDto> techStacks) {
-        List<Long> techStackIds = techStacks.stream().map(TechStackDto::getId).toList();
-        // 프로젝트에 등록된 기술을 포함하고 있는 유저 목록
-        List<UserTechStack> usersWithTechStacks = findUsersWithTechStacks(techStackIds);
+  public List<UserTechStack> findUsersWithTechStacks(List<Long> techStackIds) {
+    return userTechStackRepository.findAllByTechStackIdIn(techStackIds);
+  }
 
-        for (UserTechStack userTechStack : usersWithTechStacks) {
-            User user = userTechStack.getUser();
-            if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
-                AlarmForm alarmForm = AlarmForm.builder()
-                    .receiverUser(user)
-                    .project(project)
-                    .content(AlarmContent.RECOMMEND)
-                    .build();
-                eventPublisher.publishEvent(alarmForm);
-            } else {
-                // 프로젝트가 오프라인이면 지역이 일치하는 유저들에게 알림 이벤트 발행
-                if (project.getRegion().equals(user.getRegion())) {
-                    // 댓글 작성자에게 대댓글 알림 이벤트 발행
-                    AlarmForm alarmForm = AlarmForm.builder()
-                        .receiverUser(user)
-                        .project(project)
-                        .content(AlarmContent.RECOMMEND)
-                        .build();
-                    eventPublisher.publishEvent(alarmForm);
-                }
-            }
+  public void recommendProject(Project project, List<TechStackDto> techStacks) {
+    List<Long> techStackIds = techStacks.stream().map(TechStackDto::getId).toList();
+    // 프로젝트에 등록된 기술을 포함하고 있는 유저 목록
+    List<UserTechStack> usersWithTechStacks = findUsersWithTechStacks(techStackIds);
+
+    for (UserTechStack userTechStack : usersWithTechStacks) {
+      User user = userTechStack.getUser();
+      if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
+        alarmEventPub(user, project);
+      } else {
+        // 프로젝트가 오프라인이면 지역이 일치하는 유저들에게만 알림 이벤트 발행
+        if (project.getRegion().equals(user.getRegion())) {
+          alarmEventPub(user, project);
         }
+      }
     }
+  }
 
-    @Transactional
-    public void updateTechStacks(User user, List<TechStackDto> newTechStacks) {
-        List<UserTechStack> existingTechStacks = getUserTechStacks(user.getId());
+  private void alarmEventPub(User receiver, Project project) {
+    AlarmForm alarmForm = AlarmForm.builder()
+        .receiverUser(receiver)
+        .project(project)
+        .content(AlarmContent.RECOMMEND)
+        .build();
+    eventPublisher.publishEvent(alarmForm);
+  }
 
-        // 기존 유저기술스택이 비었다면 요청된 기술스택 바로 저장
-        if (existingTechStacks.isEmpty()) {
-            List<UserTechStack> newUserTechStacks = newTechStacks.stream()
-                .map(techStackDto -> UserTechStack.of(user, TechStack.from(techStackDto)))
-                .collect(Collectors.toList());
-            userTechStackRepository.saveAll(newUserTechStacks);
-        } else if (newTechStacks.isEmpty()) {
-            // 요청된 기술스택이 비었다면 기존 유저기술스택 모두 삭제
-            userTechStackRepository.deleteAll(existingTechStacks);
-        }else {
-            // 기존 유저기술스택 삭제할거 삭제, 추가할거 추가 저장
-            List<Long> newTechStackIds = newTechStacks.stream()
-                .map(TechStackDto::getId)
-                .collect(Collectors.toList());
-            List<Long> techStackIdsToDelete = new ArrayList<>();
+  @Transactional
+  public void updateTechStacks(User user, List<TechStackDto> newTechStacks) {
+    List<UserTechStack> existingTechStacks = getUserTechStacks(user.getId());
 
-            for (UserTechStack userTechStack : existingTechStacks) {
-                Long curExistingId = userTechStack.getTechStack().getId();
-                if (newTechStackIds.contains(curExistingId)) {
-                    newTechStackIds.remove(curExistingId);
-                } else {
-                    techStackIdsToDelete.add(curExistingId);
-                }
-            }
+    // 기존 유저기술스택이 비었다면 요청된 기술스택 바로 저장
+    if (existingTechStacks.isEmpty()) {
+      List<UserTechStack> newUserTechStacks = newTechStacks.stream()
+          .map(techStackDto -> UserTechStack.of(user, TechStack.from(techStackDto)))
+          .collect(Collectors.toList());
+      userTechStackRepository.saveAll(newUserTechStacks);
+    } else if (newTechStacks.isEmpty()) {
+      // 요청된 기술스택이 비었다면 기존 유저기술스택 모두 삭제
+      userTechStackRepository.deleteAll(existingTechStacks);
+    } else {
+      // 기존 유저기술스택 삭제할거 삭제, 추가할거 추가 저장
+      List<Long> newTechStackIds = newTechStacks.stream()
+          .map(TechStackDto::getId)
+          .collect(Collectors.toList());
+      List<Long> techStackIdsToDelete = new ArrayList<>();
 
-            if (!techStackIdsToDelete.isEmpty()) {
-                userTechStackRepository.deleteAllByUserIdAndTechStackIdIn(
-                    user.getId(), techStackIdsToDelete);
-            }
-
-            if (!newTechStackIds.isEmpty()) {
-                List<TechStack> techStacks = techStackService.findAllById(newTechStackIds);
-                for (TechStack techStack : techStacks) {
-                    userTechStackRepository.save(
-                        UserTechStack.of(user, techStack));
-                }
-            }
+      for (UserTechStack userTechStack : existingTechStacks) {
+        Long curExistingId = userTechStack.getTechStack().getId();
+        if (newTechStackIds.contains(curExistingId)) {
+          newTechStackIds.remove(curExistingId);
+        } else {
+          techStackIdsToDelete.add(curExistingId);
         }
+      }
+
+      if (!techStackIdsToDelete.isEmpty()) {
+        userTechStackRepository.deleteAllByUserIdAndTechStackIdIn(user.getId(), techStackIdsToDelete);
+      }
+
+      if (!newTechStackIds.isEmpty()) {
+        List<TechStack> techStacks = techStackService.findAllById(newTechStackIds);
+        for (TechStack techStack : techStacks) {
+          userTechStackRepository.save(UserTechStack.of(user, techStack));
+        }
+      }
     }
+  }
 }

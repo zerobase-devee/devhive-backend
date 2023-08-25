@@ -21,6 +21,7 @@ import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -33,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectService {
 
   private final ApplicationEventPublisher eventPublisher;
-
   private final ProjectRepository projectRepository;
 
   public Project findById(Long projectId) {
@@ -43,16 +43,13 @@ public class ProjectService {
 
   // 내가 생성한 프로젝트 목록 페이지
   public Page<Project> getWriteProjects(Long userId, Pageable pageable) {
-    return projectRepository.findByWriterUserIdOrderByCreatedDateDesc(userId, pageable);
-
+    return projectRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 
   // 프로젝트 작성
-  public Project createProject(
-      CreateProjectDto createProjectDto,
-      User user) {
+  public Project createProject(CreateProjectDto createProjectDto, User user) {
     Project project = Project.builder()
-        .writerUser(user)
+        .user(user)
         .title(createProjectDto.getTitle())
         .name(createProjectDto.getProjectName())
         .content(createProjectDto.getContent())
@@ -71,69 +68,49 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
-  public void updateProjectStatus(
-      User user,
-      Long projectId,
-      UpdateProjectStatusDto statusDto,
-      List<ProjectMember> members) {
+  public void updateProjectStatus(User user, Long projectId,
+      UpdateProjectStatusDto statusDto, List<ProjectMember> members) {
     Project project = findById(projectId);
+    User writerUser = project.getUser();
 
-    User writerUser = project.getWriterUser();
-
-    if (writerUser != null && writerUser.getId().equals(user.getId())) {
-      ProjectStatus status = statusDto.getStatus();
-
-      if (status == RECRUITMENT_COMPLETE) {
-        project.setStartDate(LocalDateTime.now());
-      } else if (status == COMPLETE) {
-        project.setEndDate(LocalDateTime.now());
-      }
-
-      project.setStatus(status);
-
-      Project saveProject = projectRepository.save(project);
-
-      if (saveProject.getStatus() == COMPLETE) {
-        // 프로젝트 멤버들에게 팀원 평가 권유 알림 이벤트 발행
-        for (ProjectMember projectMember : members) {
-          User member = projectMember.getUser();
-
-          AlarmForm alarmForm = AlarmForm.builder()
-              .receiverUser(member)
-              .project(saveProject)
-              .content(AlarmContent.REVIEW_REQUEST)
-              .build();
-          eventPublisher.publishEvent(alarmForm);
-        }
-      }
-    } else {
+    if (!Objects.equals(writerUser.getId(), user.getId())) {
       throw new CustomException(UNAUTHORIZED);
+    }
+    ProjectStatus status = statusDto.getStatus();
+
+    if (status == RECRUITMENT_COMPLETE) {
+      project.setStartDate(LocalDateTime.now());
+    } else if (status == COMPLETE) {
+      project.setEndDate(LocalDateTime.now());
+    }
+
+    project.setStatus(status);
+
+    Project saveProject = projectRepository.save(project);
+
+    if (saveProject.getStatus() == COMPLETE) {
+      // 프로젝트 멤버들에게 팀원 평가 권유 알림 이벤트 발행
+      for (ProjectMember projectMember : members) {
+        alarmEventPub(projectMember.getUser(), saveProject);
+      }
     }
   }
 
   // 프로젝트 수정
   @Transactional
-  public Project updateProject(
-      User user,
-      Long projectId,
-      UpdateProjectDto updateProjectDto) {
-
+  public Project updateProject(User user, Long projectId, UpdateProjectDto updateProjectDto) {
     Project project = findById(projectId);
+    User writerUser = project.getUser();
 
-    User writerUser = project.getWriterUser();
-
-    if (writerUser != null && writerUser.getId().equals(user.getId())) {
-
-      updateProjectFields(updateProjectDto);
-      return projectRepository.save(project);
-    } else {
+    if (!Objects.equals(writerUser.getId(), user.getId())) {
       throw new CustomException(UNAUTHORIZED);
     }
+    updateProjectFields(updateProjectDto);
+    return projectRepository.save(project);
   }
 
   // 프로젝트 필드 업데이트
   private void updateProjectFields(UpdateProjectDto updateProjectDto) {
-
     Project project = Project.builder()
         .title(updateProjectDto.getTitle())
         .name(updateProjectDto.getProjectName())
@@ -151,7 +128,6 @@ public class ProjectService {
   // 프로젝트 삭제
   @Transactional
   public void deleteProject(Project project) {
-
     if (project.getStatus() != ProjectStatus.RECRUITING) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
@@ -162,8 +138,16 @@ public class ProjectService {
   @Transactional
   public void deleteLeadersProject(Long projectId) {
     Project project = findById(projectId);
-
     projectRepository.delete(project);
+  }
+
+  private void alarmEventPub(User user, Project project) {
+    AlarmForm alarmForm = AlarmForm.builder()
+        .receiverUser(user)
+        .project(project)
+        .content(AlarmContent.REVIEW_REQUEST)
+        .build();
+    eventPublisher.publishEvent(alarmForm);
   }
 }
 

@@ -13,22 +13,23 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BookmarkService {
 
-    private final BookmarkRepository bookmarkRepository;
+  private final BookmarkRepository bookmarkRepository;
 
-    public void register(User user, Project project) {
-        bookmarkRepository.save(Bookmark.builder()
-                .project(project)
-                .user(user)
-                .build());
-    }
+  public void register(User user, Project project) {
+    bookmarkRepository.save(Bookmark.builder()
+        .project(project)
+        .user(user)
+        .build());
+  }
 
-    public void delete(Long userId, Long projectId) {
-        bookmarkRepository.findBookmarkByUserIdAndProjectId(userId, projectId)
-            .ifPresent(bookmarkRepository::delete);
-    }
+  public void delete(Long userId, Long projectId) {
+    bookmarkRepository.findBookmarkByUserIdAndProjectId(userId, projectId)
+        .ifPresent(bookmarkRepository::delete);
+  }
 
-    // 북마크 목록 조회
-    public Page<Bookmark> getBookmarkProjects(Long userId, Pageable pageable) {
-        return bookmarkRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
-    }
+  // 북마크 목록 조회
+  public Page<Bookmark> getBookmarkProjects(Long userId, Pageable pageable) {
+    return bookmarkRepository.findByUserIdOrderByCreatedDateDesc(userId,
+        pageable);
+  }
 }

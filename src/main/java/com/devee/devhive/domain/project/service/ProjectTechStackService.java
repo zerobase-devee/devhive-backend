@@ -18,40 +18,32 @@ public class ProjectTechStackService {
   private final ProjectTechStackRepository projectTechStackRepository;
   private final TechStackRepository techStackRepository;
 
-
   public void createProjectTechStacks(Project project, List<TechStackDto> techStacks) {
-    List<ProjectTechStack> projectTechStacks = techStacks.stream()
-        .map(techStackDto -> {
-          String techStackName = techStackDto.getName();
-          TechStack techStack = techStackRepository.findByName(techStackName);
-          return ProjectTechStack.of(project, techStack);
-        })
-        .collect(Collectors.toList());
-
+    List<ProjectTechStack> projectTechStacks = mapToProjectTechStackList(project, techStacks);
     projectTechStackRepository.saveAll(projectTechStacks);
   }
 
   public void updateProjectTechStacks(Project project, List<TechStackDto> techStacks) {
     // 기존 기술 스택 삭제
-    List<ProjectTechStack> projectTechStacks = projectTechStackRepository.findAllByProjectId(
-        project.getId());
+    List<ProjectTechStack> projectTechStacks = projectTechStackRepository.findAllByProjectId(project.getId());
     projectTechStackRepository.deleteAll(projectTechStacks);
 
     // 새로운 기술 스택 추가
-    List<ProjectTechStack> newProjectTechStacks = techStacks.stream()
-        .map(techStackDto -> {
+    List<ProjectTechStack> newProjectTechStacks = mapToProjectTechStackList(project, techStacks);
+    projectTechStackRepository.saveAll(newProjectTechStacks);
+  }
+
+  public void deleteProjectTechStacksByProjectId(Long projectId) {
+    List<ProjectTechStack> projectTechStacks = projectTechStackRepository.findAllByProjectId(projectId);
+    projectTechStackRepository.deleteAll(projectTechStacks);
+  }
+
+  private List<ProjectTechStack> mapToProjectTechStackList(Project project, List<TechStackDto> techStacks) {
+    return techStacks.stream().map(techStackDto -> {
           String techStackName = techStackDto.getName();
           TechStack techStack = techStackRepository.findByName(techStackName);
           return ProjectTechStack.of(project, techStack);
         })
         .collect(Collectors.toList());
-
-    projectTechStackRepository.saveAll(newProjectTechStacks);
-  }
-
-  public void deleteProjectTechStacksByProjectId(Long projectId) {
-    List<ProjectTechStack> projectTechStacks = projectTechStackRepository.findAllByProjectId(
-        projectId);
-    projectTechStackRepository.deleteAll(projectTechStacks);
   }
 }

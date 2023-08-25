@@ -11,7 +11,6 @@ import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.redis.RedisService;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-  private final ApplicationEventPublisher eventPublisher;
 
+  private final ApplicationEventPublisher eventPublisher;
   private final CommentRepository commentRepository;
-  private final RedisService redisService;
 
   public Comment getCommentById(Long commentId) {
     return commentRepository.findById(commentId)
@@ -36,40 +34,15 @@ public class CommentService {
   // 댓글 생성
   @Transactional
   public Comment create(User user, Project project, CommentForm form) {
-    String KEY = "COMMENT_" + project.getId();
-    int retryDelayMilliseconds = 200; // 재시도 간격 (예: 200ms)
+    Comment comment = commentRepository.save(Comment.builder()
+        .project(project)
+        .user(user)
+        .content(form.getContent())
+        .build());
 
-    while (true) {
-      boolean locked = redisService.getLock(KEY, 5);
-      if (locked) {
-        try {
-            Comment comment = commentRepository.save(Comment.builder()
-              .project(project)
-              .user(user)
-              .content(form.getContent())
-              .build());
-
-            // 게시글 작성자에게 댓글 알림 이벤트 발행
-            AlarmForm alarmForm = AlarmForm.builder()
-                .receiverUser(project.getWriterUser())
-                .project(project)
-                .content(AlarmContent.COMMENT)
-                .build();
-            eventPublisher.publishEvent(alarmForm);
-
-          return comment;
-        } finally {
-          redisService.unLock(KEY);
-        }
-      } else {
-        // 락을 획득하지 못한 경우, 일정 시간 동안 대기한 후 재시도
-        try {
-          Thread.sleep(retryDelayMilliseconds);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
+    // 게시글 작성자에게 댓글 알림 이벤트 발행
+    alarmEventPub(project.getUser(), project);
+    return comment;
   }
 
   // 댓글 수정
@@ -93,5 +66,14 @@ public class CommentService {
     commentRepository.deleteAll(comments);
 
     return comments.stream().map(Comment::getId).collect(Collectors.toList());
+  }
+
+  private void alarmEventPub(User user, Project project) {
+    AlarmForm alarmForm = AlarmForm.builder()
+        .receiverUser(user)
+        .project(project)
+        .content(AlarmContent.COMMENT)
+        .build();
+    eventPublisher.publishEvent(alarmForm);
   }
 }

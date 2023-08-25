@@ -10,8 +10,9 @@ import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import jakarta.validation.Valid;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommentController {
 
+    private final UserService userService;
     private final CommentService commentService;
     private final ProjectService projectService;
     private final ReplyService replyService;
@@ -38,10 +40,9 @@ public class CommentController {
     @PostMapping("/projects/{projectId}")
     public ResponseEntity<CommentDto> create(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
-        @PathVariable("projectId") Long projectId,
-        @RequestBody @Valid CommentForm form
+        @PathVariable("projectId") Long projectId, @RequestBody @Valid CommentForm form
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Project project = projectService.findById(projectId);
         Comment saveComment = commentService.create(user, project, form);
 
@@ -52,10 +53,9 @@ public class CommentController {
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentDto> update(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
-        @PathVariable("commentId") Long commentId,
-        @RequestBody @Valid CommentForm form
+        @PathVariable("commentId") Long commentId, @RequestBody @Valid CommentForm form
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Comment comment = commentService.update(user, commentId, form);
         return ResponseEntity.ok(CommentDto.of(comment, user));
     }
@@ -66,7 +66,7 @@ public class CommentController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("commentId") Long commentId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Comment comment = commentService.getCommentById(commentId);
         if (!Objects.equals(comment.getUser().getId(), user.getId())) {
             throw new CustomException(UNAUTHORIZED);

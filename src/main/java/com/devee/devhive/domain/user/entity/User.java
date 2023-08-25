@@ -3,6 +3,7 @@ package com.devee.devhive.domain.user.entity;
 import static com.devee.devhive.domain.user.type.Role.USER;
 
 import com.devee.devhive.domain.user.type.ActivityStatus;
+import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.domain.user.type.Role;
 import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -64,6 +65,9 @@ public class User extends BaseEntity {
   private LocalDateTime modifiedDate;
 
   private String refreshToken;
+
+  private ProviderType providerType;
+  private String providerId;
 
   public void updateRefreshToken(String updateRefreshToken) {
     this.refreshToken = updateRefreshToken;

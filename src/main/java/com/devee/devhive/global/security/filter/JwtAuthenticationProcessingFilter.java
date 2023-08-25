@@ -2,7 +2,7 @@ package com.devee.devhive.global.security.filter;
 
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.security.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -114,7 +114,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
   public void saveAuthentication(User myUser) {
 
-    PrincipalDetails principalDetails = new PrincipalDetails(myUser);
+    PrincipalDetails principalDetails = PrincipalDetails.create(myUser);
     Authentication authentication =
         new UsernamePasswordAuthenticationToken(
             principalDetails, null,

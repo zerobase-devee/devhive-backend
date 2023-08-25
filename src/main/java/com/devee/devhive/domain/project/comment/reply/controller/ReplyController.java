@@ -7,7 +7,8 @@ import com.devee.devhive.domain.project.comment.reply.entity.form.ReplyForm;
 import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.domain.user.service.UserService;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,16 +28,15 @@ public class ReplyController {
 
     private final ReplyService replyService;
     private final CommentService commentService;
-
+    private final UserService userService;
 
     // 대댓글 생성
     @PostMapping("/comments/{commentId}")
     public ResponseEntity<ReplyDto> create(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
-        @PathVariable("commentId") Long commentId,
-        @RequestBody @Valid ReplyForm form
+        @PathVariable("commentId") Long commentId, @RequestBody @Valid ReplyForm form
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Comment comment = commentService.getCommentById(commentId);
         Reply reply = replyService.create(user, comment, form);
         return ResponseEntity.ok(ReplyDto.of(reply, user));
@@ -46,10 +46,9 @@ public class ReplyController {
     @PutMapping("/{replyId}")
     public ResponseEntity<ReplyDto> update(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
-        @PathVariable("replyId") Long replyId,
-        @RequestBody @Valid ReplyForm form
+        @PathVariable("replyId") Long replyId, @RequestBody @Valid ReplyForm form
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Reply reply = replyService.update(user, replyId, form);
         return ResponseEntity.ok(ReplyDto.of(reply, user));
     }
@@ -60,7 +59,7 @@ public class ReplyController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("replyId") Long replyId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         replyService.delete(user, replyId);
     }
 }

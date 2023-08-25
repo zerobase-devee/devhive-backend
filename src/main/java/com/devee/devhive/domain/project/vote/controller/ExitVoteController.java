@@ -11,7 +11,7 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.exception.ErrorCode;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -38,10 +38,9 @@ public class ExitVoteController {
   @PostMapping
   public ResponseEntity<String> createExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @PathVariable Long projectId,
-      @PathVariable Long targetUserId
+      @PathVariable Long projectId, @PathVariable Long targetUserId
   ) {
-    User registeringUser = principalDetails.getUser();
+    User registeringUser = userService.getUserByEmail(principalDetails.getEmail());
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 
@@ -50,8 +49,7 @@ public class ExitVoteController {
     }
 
     // 투표 대상 유저를 제외한 모든 유저
-    List<ProjectMember> votingUsers = projectMemberService.getProjectMemberByProjectId(projectId)
-        .stream()
+    List<ProjectMember> votingUsers = projectMemberService.getProjectMemberByProjectId(projectId).stream()
         .filter(member -> !Objects.equals(member.getUser().getId(), targetUser.getId()))
         .collect(Collectors.toList());
 
@@ -62,11 +60,9 @@ public class ExitVoteController {
   @PutMapping
   public ResponseEntity<VoteDto> submitExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @PathVariable Long projectId,
-      @PathVariable Long targetUserId,
-      @RequestParam boolean vote
+      @PathVariable Long projectId, @PathVariable Long targetUserId, @RequestParam boolean vote
   ) {
-    User votingUser = principalDetails.getUser();
+    User votingUser = userService.getUserByEmail(principalDetails.getEmail());
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 
@@ -74,8 +70,7 @@ public class ExitVoteController {
       throw new CustomException(ErrorCode.NOT_YOUR_PROJECT);
     }
 
-    ProjectMemberExitVote myVote = exitVoteService.submitExitVote(project, votingUser, targetUser,
-        vote);
+    ProjectMemberExitVote myVote = exitVoteService.submitExitVote(project, votingUser, targetUser, vote);
 
     return ResponseEntity.ok(VoteDto.from(myVote));
   }

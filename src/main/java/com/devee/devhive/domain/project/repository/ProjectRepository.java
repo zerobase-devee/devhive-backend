@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
-    Page<Project> findByWriterUserIdOrderByCreatedDateDesc(Long writerUserId, Pageable pageable);
+  Page<Project> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
 }

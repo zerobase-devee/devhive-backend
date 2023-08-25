@@ -11,8 +11,9 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProjectApplyController {
 
+    private final UserService userService;
     private final ProjectApplyService projectApplyService;
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
@@ -42,7 +44,7 @@ public class ProjectApplyController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Project project = projectService.findById(projectId);
         projectApplyService.projectApply(user, project);
     }
@@ -53,7 +55,7 @@ public class ProjectApplyController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         projectApplyService.deleteApplication(user.getId(), projectId);
     }
 
@@ -63,9 +65,9 @@ public class ProjectApplyController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         Project project = projectService.findById(projectId);
-        if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
+        if (!Objects.equals(project.getUser().getId(), user.getId())) {
             throw new CustomException(UNAUTHORIZED);
         }
         List<ProjectApply> projectApplies = projectApplyService.getProjectApplies(projectId);
@@ -80,12 +82,12 @@ public class ProjectApplyController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("applicationId") Long applicationId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         ProjectApply projectApply = projectApplyService.getProjectApplyById(applicationId);
         Project project = projectApply.getProject();
 
         // 프로젝트 작성자가 아닌 경우
-        if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
+        if (!Objects.equals(project.getUser().getId(), user.getId())) {
             throw new CustomException(UNAUTHORIZED);
         }
 
@@ -111,7 +113,7 @@ public class ProjectApplyController {
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("applicationId") Long applicationId
     ) {
-        User user = principalDetails.getUser();
+        User user = userService.getUserByEmail(principalDetails.getEmail());
         projectApplyService.reject(user, applicationId);
     }
 }

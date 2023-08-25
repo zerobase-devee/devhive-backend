@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
-    Optional<Favorite> findByUserIdAndFavoriteUserId(Long userId, Long favoriteUserId);
+  Optional<Favorite> findByUserIdAndFavoriteUserId(Long userId, Long favoriteUserId);
 
-    Page<Favorite> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
+  Page<Favorite> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
 
-    List<Favorite> findAllByFavoriteUserId(Long favoriteUserId);
+  List<Favorite> findAllByFavoriteUserId(Long favoriteUserId);
 }

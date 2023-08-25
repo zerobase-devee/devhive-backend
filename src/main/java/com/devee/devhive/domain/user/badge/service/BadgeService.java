@@ -1,7 +1,6 @@
 package com.devee.devhive.domain.user.badge.service;
 
 import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_BADGE;
-import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_TECH_STACK;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_BADGE;
 
 import com.devee.devhive.domain.user.badge.entity.Badge;
@@ -35,7 +34,6 @@ public class BadgeService {
 
     badgeRepository.save(badge);
   }
-
 
   public void deleteBadge(Long badgeId) {
     Badge badge = badgeRepository.findById(badgeId)
