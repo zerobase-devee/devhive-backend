@@ -66,8 +66,7 @@ public class UserService {
 
   // 내 프로필 사진 삭제
   public void deleteProfileImage(User user) {
-    String imageUrl = URLDecoder.decode(user.getProfileImage(),
-        StandardCharsets.UTF_8);
+    String imageUrl = URLDecoder.decode(user.getProfileImage(), StandardCharsets.UTF_8);
     String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
 
     s3Service.delete(filename);
