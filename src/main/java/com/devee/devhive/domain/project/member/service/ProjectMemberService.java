@@ -60,10 +60,10 @@ public class ProjectMemberService {
             .build());
     }
 
-    public void deleteProjectMembers(Long projectId){
+    public void deleteProjectMembers(Long projectId) {
         List<ProjectMember> projectMembers = projectMemberRepository.findAllByProjectId(projectId);
         projectMemberRepository.deleteAll(projectMembers);
-
+    }
 
     // 해당 프로젝트에 유저가 참가해있는지 체크
     public boolean isMemberofProject(Long projectId, Long userId) {
