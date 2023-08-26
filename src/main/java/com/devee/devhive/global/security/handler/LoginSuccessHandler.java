@@ -2,7 +2,7 @@ package com.devee.devhive.global.security.handler;
 
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.security.dto.TokenDto;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

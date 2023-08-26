@@ -26,8 +26,7 @@ public class EvaluationService {
     return getAllEvaluations(review, form);
   }
 
-  private List<Evaluation> getAllEvaluations(ProjectReview review,
-      EvaluationForm form) {
+  private List<Evaluation> getAllEvaluations(ProjectReview review, EvaluationForm form) {
     return Stream.of(
             EvaluationItem.MANNER,
             EvaluationItem.CONTRIBUTION,

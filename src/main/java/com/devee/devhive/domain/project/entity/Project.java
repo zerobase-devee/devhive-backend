@@ -36,8 +36,8 @@ public class Project extends BaseEntity {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "writer_user_id")
-  private User writerUser;
+  @JoinColumn(name = "user_id")
+  private User user;
 
   private String title;
   private String content;

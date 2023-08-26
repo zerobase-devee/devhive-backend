@@ -24,8 +24,11 @@ public class MyProjectInfoDto {
     private LocalDateTime endDate;   // 프로젝트 종료일자
     private List<ProjectMemberDto> projectMembers;
     private double totalAverageScore;
+    private boolean leader;
 
-    public static MyProjectInfoDto of(Project project, List<ProjectMemberDto> projectMemberDtoList, double totalAverageScore) {
+    public static MyProjectInfoDto of(Project project, List<ProjectMemberDto> projectMemberDtoList,
+        double totalAverageScore, boolean leader
+    ) {
         return MyProjectInfoDto.builder()
             .name(project.getName())
             .projectId(project.getId())
@@ -35,6 +38,7 @@ public class MyProjectInfoDto {
             .endDate(project.getEndDate())
             .projectMembers(projectMemberDtoList)
             .totalAverageScore(totalAverageScore)
+            .leader(leader)
             .build();
     }
 }

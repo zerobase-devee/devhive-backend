@@ -8,14 +8,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProjectMemberExitVoteRepository extends
-    JpaRepository<ProjectMemberExitVote, Long> {
+public interface ProjectMemberExitVoteRepository extends JpaRepository<ProjectMemberExitVote, Long> {
 
-  boolean existsByProjectIdAndVoterUserIdAndTargetUserId(Long projectId,
-      Long voterUserId, Long targetUserId);
+  boolean existsByProjectIdAndVoterUserIdAndTargetUserId(Long projectId, Long voterUserId, Long targetUserId);
 
-  Optional<ProjectMemberExitVote> findByProjectIdAndVoterUserIdAndTargetUserId(Long projectId,
-      Long voterUserId, Long targetUserId);
+  Optional<ProjectMemberExitVote> findByProjectIdAndVoterUserIdAndTargetUserId(Long projectId, Long voterUserId, Long targetUserId);
 
   List<ProjectMemberExitVote> findAllByCreatedDateBefore(Instant createdDate);
 }

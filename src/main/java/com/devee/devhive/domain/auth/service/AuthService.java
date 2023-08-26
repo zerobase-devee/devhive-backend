@@ -17,6 +17,7 @@ import com.devee.devhive.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ public class AuthService {
 
   // 인증 코드
   public void getVerificationCode(EmailDto emailDto) throws Exception {
-
     if (userRepository.existsByEmail(emailDto.getEmail())) {
       throw new CustomException(DUPLICATE_EMAIL);
     }
@@ -37,40 +37,27 @@ public class AuthService {
   }
 
   // 유저 회원가입
+  @Transactional
   public void signUp(JoinDto joinDto) {
-
-    String enteredCode = joinDto.getVerificationCode();
-    String cachedCode = redisService.getData(joinDto.getEmail());
-
     if (!redisService.existData(joinDto.getEmail())) {
       throw new CustomException(EXPIRED_VERIFY_CODE);
     }
+
+    String enteredCode = joinDto.getVerificationCode();
+    String cachedCode = redisService.getData(joinDto.getEmail());
     if (!cachedCode.equals(enteredCode)) {
       throw new CustomException(INCORRECT_VERIFY_CODE);
     }
 
-    String nickname = joinDto.getNickName();
-    try {
-      boolean nicknameLocked = redisService.getLock(nickname, 5);
-      if (nicknameLocked) {
-        // 락 확보 성공하면 중복 체크 수행
-        if (userRepository.existsByNickName(nickname)) {
-          throw new CustomException(DUPLICATE_NICKNAME);
-        }
-        userRepository.save(User.builder()
-            .email(joinDto.getEmail())
-            .password(passwordEncoder.encode(joinDto.getPassword()))
-            .nickName(joinDto.getNickName())
-            .status(ACTIVITY)
-            .build());
-      }else {
-        // 락 확보 실패 시에는 다른 클라이언트가 이미 해당 닉네임의 락을 확보한 것으로 간주
-        throw new CustomException(DUPLICATE_NICKNAME); // 중복된 닉네임으로 간주
-      }
-    } finally {
-      // 락 해제
-      redisService.unLock(nickname);
+    if (userRepository.existsByNickName(joinDto.getNickName())) {
+      throw new CustomException(DUPLICATE_NICKNAME);
     }
+    userRepository.save(User.builder()
+        .email(joinDto.getEmail())
+        .password(passwordEncoder.encode(joinDto.getPassword()))
+        .nickName(joinDto.getNickName())
+        .status(ACTIVITY)
+        .build());
   }
 
   public boolean isNicknameAvailable(NicknameDto nicknameDto) {

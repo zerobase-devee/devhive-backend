@@ -31,11 +31,9 @@ import org.springframework.stereotype.Service;
 public class ExitVoteService {
 
   private final ApplicationEventPublisher eventPublisher;
-
   private final ProjectMemberExitVoteRepository exitVoteRepository;
 
-  public String createExitVote(Project project, User registeringUser, User targetUser,
-      List<ProjectMember> votingUsers) {
+  public String createExitVote(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
     if (exitVoteRepository.existsByProjectIdAndVoterUserIdAndTargetUserId(project.getId(),
         registeringUser.getId(), targetUser.getId())) {
       throw new CustomException(ALREADY_REGISTERED_VOTE);
@@ -57,12 +55,11 @@ public class ExitVoteService {
 
     exitVoteRepository.saveAllAndFlush(exitVoteList);
 
+    // 팀원(퇴출 대상자와 등록자 제외한)들에게 퇴출 투표 생성 알림 이벤트 발행
     for (ProjectMember projectMember : votingUsers) {
       if (Objects.equals(registeringUser.getId(), projectMember.getUser().getId())) {
         continue; // 등록자 알림 제외
       }
-
-      // 팀원(퇴출 대상자와 등록자 제외한)들에게 퇴출 투표 생성 알림 이벤트 발행
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(projectMember.getUser()) // 팀원들
           .project(project)
@@ -76,8 +73,7 @@ public class ExitVoteService {
   }
 
   // 투표 제출 및 결과 저장
-  public ProjectMemberExitVote submitExitVote(Project project, User votingUser, User targetUser,
-      boolean vote) {
+  public ProjectMemberExitVote submitExitVote(Project project, User votingUser, User targetUser, boolean vote) {
     ProjectMemberExitVote myVote = getMyVote(project.getId(), votingUser.getId(),
         targetUser.getId());
 
@@ -137,7 +133,6 @@ public class ExitVoteService {
         }
       } else {
         log.info("투표에 전부 참여하지 않아 처리할 수 없습니다.");
-
       }
 
       log.info("{} 프로젝트 전체 인원 : {}, 투표 참여 인원 : {}", projectId, teamSize, votedCount);

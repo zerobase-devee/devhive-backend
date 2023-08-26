@@ -21,20 +21,17 @@ import org.springframework.stereotype.Service;
 public class ProjectReviewService {
 
   private final ApplicationEventPublisher eventPublisher;
-
   private final ProjectReviewRepository projectReviewRepository;
 
   // 프로젝트에서 유저가 받은 리뷰의 평균점수
-  public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId,
-      Long projectId) {
-    return projectReviewRepository.getAverageTotalScoreByTargetUserIdAndProjectId(
-        targetUserId,
-        projectId);
+  public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId) {
+    return projectReviewRepository.getAverageTotalScoreByTargetUserIdAndProjectId(targetUserId, projectId);
   }
 
   // 정보를 바탕으로 리뷰 등록
-  public ProjectReview submitReview(Long projectId, Long targetUserId, User user, Project project, User targetUser,
-      EvaluationForm form) {
+  public ProjectReview submitReview(Long projectId, Long targetUserId, User user,
+      Project project, User targetUser, EvaluationForm form
+  ) {
     // 리뷰는 프로젝트가 완료된 상태에서만 작성 가능
     if (project.getStatus() != ProjectStatus.COMPLETE) {
       throw new CustomException(PROJECT_NOT_COMPLETE);

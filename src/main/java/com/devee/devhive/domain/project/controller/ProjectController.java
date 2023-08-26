@@ -15,9 +15,10 @@ import com.devee.devhive.domain.project.service.ProjectTechStackService;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
+import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
+  private final UserService userService;
   private final ProjectService projectService;
   private final CommentService commentService;
   private final ReplyService replyService;
@@ -47,9 +49,9 @@ public class ProjectController {
   @PostMapping
   public void createProject(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @RequestBody CreateProjectDto createProjectDto) {
-
-    User user = principal.getUser();
+      @RequestBody CreateProjectDto createProjectDto
+  ) {
+    User user = userService.getUserByEmail(principal.getEmail());
 
     Project project = projectService.createProject(createProjectDto, user);
     List<TechStackDto> techStacks = createProjectDto.getTechStacks();
@@ -65,9 +67,9 @@ public class ProjectController {
   @PutMapping("/{projectId}/status")
   public void updateProjectStatus(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId,
-      @RequestBody UpdateProjectStatusDto statusDto) {
-    User user = principal.getUser();
+      @PathVariable Long projectId, @RequestBody UpdateProjectStatusDto statusDto
+  ) {
+    User user = userService.getUserByEmail(principal.getEmail());
     List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
     projectService.updateProjectStatus(user, projectId, statusDto, members);
   }
@@ -76,10 +78,9 @@ public class ProjectController {
   @PutMapping("/{projectId}")
   public void updateProject(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId,
-      @RequestBody UpdateProjectDto updateProjectDto) {
-
-    User user = principal.getUser();
+      @PathVariable Long projectId, @RequestBody UpdateProjectDto updateProjectDto
+  ) {
+    User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.updateProject(user, projectId, updateProjectDto);
     projectTechStackService.updateProjectTechStacks(project, updateProjectDto.getTechStacks());
   }
@@ -87,12 +88,11 @@ public class ProjectController {
   // 프로젝트 삭제
   @DeleteMapping("/{projectId}")
   public void deleteProject(
-      @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId
+      @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
   ) {
-    User user = principal.getUser();
+    User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.findById(projectId);
-    if (!Objects.equals(project.getWriterUser().getId(), user.getId())) {
+    if (!Objects.equals(project.getUser().getId(), user.getId())) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
 

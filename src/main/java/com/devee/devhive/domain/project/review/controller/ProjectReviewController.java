@@ -10,7 +10,7 @@ import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class ProjectReviewController {
       @PathVariable Long projectId, @PathVariable Long targetUserId,
       @RequestBody EvaluationForm form
   ) {
-    User user = principalDetails.getUser();
+    User user = userService.getUserByEmail(principalDetails.getEmail());
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 

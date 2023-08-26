@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProjectTechStackRepository extends JpaRepository<ProjectTechStack, Long> {
-
   List<ProjectTechStack> findAllByProjectId(Long projectId);
 }
