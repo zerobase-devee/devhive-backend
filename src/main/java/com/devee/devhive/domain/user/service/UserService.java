@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.user.service;
 
+import static com.devee.devhive.global.exception.ErrorCode.ALREADY_CHANGED_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.NEW_PASSWORD_MISMATCH_RE_PASSWORD;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_USER;
@@ -83,6 +84,8 @@ public class UserService {
       // 최초 닉네임인 경우에만 변경
       if (userNickname.equals(user.getProviderType().getValue() + "_" + user.getProviderId())) {
         updateNickname(user, nickname);
+      } else {
+        throw new CustomException(ALREADY_CHANGED_NICKNAME);
       }
     }
 
