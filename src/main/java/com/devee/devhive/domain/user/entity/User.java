@@ -64,6 +64,7 @@ public class User extends BaseEntity {
 
   private String refreshToken;
 
+  @Enumerated(EnumType.STRING)
   private ProviderType providerType;
   private String providerId;
 

@@ -82,7 +82,7 @@ public class TokenService {
 
     setAccessTokenHeader(response, BEARER + accessToken);
     setRefreshTokenHeader(response, BEARER + refreshToken);
-    setRefreshTokenCookie(response, BEARER + refreshToken);
+    setRefreshTokenCookie(response, refreshToken);
 
     response.setStatus(HttpStatus.OK.value());
     response.setCharacterEncoding("UTF-8");
