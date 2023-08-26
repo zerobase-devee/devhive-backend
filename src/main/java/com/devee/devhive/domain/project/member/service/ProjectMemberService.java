@@ -22,7 +22,7 @@ public class ProjectMemberService {
   private final ProjectMemberRepository projectMemberRepository;
 
   public List<ProjectMember> getProjectMemberByProjectId(Long projectId) {
-    return projectMemberRepository.findAllByProjectId(projectId);
+    return projectMemberRepository.findAllByProjectIdOrderByCreatedDateAsc(projectId);
   }
 
   // 유저가 참여한 완료된 프로젝트 갯수 (벌집레벨)

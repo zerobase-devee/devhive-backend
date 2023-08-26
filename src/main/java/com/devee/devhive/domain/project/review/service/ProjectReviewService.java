@@ -12,6 +12,7 @@ import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -60,5 +61,9 @@ public class ProjectReviewService {
     }
 
     return saveReview;
+  }
+
+  public List<ProjectReview> findByProjectIdAndTargetUserId(Long projectId, Long targetUserId) {
+    return projectReviewRepository.findAllByProjectIdAndTargetUserId(projectId, targetUserId);
   }
 }

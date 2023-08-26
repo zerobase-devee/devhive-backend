@@ -59,7 +59,7 @@ public enum ErrorCode {
 
     // Vote
     NOT_FOUND_VOTE(HttpStatus.BAD_REQUEST, "해당 투표를 찾을 수 없습니다."),
-    ALREADY_REGISTERED_VOTE(HttpStatus.BAD_REQUEST, "해당 유저에 대한 투표는 이미 등록되었습니다."),
+    ALREADY_REGISTERED_VOTE(HttpStatus.BAD_REQUEST, "진행중인 투표가 있습니다."),
     ALREADY_SUBMIT_VOTE(HttpStatus.BAD_REQUEST, "투표를 이미 진행했습니다."),
 
     NOT_FOUND_TECH_STACK(HttpStatus.NOT_FOUND, "테크스택을 찾을 수 없습니다. "),
