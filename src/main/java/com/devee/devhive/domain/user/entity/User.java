@@ -43,8 +43,6 @@ public class User extends BaseEntity {
   @Column(nullable = false, unique = true)
   private String nickName;
 
-  private boolean isNickNameChanged;
-
   private String region;
 
   private String profileImage;
@@ -73,11 +71,12 @@ public class User extends BaseEntity {
     this.refreshToken = updateRefreshToken;
   }
 
-  public User update(String nickName, String profileImage) {
+  @Builder
+  public User(String nickName, String password, String email, ProviderType providerType, String providerId) {
     this.nickName = nickName;
-    this.profileImage = profileImage;
-
-    return this;
+    this.email = email;
+    this.password = password;
+    this.providerType = providerType;
+    this.providerId = providerId;
   }
-
 }

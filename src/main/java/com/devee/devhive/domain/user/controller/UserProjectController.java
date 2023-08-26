@@ -68,16 +68,18 @@ public class UserProjectController {
         @AuthenticationPrincipal PrincipalDetails principal
     ) {
         User user = userService.getUserByEmail(principal.getEmail());
+        Long userId = user.getId();
         Project project = projectService.findById(projectId);
         double totalAverageScore =
-            projectReviewService.getAverageTotalScoreByTargetUserAndProject(user.getId(), projectId);
+            projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, projectId);
         List<ProjectMemberDto> projectMemberDtoList =
             projectMemberService.getProjectMemberByProjectId(projectId).stream()
                 .map(ProjectMemberDto::from).toList();
-        boolean leader = Objects.equals(project.getUser().getId(), user.getId());
+
+        boolean leader = Objects.equals(project.getUser().getId(), userId);
 
         return ResponseEntity.ok(
-            MyProjectInfoDto.of(project, projectMemberDtoList, totalAverageScore, leader)
+            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader)
         );
     }
 }

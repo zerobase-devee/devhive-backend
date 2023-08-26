@@ -1,7 +1,11 @@
 package com.devee.devhive.global.oauth2.domain;
 
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.type.Role;
+import com.devee.devhive.domain.user.type.ProviderType;
+import com.devee.devhive.global.oauth2.info.GoogleOAuth2UserInfo;
+import com.devee.devhive.global.oauth2.info.KakaoOAuth2UserInfo;
+import com.devee.devhive.global.oauth2.info.NaverOAuth2UserInfo;
+import com.devee.devhive.global.oauth2.info.OAuth2UserInfo;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,64 +13,55 @@ import lombok.Getter;
 @Getter
 public class OAuthAttributes {
 
-  private final Map<String, Object> attributes;
-  private final String nameAttributeKey;
-  private final String name;
-  private final String email;
-  private final String profileImage;
+  private final String nameAttributeKey; // OAuth2 로그인 진행 시 키가 되는 필드 값, PK와 같은 의미
+  private final OAuth2UserInfo oauth2UserInfo; // 소셜 타입별 로그인 유저 정보(닉네임, 이메일, 프로필 사진 등등)
 
   @Builder
-  public OAuthAttributes(Map<String, Object> attributes,
-      String nameAttributeKey, String name,
-      String email, String picture) {
-    this.attributes = attributes;
+  public OAuthAttributes(String nameAttributeKey, OAuth2UserInfo oauth2UserInfo) {
     this.nameAttributeKey = nameAttributeKey;
-    this.name = name;
-    this.email = email;
-    this.profileImage = picture;
+    this.oauth2UserInfo = oauth2UserInfo;
   }
 
-  public static OAuthAttributes of(String registrationId,
-      String userNameAttributeName,
-      Map<String, Object> attributes) {
-    if ("naver".equals(registrationId)) {
-      return ofNaver(attributes);
-    }
+  public static OAuthAttributes of(ProviderType providerType,
+      String userNameAttributeName, Map<String, Object> attributes) {
 
+    if (providerType == ProviderType.NAVER) {
+      return ofNaver(userNameAttributeName, attributes);
+    }
+    if (providerType == ProviderType.KAKAO) {
+      return ofKakao(userNameAttributeName, attributes);
+    }
     return ofGoogle(userNameAttributeName, attributes);
   }
 
-  private static OAuthAttributes ofGoogle(String userNameAttributeName,
-      Map<String, Object> attributes) {
+  private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
     return OAuthAttributes.builder()
-        .name((String) attributes.get("name"))
-        .email((String) attributes.get("email"))
-        .picture((String) attributes.get("picture"))
-        .attributes(attributes)
         .nameAttributeKey(userNameAttributeName)
+        .oauth2UserInfo(new KakaoOAuth2UserInfo(attributes))
         .build();
   }
 
-  private static OAuthAttributes ofNaver(Map<String, Object> attributes) {
-    Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-
+  public static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
     return OAuthAttributes.builder()
-        .name((String) response.get("name"))
-        .email((String) response.get("email"))
-        .picture((String) response.get("profile_image"))
-        .attributes(response)
-        .nameAttributeKey("id")
+        .nameAttributeKey(userNameAttributeName)
+        .oauth2UserInfo(new GoogleOAuth2UserInfo(attributes))
         .build();
   }
 
-
-  public User toEntity() {
-    return User.builder()
-        .nickName(name)
-        .email(email)
-        .profileImage(profileImage)
-        .password("OAUTH_TEST")
-        .role(Role.USER)
+  public static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
+    return OAuthAttributes.builder()
+        .nameAttributeKey(userNameAttributeName)
+        .oauth2UserInfo(new NaverOAuth2UserInfo(attributes))
         .build();
+  }
+
+  public User toEntity(ProviderType providerType, OAuth2UserInfo oauth2UserInfo) {
+    return new User(
+        providerType.getValue() + "_" + oauth2UserInfo.getProviderId(),
+        oauth2UserInfo.getProviderId(),
+        oauth2UserInfo.getEmail(),
+        providerType,
+        oauth2UserInfo.getProviderId()
+        );
   }
 }

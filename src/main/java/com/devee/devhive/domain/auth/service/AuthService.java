@@ -12,6 +12,7 @@ import com.devee.devhive.domain.auth.dto.NicknameDto;
 import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,7 @@ public class AuthService {
         .password(passwordEncoder.encode(joinDto.getPassword()))
         .nickName(joinDto.getNickName())
         .status(ACTIVITY)
+        .providerType(ProviderType.LOCAL)
         .build());
   }
 

@@ -30,7 +30,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
   private static final String NO_CHECK_URL = "/api/auth/signin"; // "/api/auth/signin"으로 들어오는 요청은 Filter 작동 X
-
+  private static final String NO_CHECK_URL2 = "/login"; // "/api/auth/signin"으로 들어오는 요청은 Filter 작동 X
   private final TokenService tokenService;
   private final UserRepository userRepository;
 
@@ -39,7 +39,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    if (request.getRequestURI().equals(NO_CHECK_URL)) {
+    if (request.getRequestURI().equals(NO_CHECK_URL) || request.getRequestURI().equals(NO_CHECK_URL2)) {
       filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
       return; // return으로 이후 현재 필터 진행 막기 (안해주면 아래로 내려가서 계속 필터 진행시킴)
     }
@@ -71,8 +71,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
    * 있다면 TokenService.createAccessToken()으로 AccessToken 생성, reIssueRefreshToken()로 리프레시 토큰 재발급 &
    * DB에 리프레시 토큰 업데이트 메소드 호출 그 후 TokenService.sendAccessTokenAndRefreshToken()으로 응답 헤더에 보내기
    */
-  public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response,
-      String refreshToken) {
+  public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
     userRepository.findByRefreshToken(refreshToken)
         .ifPresent(user -> {
           String reIssuedRefreshToken = reIssueRefreshToken(user);
@@ -99,8 +98,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
    * saveAuthentication()으로 인증 처리하여 인증 허가 처리된 객체를 SecurityContextHolder에 담기 그 후 다음 인증 필터로 진행
    */
   public void checkAccessTokenAndAuthentication(HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+      HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
     log.info("checkAccessTokenAndAuthentication() 호출");
     String token = tokenService.extractAccessToken(request);
     if (token != null && tokenService.isTokenValid(token)) {

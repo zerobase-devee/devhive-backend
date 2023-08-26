@@ -1,24 +1,41 @@
 package com.devee.devhive.global.oauth2.handler;
 
-import jakarta.servlet.ServletException;
+import static com.devee.devhive.global.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
+
+import com.devee.devhive.global.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.devee.devhive.global.oauth2.util.CookieUtils;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Component
-public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
+@RequiredArgsConstructor
+public class OAuth2LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+
+  private final HttpCookieOAuth2AuthorizationRequestRepository auth2AuthorizationRequestRepository;
 
   @Override
-  public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException exception) throws IOException, ServletException {
-    response.setStatus(HttpStatus.BAD_REQUEST.value());
-    response.getWriter().write("로그인 실패! 서버 로그를 확인해주세요.");
-    log.info("에러 메세지 : {}", exception.getMessage());
+  public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
+    String targetUrl = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
+        .map(Cookie::getValue)
+        .orElse(("/"));
+
+    exception.printStackTrace();
+
+    targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
+        .queryParam("error", exception.getLocalizedMessage())
+        .build().toUriString();
+
+    auth2AuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+
+    getRedirectStrategy().sendRedirect(request, response, targetUrl);
   }
 }
