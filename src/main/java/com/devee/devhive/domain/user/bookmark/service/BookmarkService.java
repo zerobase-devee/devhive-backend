@@ -15,6 +15,10 @@ public class BookmarkService {
 
   private final BookmarkRepository bookmarkRepository;
 
+  public boolean isBookmark(Long userId, Long projectId) {
+    return bookmarkRepository.existsByUserIdAndProjectId(userId, projectId);
+  }
+
   public void register(User user, Project project) {
     bookmarkRepository.save(Bookmark.builder()
         .project(project)
