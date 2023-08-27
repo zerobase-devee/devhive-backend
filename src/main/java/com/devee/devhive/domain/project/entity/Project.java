@@ -56,8 +56,11 @@ public class Project extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private DevelopmentType developmentType;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime startDate; // 프로젝트 시작일자
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime endDate;   // 프로젝트 종료일자
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime deadline;  // 모집 마감 종료일자
 
   @LastModifiedDate
