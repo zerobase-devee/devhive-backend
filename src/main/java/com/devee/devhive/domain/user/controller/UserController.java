@@ -1,5 +1,7 @@
 package com.devee.devhive.domain.user.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.AVAILABLE_LOCAL_LOGIN;
+
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
@@ -22,7 +24,9 @@ import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserBadgeService;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
+import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import com.devee.devhive.global.exception.CustomException;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -106,6 +110,9 @@ public class UserController {
       @RequestBody @Valid UpdatePasswordForm form
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
+    if (user.getProviderType() != ProviderType.LOCAL) {
+      throw new CustomException(AVAILABLE_LOCAL_LOGIN);
+    }
     userService.updatePassword(user, form);
   }
 

@@ -29,7 +29,6 @@ public class BookmarkService {
 
   // 북마크 목록 조회
   public Page<Bookmark> getBookmarkProjects(Long userId, Pageable pageable) {
-    return bookmarkRepository.findByUserIdOrderByCreatedDateDesc(userId,
-        pageable);
+    return bookmarkRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 }

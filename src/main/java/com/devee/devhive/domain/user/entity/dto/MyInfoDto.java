@@ -4,6 +4,7 @@ import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.badge.entity.dto.BadgeDto;
 import com.devee.devhive.domain.user.career.entity.dto.CareerDto;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.type.ProviderType;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,7 @@ public class MyInfoDto {
     private String email;
     private String region;
     private String nickName;
-    private boolean isNickNameChanged;
+    private boolean isLocalLogin;
     private String profileImage;
     private String intro;
     private List<TechStackDto> techStacks;
@@ -36,7 +37,7 @@ public class MyInfoDto {
             .email(user.getEmail())
             .region(user.getRegion())
             .nickName(user.getNickName())
-            .isNickNameChanged(user.isNickNameChanged())
+            .isLocalLogin(user.getProviderType() == ProviderType.LOCAL)
             .profileImage(user.getProfileImage())
             .intro(user.getIntro())
             .techStacks(informationDto.getTechStacks())

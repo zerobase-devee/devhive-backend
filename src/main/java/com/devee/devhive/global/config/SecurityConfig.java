@@ -12,9 +12,11 @@ import com.devee.devhive.global.security.handler.LoginSuccessHandler;
 import com.devee.devhive.global.security.service.CustomUserDetailService;
 import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -26,19 +28,21 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private final CorsProperties corsProperties;
+  private final AppProperties appProperties;
   private final TokenService tokenService;
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
   private final CustomUserDetailService customUserDetailService;
   private final CustomOAuth2UserService customOAuth2UserService;
-  private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-  private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
   @Bean
   public BCryptPasswordEncoder passwordEncoder() {
@@ -61,7 +65,8 @@ public class SecurityConfig {
               "/api/projects/list",
               "/api/projects/{projectId}",
               "/api/users/rank",
-              "/api/users/{userId}"
+              "/api/users/{userId}",
+              "/login/**"
           ).permitAll();
           authorizeRequests.requestMatchers(
               "/api/users/**",
@@ -81,14 +86,14 @@ public class SecurityConfig {
         .oauth2Login(oauth2Login -> oauth2Login
             .authorizationEndpoint(
                 authorizationEndpoint -> authorizationEndpoint
-                    .baseUri("/oauth2/authorize")
+                    .baseUri("/oauth2/authorization")
                     .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
             .redirectionEndpoint(
                 redirectionEndpoint -> redirectionEndpoint.baseUri("/api/oauth2/code/*"))
             .userInfoEndpoint(
                 userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
-            .successHandler(oAuth2LoginSuccessHandler)
-            .failureHandler(oAuth2LoginFailureHandler))
+            .successHandler(oAuth2AuthenticationSuccessHandler())
+            .failureHandler(oAuth2AuthenticationFailureHandler()))
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),
@@ -98,6 +103,7 @@ public class SecurityConfig {
   }
 
   @Bean
+  @Primary
   public HttpCookieOAuth2AuthorizationRequestRepository oAuth2AuthorizationRequestRepository() {
     return new HttpCookieOAuth2AuthorizationRequestRepository();
   }
@@ -135,5 +141,35 @@ public class SecurityConfig {
   public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
     return new JwtAuthenticationProcessingFilter(
         tokenService, userRepository);
+  }
+
+  @Bean
+  public OAuth2LoginSuccessHandler oAuth2AuthenticationSuccessHandler() {
+    return new OAuth2LoginSuccessHandler(tokenService, userRepository, oAuth2AuthorizationRequestRepository(), appProperties
+    );
+  }
+
+  @Bean
+  public OAuth2LoginFailureHandler oAuth2AuthenticationFailureHandler() {
+    return new OAuth2LoginFailureHandler(oAuth2AuthorizationRequestRepository());
+  }
+
+  /*
+   * Cors 설정
+   * */
+  @Bean
+  public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    UrlBasedCorsConfigurationSource corsConfigSource = new UrlBasedCorsConfigurationSource();
+
+    CorsConfiguration corsConfig = new CorsConfiguration();
+    corsConfig.setAllowedHeaders(
+        Arrays.asList(corsProperties.getAllowedHeaders().split(",")));
+    corsConfig.setAllowedMethods(Arrays.asList(corsProperties.getAllowedMethods().split(",")));
+    corsConfig.setAllowedOrigins(Arrays.asList(corsProperties.getAllowedOrigins().split(",")));
+    corsConfig.setAllowCredentials(true);
+    corsConfig.setMaxAge(corsConfig.getMaxAge());
+
+    corsConfigSource.registerCorsConfiguration("/**", corsConfig);
+    return corsConfigSource;
   }
 }

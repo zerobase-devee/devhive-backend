@@ -77,13 +77,16 @@ public class UserService {
   // 내 기본 정보 수정
   @Transactional
   public void updateBasicInfo(User user, UpdateBasicInfoForm form) {
-    // 닉네임
+    // 닉네임은 소셜로그인한 유저가 1번만 변경 가능
     String nickname = form.getNickName();
-    if (!user.getNickName().equals(nickname)) {
-      if (user.isNickNameChanged()) {
+    String userNickname = user.getNickName();
+    if (!userNickname.equals(nickname)) {
+      // 최초 닉네임인 경우에만 변경
+      if (userNickname.equals(user.getProviderType().getValue() + "_" + user.getProviderId())) {
+        updateNickname(user, nickname);
+      } else {
         throw new CustomException(ALREADY_CHANGED_NICKNAME);
       }
-      updateNickname(user, nickname);
     }
 
     // 지역
@@ -107,7 +110,6 @@ public class UserService {
       throw new CustomException(DUPLICATE_NICKNAME);
     }
     user.setNickName(nickname);
-    user.setNickNameChanged(true);
     userRepository.save(user);
   }
 

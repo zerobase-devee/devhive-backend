@@ -44,8 +44,7 @@ public class ProjectMemberExitVote {
   private boolean isAccept;
   private Instant createdDate;
 
-  public static ProjectMemberExitVote of(Project project, User targetUser, User votingUser,
-      Instant currentTime) {
+  public static ProjectMemberExitVote of(Project project, User targetUser, User votingUser, Instant currentTime) {
     return ProjectMemberExitVote.builder()
         .project(project)
         .targetUser(targetUser)

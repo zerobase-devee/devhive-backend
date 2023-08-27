@@ -17,18 +17,18 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.redis.RedisService;
 import com.devee.devhive.global.s3.S3Service;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
-@SpringBootTest
 class UserServiceTest {
     @InjectMocks
     private UserService userService;
@@ -37,9 +37,12 @@ class UserServiceTest {
     @Mock
     private S3Service s3Service;
     @Mock
-    private RedisService redisService;
-    @Mock
     private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     @DisplayName("프로필사진 수정 - 성공")
@@ -68,8 +71,9 @@ class UserServiceTest {
             .id(1L)
             .email("test@test.com")
             .region("seoul")
-            .nickName("cool")
-            .isNickNameChanged(false)
+            .nickName("GOOGLE_123")
+            .providerType(ProviderType.GOOGLE)
+            .providerId("123")
             .intro(null)
             .build();
 
@@ -79,7 +83,6 @@ class UserServiceTest {
             .region("deaGu")
             .build();
 
-        when(redisService.getLock(form.getNickName(), 5)).thenReturn(true);
         when(userRepository.existsByNickName(form.getNickName())).thenReturn(false);
         //when
         userService.updateBasicInfo(user, form);
@@ -95,7 +98,8 @@ class UserServiceTest {
             .email("test@test.com")
             .region("seoul")
             .nickName("cool")
-            .isNickNameChanged(true)
+            .providerType(ProviderType.GOOGLE)
+            .providerId("123")
             .intro(null)
             .build();
 
@@ -120,8 +124,9 @@ class UserServiceTest {
             .id(1L)
             .email("test@test.com")
             .region("seoul")
-            .nickName("cool")
-            .isNickNameChanged(false)
+            .nickName("GOOGLE_123")
+            .providerType(ProviderType.GOOGLE)
+            .providerId("123")
             .intro(null)
             .build();
 
@@ -131,7 +136,6 @@ class UserServiceTest {
             .region("deaGu")
             .build();
 
-        when(redisService.getLock(form.getNickName(), 5)).thenReturn(true);
         when(userRepository.existsByNickName(form.getNickName())).thenReturn(true);
         //when
         CustomException exception = assertThrows(CustomException.class,

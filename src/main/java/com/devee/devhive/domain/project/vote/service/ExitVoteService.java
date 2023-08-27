@@ -33,9 +33,12 @@ public class ExitVoteService {
   private final ApplicationEventPublisher eventPublisher;
   private final ProjectMemberExitVoteRepository exitVoteRepository;
 
+  public List<ProjectMemberExitVote> findByProjectId(Long projectId) {
+    return exitVoteRepository.findAllByProjectId(projectId);
+  }
+
   public String createExitVote(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
-    if (exitVoteRepository.existsByProjectIdAndVoterUserIdAndTargetUserId(project.getId(),
-        registeringUser.getId(), targetUser.getId())) {
+    if (exitVoteRepository.existsByProjectId(project.getId())) {
       throw new CustomException(ALREADY_REGISTERED_VOTE);
     }
 
