@@ -4,6 +4,7 @@ import static com.devee.devhive.global.exception.ErrorCode.ALREADY_CREATE_CHATRO
 import static com.devee.devhive.global.exception.ErrorCode.ALREADY_ENTER_CHATROOM;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_PROJECT;
 
+import com.devee.devhive.domain.project.chat.entity.ProjectChatMember;
 import com.devee.devhive.domain.project.chat.entity.ProjectChatRoom;
 import com.devee.devhive.domain.project.chat.entity.dto.ChatRoomDto;
 import com.devee.devhive.domain.project.chat.entity.dto.ChatRoomForm;
@@ -18,6 +19,7 @@ import com.devee.devhive.global.security.service.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -73,5 +75,19 @@ public class ChatRoomController {
     }
 
     return ResponseEntity.ok(chatMemberService.enterChatRoom(chatRoom, user));
+  }
+
+  @DeleteMapping("{roomId}")
+  public ResponseEntity<String> exitChatRoom(
+      @AuthenticationPrincipal PrincipalDetails principalDetails,
+      @PathVariable Long roomId
+  ) {
+    User user = principalDetails.getUser();
+    ProjectChatRoom chatRoom = chatRoomService.findByRoomId(roomId);
+    Long userId = user.getId();
+
+    ProjectChatMember member = chatMemberService.findMember(roomId, userId);
+
+    return ResponseEntity.ok(chatMemberService.exitChatRoom(chatRoom, member));
   }
 }
