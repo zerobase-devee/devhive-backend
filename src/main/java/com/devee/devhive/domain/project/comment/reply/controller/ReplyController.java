@@ -39,7 +39,7 @@ public class ReplyController {
         User user = userService.getUserByEmail(principalDetails.getEmail());
         Comment comment = commentService.getCommentById(commentId);
         Reply reply = replyService.create(user, comment, form);
-        return ResponseEntity.ok(ReplyDto.of(reply, user));
+        return ResponseEntity.ok(ReplyDto.from(reply));
     }
 
     // 대댓글 수정
@@ -50,7 +50,7 @@ public class ReplyController {
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
         Reply reply = replyService.update(user, replyId, form);
-        return ResponseEntity.ok(ReplyDto.of(reply, user));
+        return ResponseEntity.ok(ReplyDto.from(reply));
     }
 
     // 대댓글 삭제

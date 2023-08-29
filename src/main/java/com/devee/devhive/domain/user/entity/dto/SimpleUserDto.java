@@ -17,6 +17,9 @@ public class SimpleUserDto {
     private String profileImage;
 
     public static SimpleUserDto from(User user) {
+        if (user == null) {
+            return null;
+        }
         return SimpleUserDto.builder()
             .userId(user.getId())
             .nickName(user.getNickName())

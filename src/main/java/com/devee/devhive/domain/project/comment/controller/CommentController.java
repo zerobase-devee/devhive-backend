@@ -46,7 +46,7 @@ public class CommentController {
         Project project = projectService.findById(projectId);
         Comment saveComment = commentService.create(user, project, form);
 
-        return ResponseEntity.ok(CommentDto.of(saveComment, user));
+        return ResponseEntity.ok(CommentDto.from(saveComment));
     }
 
     // 댓글 수정
@@ -57,7 +57,7 @@ public class CommentController {
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
         Comment comment = commentService.update(user, commentId, form);
-        return ResponseEntity.ok(CommentDto.of(comment, user));
+        return ResponseEntity.ok(CommentDto.from(comment));
     }
 
     // 댓글 삭제

@@ -31,6 +31,10 @@ public class CommentService {
         .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
   }
 
+  public List<Comment> getCommentsByProjectId(Long projectId) {
+    return commentRepository.findAllByProjectIdOrderByCreatedDateAsc(projectId);
+  }
+
   // 댓글 생성
   @Transactional
   public Comment create(User user, Project project, CommentForm form) {
@@ -62,7 +66,7 @@ public class CommentService {
   }
 
   public List<Long> deleteCommentsByProjectId(Long projectId) {
-    List<Comment> comments = commentRepository.findAllByProjectId(projectId);
+    List<Comment> comments = getCommentsByProjectId(projectId);
     commentRepository.deleteAll(comments);
 
     return comments.stream().map(Comment::getId).collect(Collectors.toList());

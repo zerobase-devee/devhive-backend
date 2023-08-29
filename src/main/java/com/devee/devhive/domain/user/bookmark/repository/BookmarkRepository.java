@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
+    boolean existsByUserIdAndProjectId(Long userId, Long projectId);
+
     Optional<Bookmark> findBookmarkByUserIdAndProjectId(Long userId, Long projectId);
 
     Page<Bookmark> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
