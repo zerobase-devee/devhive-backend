@@ -9,11 +9,14 @@ import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
+import com.devee.devhive.domain.project.entity.dto.ProjectListDto;
+import com.devee.devhive.domain.project.entity.dto.SearchProjectDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectImageDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectInfoDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
+import com.devee.devhive.domain.project.member.entity.dto.ProjectMemberDto;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
@@ -27,11 +30,15 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.Collections;
 import com.devee.devhive.global.s3.S3Service;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,6 +51,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -123,6 +131,50 @@ public class ProjectController {
     projectService.deleteProject(project);
   }
 
+  @PostMapping("/list")
+  public ResponseEntity<Page<ProjectListDto>> getProjects(@AuthenticationPrincipal PrincipalDetails principal,
+      @RequestBody(required = false) SearchProjectDto searchRequest,
+      @RequestParam(defaultValue = "desc") String sort,
+      Pageable pageable) {
+
+    User user;
+    Long userId;
+    List<Long> bookmarkedProjectIds;
+
+    if (principal != null) {
+      user = userService.getUserByEmail(principal.getEmail());
+      userId = user.getId();
+      bookmarkedProjectIds = bookmarkService.getBookmarkedProjectIds(userId);
+    } else {
+      bookmarkedProjectIds = Collections.emptyList();
+      user = null;
+    }
+
+    Page<Project> projectPage = projectService.getProject(searchRequest, sort, pageable);
+
+    Page<ProjectListDto> projectListDtoPage = projectPage.map(project -> {
+      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(
+              project)
+          .stream()
+          .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
+          .collect(Collectors.toList());
+
+      List<ProjectMemberDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(
+              project.getId())
+          .stream()
+          .map(ProjectMemberDto::from)
+          .collect(Collectors.toList());
+
+      boolean bookmarked = false;
+      if (user != null) {
+        bookmarked = bookmarkedProjectIds.contains(project.getId());
+      }
+
+      return ProjectListDto.of(project, techStackDtoList, projectMemberDtoList, bookmarked);
+    });
+
+    return ResponseEntity.ok(projectListDtoPage);
+  
   // 이미지 업로드 후 url 얻는 api
   @GetMapping("/image")
   public ResponseEntity<ProjectImageDto> getImageUrl(

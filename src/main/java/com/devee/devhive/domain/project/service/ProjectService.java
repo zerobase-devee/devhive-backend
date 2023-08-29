@@ -10,10 +10,12 @@ import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
+import com.devee.devhive.domain.project.entity.dto.SearchProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.repository.ProjectRepository;
+import com.devee.devhive.domain.project.repository.custom.CustomProjectRepository;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
@@ -35,6 +37,7 @@ public class ProjectService {
 
   private final ApplicationEventPublisher eventPublisher;
   private final ProjectRepository projectRepository;
+  private final CustomProjectRepository customProjectRepository;
 
   public Project findById(Long projectId) {
     return projectRepository.findById(projectId)
@@ -154,6 +157,19 @@ public class ProjectService {
         .content(AlarmContent.REVIEW_REQUEST)
         .build();
     eventPublisher.publishEvent(alarmForm);
+  }
+
+  public Page<Project> getProject(SearchProjectDto searchRequest, String sort, Pageable pageable) {
+    if (searchRequest == null) {
+      return customProjectRepository.getProject(null, null, null, null, sort, pageable);
+    }
+
+    return customProjectRepository.getProject(
+        searchRequest.getKeyword(),
+        searchRequest.getDevelopment(),
+        searchRequest.getRecruitment(),
+        searchRequest.getTechStackIds(),
+        sort, pageable);
   }
 }
 

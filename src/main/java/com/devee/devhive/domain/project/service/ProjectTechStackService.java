@@ -29,7 +29,7 @@ public class ProjectTechStackService {
 
   public void updateProjectTechStacks(Project project, List<TechStackDto> techStacks) {
     // 기존 기술 스택 삭제
-    List<ProjectTechStack> projectTechStacks = getTechStacks(project.getId());
+    List<ProjectTechStack> projectTechStacks = getTechStacks(project.getId();
     projectTechStackRepository.deleteAll(projectTechStacks);
 
     // 새로운 기술 스택 추가
@@ -42,7 +42,8 @@ public class ProjectTechStackService {
     projectTechStackRepository.deleteAll(projectTechStacks);
   }
 
-  private List<ProjectTechStack> mapToProjectTechStackList(Project project, List<TechStackDto> techStacks) {
+  private List<ProjectTechStack> mapToProjectTechStackList(Project project,
+      List<TechStackDto> techStacks) {
     return techStacks.stream().map(techStackDto -> {
           String techStackName = techStackDto.getName();
           TechStack techStack = techStackRepository.findByName(techStackName);
@@ -50,4 +51,9 @@ public class ProjectTechStackService {
         })
         .collect(Collectors.toList());
   }
+
+  public List<ProjectTechStack> getProjectTechStacksByProject(Project project) {
+    return projectTechStackRepository.findByProject(project);
+  }
+
 }

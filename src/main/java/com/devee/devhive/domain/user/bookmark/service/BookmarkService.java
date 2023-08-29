@@ -4,6 +4,8 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import com.devee.devhive.domain.user.bookmark.repository.BookmarkRepository;
 import com.devee.devhive.domain.user.entity.User;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,5 +36,12 @@ public class BookmarkService {
   // 북마크 목록 조회
   public Page<Bookmark> getBookmarkProjects(Long userId, Pageable pageable) {
     return bookmarkRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
+  }
+
+  public List<Long> getBookmarkedProjectIds(Long userId) {
+    List<Bookmark> bookmarks = bookmarkRepository.findByUserId(userId);
+    return bookmarks.stream()
+        .map(bookmark -> bookmark.getProject().getId())
+        .collect(Collectors.toList());
   }
 }
