@@ -25,7 +25,6 @@ public class ProjectListDto {
   private ProjectStatus status;
   private String title;
   private String name;
-  private String content;
   private LocalDateTime deadline;
   private DevelopmentType developmentType;
   private RecruitmentType recruitmentType;
@@ -46,7 +45,6 @@ public class ProjectListDto {
         .status(project.getStatus())
         .title(project.getTitle())
         .name(project.getName())
-        .content(project.getContent())
         .deadline(project.getDeadline())
         .developmentType(project.getDevelopmentType())
         .recruitmentType(project.getRecruitmentType())
