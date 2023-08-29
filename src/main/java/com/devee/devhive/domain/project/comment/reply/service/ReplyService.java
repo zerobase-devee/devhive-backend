@@ -31,6 +31,9 @@ public class ReplyService {
         .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
   }
 
+  public List<Reply> getRepliesByCommentId(Long commentId) {
+    return replyRepository.findAllByCommentIdOrderByCreatedDateAsc(commentId);
+  }
   // 대댓글 생성
   @Transactional
   public Reply create(User user, Comment comment, ReplyForm form) {
@@ -68,13 +71,13 @@ public class ReplyService {
   }
 
   public void deleteRepliesByCommentId(Long commentId) {
-    List<Reply> repliesToDelete = replyRepository.findAllByCommentId(commentId);
+    List<Reply> repliesToDelete = getRepliesByCommentId(commentId);
     replyRepository.deleteAll(repliesToDelete);
   }
 
   public void deleteRepliesByCommentList(List<Long> commentIdList) {
     for (Long commentId : commentIdList) {
-      List<Reply> repliesToDelete = replyRepository.findAllByCommentId(commentId);
+      List<Reply> repliesToDelete = getRepliesByCommentId(commentId);
       replyRepository.deleteAll(repliesToDelete);
     }
   }

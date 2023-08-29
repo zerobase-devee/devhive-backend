@@ -18,6 +18,10 @@ public class ProjectTechStackService {
   private final ProjectTechStackRepository projectTechStackRepository;
   private final TechStackRepository techStackRepository;
 
+  public List<ProjectTechStack> getTechStacks(Long projectId) {
+    return projectTechStackRepository.findAllByProjectId(projectId);
+  }
+
   public void createProjectTechStacks(Project project, List<TechStackDto> techStacks) {
     List<ProjectTechStack> projectTechStacks = mapToProjectTechStackList(project, techStacks);
     projectTechStackRepository.saveAll(projectTechStacks);
@@ -25,8 +29,7 @@ public class ProjectTechStackService {
 
   public void updateProjectTechStacks(Project project, List<TechStackDto> techStacks) {
     // 기존 기술 스택 삭제
-    List<ProjectTechStack> projectTechStacks = projectTechStackRepository.findAllByProjectId(
-        project.getId());
+    List<ProjectTechStack> projectTechStacks = getTechStacks(project.getId();
     projectTechStackRepository.deleteAll(projectTechStacks);
 
     // 새로운 기술 스택 추가
@@ -35,8 +38,7 @@ public class ProjectTechStackService {
   }
 
   public void deleteProjectTechStacksByProjectId(Long projectId) {
-    List<ProjectTechStack> projectTechStacks = projectTechStackRepository.findAllByProjectId(
-        projectId);
+    List<ProjectTechStack> projectTechStacks = getTechStacks(projectId);
     projectTechStackRepository.deleteAll(projectTechStacks);
   }
 

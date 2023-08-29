@@ -2,6 +2,7 @@ package com.devee.devhive.domain.user.career.entity;
 
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.career.entity.dto.CareerDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,7 +32,9 @@ public class Career {
 
     private String company;
     private String position;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime endDate;
 
     public static Career of(User user, CareerDto careerDto) {

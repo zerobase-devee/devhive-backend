@@ -144,6 +144,12 @@ public class ProjectService {
     projectRepository.delete(project);
   }
 
+  public Project updateViewPoint(Long projectId) {
+    Project project = findById(projectId);
+    project.setViewCount(project.getViewCount() + 1);
+    return projectRepository.save(project);
+  }
+
   private void alarmEventPub(User user, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
