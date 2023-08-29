@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,7 @@ public class Project extends BaseEntity {
   private User user;
 
   private String title;
+  @Lob
   private String content;
   private String name;
   private int teamSize;

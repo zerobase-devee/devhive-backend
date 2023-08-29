@@ -28,6 +28,7 @@ import com.devee.devhive.domain.user.service.UserTechStackService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,7 @@ public class ProjectController {
   @PostMapping
   public void createProject(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @RequestBody CreateProjectDto createProjectDto
+      @RequestBody @Valid CreateProjectDto createProjectDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
 
@@ -97,7 +98,7 @@ public class ProjectController {
   @PutMapping("/{projectId}")
   public void updateProject(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId, @RequestBody UpdateProjectDto updateProjectDto
+      @PathVariable Long projectId, @RequestBody @Valid UpdateProjectDto updateProjectDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.updateProject(user, projectId, updateProjectDto);
@@ -122,6 +123,7 @@ public class ProjectController {
     projectService.deleteProject(project);
   }
 
+  // 이미지 업로드 후 url 얻는 api
   @GetMapping("/image")
   public ResponseEntity<ProjectImageDto> getImageUrl(
       @RequestPart(value = "image", required = false) MultipartFile multipartFile
