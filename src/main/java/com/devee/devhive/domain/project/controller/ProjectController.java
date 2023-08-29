@@ -13,6 +13,7 @@ import com.devee.devhive.domain.project.entity.dto.ProjectImageDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectInfoDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectListDto;
 import com.devee.devhive.domain.project.entity.dto.SearchProjectDto;
+import com.devee.devhive.domain.project.entity.dto.SimpleProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
@@ -74,7 +75,7 @@ public class ProjectController {
 
   // 프로젝트 작성
   @PostMapping
-  public void createProject(
+  public ResponseEntity<SimpleProjectDto> createProject(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody @Valid CreateProjectDto createProjectDto
   ) {
@@ -88,6 +89,7 @@ public class ProjectController {
     favoriteService.favoriteUserUploadProject(user, user.getId(), project);
     // 프로젝트에 등록되는 기술, 지역이 포함된 유저들에게 알림 발행
     userTechStackService.recommendProject(project, techStacks);
+    return ResponseEntity.ok(SimpleProjectDto.from(project));
   }
 
   // 상태변경
