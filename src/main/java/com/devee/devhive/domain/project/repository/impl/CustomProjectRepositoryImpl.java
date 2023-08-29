@@ -8,6 +8,7 @@ import com.devee.devhive.domain.project.repository.custom.CustomProjectRepositor
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.RecruitmentType;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -49,27 +50,20 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
       predicate.and(qProjectTechStack.techStack.id.in(techStackIds));
     }
 
-    List<Project> projectList;
+    JPAQuery<Project> query = queryFactory.selectFrom(qProject)
+        .leftJoin(qProjectTechStack)
+        .on(qProjectTechStack.project.eq(qProject))
+        .where(predicate)
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize());
 
     if ("asc".equals(sort)) {
-      projectList = queryFactory.selectFrom(qProject)
-          .leftJoin(qProjectTechStack)
-          .on(qProjectTechStack.project.eq(qProject))
-          .where(predicate)
-          .offset(pageable.getOffset())
-          .limit(pageable.getPageSize())
-          .orderBy(qProject.createdDate.asc())
-          .fetch();
+      query = query.orderBy(qProject.createdDate.asc());
     } else {
-      projectList = queryFactory.selectFrom(qProject)
-          .leftJoin(qProjectTechStack)
-          .on(qProjectTechStack.project.eq(qProject))
-          .where(predicate)
-          .offset(pageable.getOffset())
-          .limit(pageable.getPageSize())
-          .orderBy(qProject.createdDate.desc())
-          .fetch();
+      query = query.orderBy(qProject.createdDate.desc());
     }
+
+    List<Project> projectList = query.fetch();
 
     return new PageImpl<>(projectList);
   }
