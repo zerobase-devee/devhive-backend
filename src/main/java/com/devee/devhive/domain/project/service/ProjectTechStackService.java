@@ -29,7 +29,7 @@ public class ProjectTechStackService {
 
   public void updateProjectTechStacks(Project project, List<TechStackDto> techStacks) {
     // 기존 기술 스택 삭제
-    List<ProjectTechStack> projectTechStacks = getTechStacks(project.getId();
+    List<ProjectTechStack> projectTechStacks = getTechStacks(project.getId());
     projectTechStackRepository.deleteAll(projectTechStacks);
 
     // 새로운 기술 스택 추가
