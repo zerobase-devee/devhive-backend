@@ -9,6 +9,7 @@ import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
+import com.devee.devhive.domain.project.entity.dto.ProjectImageDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectInfoDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
@@ -26,6 +27,7 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.service.UserTechStackService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
+import com.devee.devhive.global.s3.S3Service;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +43,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,6 +62,7 @@ public class ProjectController {
   private final UserTechStackService userTechStackService;
   private final BookmarkService bookmarkService;
   private final ProjectApplyService projectApplyService;
+  private final S3Service s3Service;
 
   // 프로젝트 작성
   @PostMapping
@@ -115,6 +120,13 @@ public class ProjectController {
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
     projectMemberService.deleteProjectMembers(projectId);
     projectService.deleteProject(project);
+  }
+
+  @GetMapping("/image")
+  public ResponseEntity<ProjectImageDto> getImageUrl(
+      @RequestPart(value = "image", required = false) MultipartFile multipartFile
+  ) {
+    return ResponseEntity.ok(ProjectImageDto.from(s3Service.upload(multipartFile)));
   }
 
   // 프로젝트 상세 조회
