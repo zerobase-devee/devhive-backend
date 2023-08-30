@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,9 +41,8 @@ public class UserProjectController {
     // 내가 생성한 프로젝트 페이지
     @GetMapping("/write")
     public ResponseEntity<Page<SimpleProjectDto>> getWriteProjects(
-        @AuthenticationPrincipal PrincipalDetails principal
+        @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(0, 3);
         User user = userService.getUserByEmail(principal.getEmail());
         return ResponseEntity.ok(
             projectService.getWriteProjects(user.getId(), pageable).map(SimpleProjectDto::from)
@@ -54,9 +52,8 @@ public class UserProjectController {
     // 내가 참여한 프로젝트 페이지
     @GetMapping("/participation")
     public ResponseEntity<Page<SimpleProjectDto>> getParticipationProjects(
-        @AuthenticationPrincipal PrincipalDetails principal
+        @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(0, 3);
         User user = userService.getUserByEmail(principal.getEmail());
         return ResponseEntity.ok(
             projectMemberService.getParticipationProjects(user.getId(), pageable)

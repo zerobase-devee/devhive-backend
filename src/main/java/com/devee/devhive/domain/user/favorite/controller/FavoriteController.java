@@ -7,7 +7,6 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -53,10 +52,10 @@ public class FavoriteController {
   // 관심 유저 목록 조회
   @GetMapping
   public ResponseEntity<Page<SimpleUserDto>> getFavoriteUsers(
-      @AuthenticationPrincipal PrincipalDetails principal
+      @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
-    Pageable pageable = PageRequest.of(0, 9);
+
     return ResponseEntity.ok(
         favoriteService.getFavoriteUsers(user.getId(), pageable)
             .map(favorite -> SimpleUserDto.from(favorite.getFavoriteUser())));
