@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -146,8 +145,7 @@ public class UserController {
 
   // 랭킹 목록 페이징 처리
   @GetMapping("/rank")
-  public ResponseEntity<Page<RankUserDto>> getRankUsers() {
-    Pageable pageable = PageRequest.of(0, 3);
+  public ResponseEntity<Page<RankUserDto>> getRankUsers(Pageable pageable) {
     return ResponseEntity.ok(userService.getRankUsers(pageable).map(RankUserDto::from));
   }
 
