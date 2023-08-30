@@ -11,6 +11,7 @@ import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRep
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
+import com.devee.devhive.domain.user.exithistory.repository.ExitHistoryRepository;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.Instant;
@@ -32,6 +33,7 @@ public class ExitVoteService {
 
   private final ApplicationEventPublisher eventPublisher;
   private final ProjectMemberExitVoteRepository exitVoteRepository;
+  private final ExitHistoryRepository exitHistoryRepository;
 
   public List<ProjectMemberExitVote> findByProjectId(Long projectId) {
     return exitVoteRepository.findAllByProjectId(projectId);
@@ -121,6 +123,7 @@ public class ExitVoteService {
       User targetUser = currentVotes.get(0).getTargetUser();
       int teamSize = currentVotes.get(0).getProject().getTeamSize();
       int votedCount = currentVotes.size();
+      int exitedCount = exitHistoryRepository.countExitHistoryByUserId(targetUser.getId());
 
       if (votedCount == teamSize - 1) {
         int agreedCount = (int) currentVotes.stream()
@@ -130,7 +133,7 @@ public class ExitVoteService {
           log.info("투표가 과반수를 넘었으므로 해당 유저를 퇴출 처리합니다.");
           ExitHistory exitHistory = ExitHistory.builder()
               .user(targetUser)
-              .exitDate(Instant.now())
+              .reActiveDate(Instant.now().plus(exitedCount+1, ChronoUnit.WEEKS))
               .build();
           exitHistoryMap.put(projectId, exitHistory);
         }
