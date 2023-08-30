@@ -182,6 +182,14 @@ public class ProjectService {
         searchRequest.getTechStackIds(),
         sort, pageable);
   }
+
+  public void updateDeadlineOverProjects() {
+    List<Project> deadLineOverProjects = projectRepository
+        .findAllByDeadlineBefore(LocalDateTime.now());
+
+    deadLineOverProjects.forEach(project -> project.setStatus(RECRUITMENT_COMPLETE));
+    projectRepository.saveAll(deadLineOverProjects);
+  }
 }
 
 

@@ -11,6 +11,7 @@ import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRep
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
+import com.devee.devhive.domain.user.exithistory.repository.ExitHistoryRepository;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.Instant;
@@ -32,6 +33,7 @@ public class ExitVoteService {
 
   private final ApplicationEventPublisher eventPublisher;
   private final ProjectMemberExitVoteRepository exitVoteRepository;
+  private final ExitHistoryRepository exitHistoryRepository;
 
   public List<ProjectMemberExitVote> findByProjectId(Long projectId) {
     return exitVoteRepository.findAllByProjectId(projectId);
@@ -126,13 +128,23 @@ public class ExitVoteService {
         int agreedCount = (int) currentVotes.stream()
             .filter(ProjectMemberExitVote::isAccept)
             .count();
+        // 찬성이 과반수를 넘은 경우
         if (isOverHalf(votedCount, agreedCount)) {
-          log.info("투표가 과반수를 넘었으므로 해당 유저를 퇴출 처리합니다.");
+          log.info("찬성이 과반수를 넘었으므로 해당 유저를 퇴출 처리합니다.");
+
+          int exitedCount = exitHistoryRepository.countExitHistoryByUserId(targetUser.getId());
+          // 퇴출 횟수 당 1주로 유저 비활성화 기간 설정(이번이 10회째인 경우 영구 비활성화)
+          Instant reActiveDate = exitedCount >= 9 ?
+              Instant.MAX : Instant.now().plus(exitedCount + 1, ChronoUnit.WEEKS);
+
           ExitHistory exitHistory = ExitHistory.builder()
               .user(targetUser)
-              .exitDate(Instant.now())
+              .reActiveDate(reActiveDate)
               .build();
+
           exitHistoryMap.put(projectId, exitHistory);
+        } else {
+          log.info("찬성이 과반수를 넘지 않았으므로 투표를 무효 처리합니다.");
         }
       } else {
         log.info("투표에 전부 참여하지 않아 처리할 수 없습니다.");
@@ -143,6 +155,7 @@ public class ExitVoteService {
     }
     return exitHistoryMap;
   }
+
   // 과반수를 넘었는지 확인
   private boolean isOverHalf(int a, int b) {
     return Math.round(a / 2.0) <= b;
