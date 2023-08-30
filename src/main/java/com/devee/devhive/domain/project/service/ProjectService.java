@@ -108,25 +108,36 @@ public class ProjectService {
     if (!Objects.equals(writerUser.getId(), user.getId())) {
       throw new CustomException(UNAUTHORIZED);
     }
-    updateProjectFields(updateProjectDto);
+
+    if (!Objects.equals(project.getTitle(), updateProjectDto.getTitle())) {
+      project.setTitle(updateProjectDto.getTitle());
+    }
+    if (!Objects.equals(project.getName(), updateProjectDto.getProjectName())) {
+      project.setName(updateProjectDto.getProjectName());
+    }
+    if (!Objects.equals(project.getContent(), updateProjectDto.getContent())) {
+      project.setContent(updateProjectDto.getContent());
+    }
+    if (!Objects.equals(project.getTeamSize(), updateProjectDto.getTeamSize())) {
+      project.setTeamSize(updateProjectDto.getTeamSize());
+    }
+    if (!Objects.equals(project.getRecruitmentType(), updateProjectDto.getRecruitmentType())) {
+      project.setRecruitmentType(updateProjectDto.getRecruitmentType());
+    }
+    if (!Objects.equals(project.getDevelopmentType(), updateProjectDto.getDevelopmentType())) {
+      project.setDevelopmentType(updateProjectDto.getDevelopmentType());
+    }
+    if (!Objects.equals(project.getDeadline(), updateProjectDto.getDeadline())) {
+      project.setDeadline(updateProjectDto.getDeadline());
+    }
+    if (updateProjectDto.getRecruitmentType() == OFFLINE && !Objects.equals(project.getRegion(),
+        updateProjectDto.getRegion())) {
+      project.setRegion(updateProjectDto.getRegion());
+    }
+
     return projectRepository.save(project);
   }
 
-  // 프로젝트 필드 업데이트
-  private void updateProjectFields(UpdateProjectDto updateProjectDto) {
-    Project project = Project.builder()
-        .title(updateProjectDto.getTitle())
-        .name(updateProjectDto.getProjectName())
-        .teamSize(updateProjectDto.getTeamSize())
-        .recruitmentType(updateProjectDto.getRecruitmentType())
-        .developmentType(updateProjectDto.getDevelopmentType())
-        .deadline(updateProjectDto.getDeadline())
-        .build();
-
-    if (updateProjectDto.getRecruitmentType() == OFFLINE) {
-      project.setRegion(updateProjectDto.getRegion());
-    }
-  }
 
   // 프로젝트 삭제
   @Transactional
