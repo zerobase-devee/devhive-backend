@@ -32,9 +32,7 @@ public class BatchProcessingScheduler {
   // 매 0분마다 처리
   @Scheduled(cron = "0/5 * * * * *")
   public void processVote() {
-    Map<String, JobParameter<?>> confMap = new HashMap<>();
-    confMap.put("time", new JobParameter<>(System.currentTimeMillis(), Long.class));
-    JobParameters jobParameters = new JobParameters(confMap);
+    JobParameters jobParameters = getJobParameters();
 
     try {
       jobLauncher.run(jobRegistry.getJob("voteProcessJob"), jobParameters);
@@ -45,14 +43,18 @@ public class BatchProcessingScheduler {
 
   @Scheduled(cron = "0/5 * * * * *")
   public void userReactivation() {
-    Map<String, JobParameter<?>> confMap = new HashMap<>();
-    confMap.put("time", new JobParameter<>(System.currentTimeMillis(), Long.class));
-    JobParameters jobParameters = new JobParameters(confMap);
+    JobParameters jobParameters = getJobParameters();
 
     try {
       jobLauncher.run(jobRegistry.getJob("userReactivationJob"), jobParameters);
     } catch (Exception e) {
       log.info("error: {}", e.getMessage());
     }
+  }
+
+  private JobParameters getJobParameters() {
+    Map<String, JobParameter<?>> confMap = new HashMap<>();
+    confMap.put("time", new JobParameter<>(System.currentTimeMillis(), Long.class));
+    return new JobParameters(confMap);
   }
 }
