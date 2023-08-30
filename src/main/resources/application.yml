@@ -87,6 +87,8 @@ spring:
   batch:
     jdbc:
       initialize-schema: always
+    job:
+      name: voteProcessJob, userReactivationJob, recruitProcessJob
 
 cloud:
   aws:

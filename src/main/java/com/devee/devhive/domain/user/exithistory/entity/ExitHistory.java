@@ -29,5 +29,5 @@ public class ExitHistory {
     private User user;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private Instant exitDate;
+    private Instant reActiveDate;
 }
