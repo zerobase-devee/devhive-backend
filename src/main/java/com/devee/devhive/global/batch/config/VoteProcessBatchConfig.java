@@ -9,6 +9,7 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
 import com.devee.devhive.domain.user.exithistory.service.ExitHistoryService;
 import com.devee.devhive.domain.user.service.UserService;
+import com.devee.devhive.domain.user.type.ActivityStatus;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -35,14 +37,14 @@ public class VoteProcessBatchConfig {
   private final ProjectService projectService;
   private final UserService userService;
 
-  @Bean
-  public Job voteProcessJob(JobRepository jobRepository, Step voteProcessStep) {
+  @Bean(name = "voteProcessJob")
+  public Job voteProcessJob(JobRepository jobRepository, @Qualifier("voteProcessStep") Step step) {
     return new JobBuilder("voteProcessJob", jobRepository)
-        .start(voteProcessStep)
+        .start(step)
         .build();
   }
 
-  @Bean
+  @Bean(name = "voteProcessStep")
   public Step voteProcessStep(JobRepository jobRepository, Tasklet voteProcessTasklet,
       PlatformTransactionManager platformTransactionManager) {
     return new StepBuilder("voteProcessStep", jobRepository)
@@ -50,7 +52,7 @@ public class VoteProcessBatchConfig {
         .build();
   }
 
-  @Bean
+  @Bean(name = "voteProcessTasklet")
   public Tasklet voteProcessTasklet() {
     return ((contribution, chunkContext) -> {
       Map<Long, List<ProjectMemberExitVote>> sortedVotesMap
@@ -78,7 +80,7 @@ public class VoteProcessBatchConfig {
 
         String exitedUserName = savedExitHistory.getUser().getNickName();
         int exitCount = exitHistoryService.countExitHistoryByUserId(exitedUser.getId());
-        userService.setUserInactive(exitedUser);
+        userService.setUserStatus(exitedUser, ActivityStatus.INACTIVITY);
 
         log.info("{} 유저 퇴출 완료. 누적 {}회", exitedUserName, exitCount);
       }

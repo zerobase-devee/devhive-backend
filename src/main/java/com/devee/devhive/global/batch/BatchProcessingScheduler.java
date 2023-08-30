@@ -1,16 +1,16 @@
 package com.devee.devhive.global.batch;
 
 
-import com.devee.devhive.global.batch.config.VoteProcessBatchConfig;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,19 +20,37 @@ import org.springframework.stereotype.Component;
 public class BatchProcessingScheduler {
 
   private final JobLauncher jobLauncher;
-  private final VoteProcessBatchConfig voteProcessBatchConfig;
-  private final JobRepository jobRepository;
-  private final Step step;
+  private final JobRegistry jobRegistry;
+
+  @Bean
+  public JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor(JobRegistry jobRegistry) {
+    JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor = new JobRegistryBeanPostProcessor();
+    jobRegistryBeanPostProcessor.setJobRegistry(jobRegistry);
+    return jobRegistryBeanPostProcessor;
+  }
 
   // 매 0분마다 처리
-  @Scheduled(cron = "* 0 * * * *")
+  @Scheduled(cron = "0/5 * * * * *")
   public void processVote() {
     Map<String, JobParameter<?>> confMap = new HashMap<>();
     confMap.put("time", new JobParameter<>(System.currentTimeMillis(), Long.class));
     JobParameters jobParameters = new JobParameters(confMap);
 
     try {
-      jobLauncher.run(voteProcessBatchConfig.voteProcessJob(jobRepository, step), jobParameters);
+      jobLauncher.run(jobRegistry.getJob("voteProcessJob"), jobParameters);
+    } catch (Exception e) {
+      log.info("error: {}", e.getMessage());
+    }
+  }
+
+  @Scheduled(cron = "0/5 * * * * *")
+  public void userReactivation() {
+    Map<String, JobParameter<?>> confMap = new HashMap<>();
+    confMap.put("time", new JobParameter<>(System.currentTimeMillis(), Long.class));
+    JobParameters jobParameters = new JobParameters(confMap);
+
+    try {
+      jobLauncher.run(jobRegistry.getJob("userReactivationJob"), jobParameters);
     } catch (Exception e) {
       log.info("error: {}", e.getMessage());
     }

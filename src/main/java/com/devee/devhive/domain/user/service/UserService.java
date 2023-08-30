@@ -156,9 +156,9 @@ public class UserService {
     eventPublisher.publishEvent(alarmForm);
   }
 
-  // 유저 비활성화
-  public void setUserInactive(User user) {
-    user.setStatus(ActivityStatus.INACTIVITY);
+  // 유저 활성화/비활성화
+  public void setUserStatus(User user, ActivityStatus status) {
+    user.setStatus(status);
     userRepository.save(user);
   }
 }
