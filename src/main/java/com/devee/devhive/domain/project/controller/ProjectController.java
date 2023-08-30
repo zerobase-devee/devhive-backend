@@ -133,22 +133,20 @@ public class ProjectController {
   @PostMapping("/list")
   public ResponseEntity<Page<ProjectListDto>> getProjects(
       @RequestBody(required = false) SearchProjectDto searchRequest,
-      @RequestParam(defaultValue = "desc") String sort,
-      Pageable pageable) {
+      @RequestParam(defaultValue = "desc") String sort, Pageable pageable
+  ) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     User user = getLoggedInUser(authentication);
 
     Page<Project> projectPage = projectService.getProject(searchRequest, sort, pageable);
 
     Page<ProjectListDto> projectListDtoPage = projectPage.map(project -> {
-      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(
-              project)
+      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(project)
           .stream()
           .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
           .collect(Collectors.toList());
 
-      List<ProjectMemberDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(
-              project.getId())
+      List<ProjectMemberDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(project.getId())
           .stream()
           .map(ProjectMemberDto::from)
           .collect(Collectors.toList());
