@@ -7,16 +7,20 @@ import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_USER;
 import static com.devee.devhive.global.exception.ErrorCode.USER_PASSWORD_EQUALS_NEW_PASSWORD;
 import static com.devee.devhive.global.exception.ErrorCode.USER_PASSWORD_MISMATCH;
 
+import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +36,7 @@ public class UserService {
 
   private final S3Service s3Service;
   private final PasswordEncoder passwordEncoder;
+  private final ApplicationEventPublisher eventPublisher;
 
   public User getUserById(Long userId) {
     return userRepository.findById(userId)
@@ -134,5 +139,19 @@ public class UserService {
       user.setPassword(passwordEncoder.encode(newPassword));
       userRepository.save(user);
     }
+  }
+
+  // 랭킹포인트 업데이트, 알림이벤트 발행
+  public void updateRankPoint(User user, Project project, double averagePoint) {
+    user.setRankPoint(user.getRankPoint() + averagePoint);
+    userRepository.save(user);
+
+    // 평가 완료 알림 이벤트 발행
+    AlarmForm alarmForm = AlarmForm.builder()
+        .receiverUser(user)
+        .project(project)
+        .content(AlarmContent.REVIEW_RESULT)
+        .build();
+    eventPublisher.publishEvent(alarmForm);
   }
 }

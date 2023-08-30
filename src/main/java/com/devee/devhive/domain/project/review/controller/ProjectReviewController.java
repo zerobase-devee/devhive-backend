@@ -47,6 +47,12 @@ public class ProjectReviewController {
     ProjectReview newReview = reviewService.submitReview(projectId, targetUserId, user, project, targetUser, form);
     List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, form);
 
-    return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
+    int count = reviewService.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
+    if (count == project.getTeamSize()-1) {
+      // 팀원평가 평균점수를 타겟유저 랭킹포인트에 더하기
+      double averagePoint = reviewService.getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId);
+      userService.updateRankPoint(targetUser, project, averagePoint);
+    }
+      return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
   }
 }
