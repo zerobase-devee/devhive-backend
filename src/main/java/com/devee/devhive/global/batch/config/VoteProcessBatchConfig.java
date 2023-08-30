@@ -1,4 +1,4 @@
-package com.devee.devhive.global.config;
+package com.devee.devhive.global.batch.config;
 
 
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
@@ -25,7 +25,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class BatchConfig {
+public class VoteProcessBatchConfig {
 
   private final ExitVoteService exitVoteService;
   private final ProjectMemberService projectMemberService;
