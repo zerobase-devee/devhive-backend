@@ -17,7 +17,6 @@ import com.devee.devhive.domain.project.entity.dto.SimpleProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectDto;
 import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
-import com.devee.devhive.domain.project.member.entity.dto.ProjectMemberDto;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.service.ProjectTechStackService;
@@ -148,9 +147,9 @@ public class ProjectController {
           .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
           .collect(Collectors.toList());
 
-      List<ProjectMemberDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(project.getId())
+      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(project.getId())
           .stream()
-          .map(ProjectMemberDto::from)
+          .map(projectMember -> SimpleUserDto.from(projectMember.getUser()))
           .collect(Collectors.toList());
 
       boolean bookmarked = isLoggedInUserBookmark(user, project.getId());

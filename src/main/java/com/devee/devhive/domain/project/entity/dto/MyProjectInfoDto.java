@@ -31,11 +31,9 @@ public class MyProjectInfoDto {
     private List<ProjectMemberDto> projectMembers;
     private double totalAverageScore;
     private ProjectExitVoteDto projectExitVoteDto; // 퇴출투표가 있으면 투표정보와 각 팀원들의 투표 참여 여부
-    private List<Long> reviewerIds;  // 유저에게 리뷰한 리뷰어들의 아이디리스트
 
     public static MyProjectInfoDto of(Long userId, Project project, List<ProjectMemberDto> projectMemberDtoList,
-        double totalAverageScore, boolean leader, List<ProjectMemberExitVote> exitVotes, List<Long> reviewerIds
-    ) {
+        double totalAverageScore, boolean leader, List<ProjectMemberExitVote> exitVotes) {
         ProjectExitVoteDto projectExitVoteDto = null;
         if (!exitVotes.isEmpty()) {
             List<VotedDto> votedDtoList = exitVotes.stream().map(VotedDto::from).collect(Collectors.toList());
@@ -54,7 +52,6 @@ public class MyProjectInfoDto {
             .totalAverageScore(totalAverageScore)
             .leader(leader)
             .projectExitVoteDto(projectExitVoteDto)
-            .reviewerIds(reviewerIds)
             .build();
     }
 }

@@ -70,19 +70,19 @@ public class UserProjectController {
         User user = userService.getUserByEmail(principal.getEmail());
         Long userId = user.getId();
         Project project = projectService.findById(projectId);
-        double totalAverageScore =
-            projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, projectId);
+        double totalAverageScore = projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, projectId);
         List<ProjectMemberDto> projectMemberDtoList =
             projectMemberService.getProjectMemberByProjectId(projectId).stream()
-                .map(ProjectMemberDto::from).toList();
+                .map(projectMember -> {
+                    boolean isReviewed = projectReviewService.isReviewed(projectId, userId, projectMember.getUser().getId());
+                    return ProjectMemberDto.of(projectMember, isReviewed);
+                }).toList();
         List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
-        List<Long> reviewerIds = projectReviewService.findByProjectIdAndTargetUserId(projectId, userId).stream()
-            .map(projectReview -> projectReview.getReviewerUser().getId()).toList();
+
         boolean leader = Objects.equals(project.getUser().getId(), userId);
 
         return ResponseEntity.ok(
-            MyProjectInfoDto.of(userId, project, projectMemberDtoList,
-                totalAverageScore, leader, exitVotes, reviewerIds)
+            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader, exitVotes)
         );
     }
 }

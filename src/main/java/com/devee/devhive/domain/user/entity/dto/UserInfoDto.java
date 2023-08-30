@@ -18,7 +18,6 @@ public class UserInfoDto {
 
     private Long userId;
     private boolean isFavorite;
-    private String region;
     private String nickName;
     private String profileImage;
     private String intro;
@@ -35,7 +34,6 @@ public class UserInfoDto {
         return UserInfoDto.builder()
             .userId(user.getId())
             .isFavorite(isFavorite)
-            .region(user.getRegion())
             .nickName(user.getNickName())
             .profileImage(user.getProfileImage())
             .intro(user.getIntro())
