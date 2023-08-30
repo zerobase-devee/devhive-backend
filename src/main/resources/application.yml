@@ -88,7 +88,7 @@ spring:
     jdbc:
       initialize-schema: always
     job:
-      name: voteProcessJob, userReactivationJob
+      name: voteProcessJob, userReactivationJob, recruitProcessJob
 
 cloud:
   aws:

@@ -30,7 +30,7 @@ public class BatchProcessingScheduler {
   }
 
   // 매 0분마다 처리
-  @Scheduled(cron = "0/5 * * * * *")
+  @Scheduled(cron = "* 0 * * * *")
   public void processVote() {
     JobParameters jobParameters = getJobParameters();
 
@@ -41,12 +41,23 @@ public class BatchProcessingScheduler {
     }
   }
 
-  @Scheduled(cron = "0/5 * * * * *")
+  @Scheduled(cron = "* 0 * * * *")
   public void userReactivation() {
     JobParameters jobParameters = getJobParameters();
 
     try {
       jobLauncher.run(jobRegistry.getJob("userReactivationJob"), jobParameters);
+    } catch (Exception e) {
+      log.info("error: {}", e.getMessage());
+    }
+  }
+
+  @Scheduled(cron = "* 0 * * * *")
+  public void projectRecruitProcess() {
+    JobParameters jobParameters = getJobParameters();
+
+    try {
+      jobLauncher.run(jobRegistry.getJob("recruitProcessJob"), jobParameters);
     } catch (Exception e) {
       log.info("error: {}", e.getMessage());
     }
