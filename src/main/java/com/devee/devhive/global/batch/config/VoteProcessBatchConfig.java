@@ -5,8 +5,10 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
+import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
 import com.devee.devhive.domain.user.exithistory.service.ExitHistoryService;
+import com.devee.devhive.domain.user.service.UserService;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class VoteProcessBatchConfig {
   private final ProjectMemberService projectMemberService;
   private final ExitHistoryService exitHistoryService;
   private final ProjectService projectService;
+  private final UserService userService;
 
   @Bean
   public Job voteProcessJob(JobRepository jobRepository, Step step) {
@@ -58,23 +61,25 @@ public class VoteProcessBatchConfig {
 
       for (Long projectId : exitHistoryMap.keySet()) {
         ExitHistory currentExitHistory = exitHistoryMap.get(projectId);
-        Long exitedUserId = currentExitHistory.getUser().getId();
+        User exitedUser = currentExitHistory.getUser();
 
         // 해당 프로젝트의 리더인 경우
-        if (projectMemberService.isLeaderOfProject(projectId, exitedUserId)) {
+        if (projectMemberService.isLeaderOfProject(projectId, exitedUser.getId())) {
           log.info("해당 프로젝트의 리더입니다. 프로젝트를 삭제합니다.");
 
           projectMemberService.deleteAllOfMembersFromProject(projectId);
           projectService.deleteLeadersProject(projectId);
 
         } else {
-          projectMemberService.deleteMemberFromProject(projectId, exitedUserId);
+          projectMemberService.deleteMemberFromProject(projectId, exitedUser.getId());
         }
 
         ExitHistory savedExitHistory = exitHistoryService.saveExitHistory(currentExitHistory);
 
         String exitedUserName = savedExitHistory.getUser().getNickName();
-        int exitCount = exitHistoryService.countExitHistoryByUserId(exitedUserId);
+        int exitCount = exitHistoryService.countExitHistoryByUserId(exitedUser.getId());
+        userService.setUserInactive(exitedUser);
+
         log.info("{} 유저 퇴출 완료. 누적 {}회", exitedUserName, exitCount);
       }
 

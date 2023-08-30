@@ -13,6 +13,7 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.domain.user.type.ActivityStatus;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
@@ -153,5 +154,11 @@ public class UserService {
         .content(AlarmContent.REVIEW_RESULT)
         .build();
     eventPublisher.publishEvent(alarmForm);
+  }
+
+  // 유저 비활성화
+  public void setUserInactive(User user) {
+    user.setStatus(ActivityStatus.INACTIVITY);
+    userRepository.save(user);
   }
 }
