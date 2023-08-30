@@ -36,9 +36,9 @@ public class VoteProcessBatchConfig {
   private final UserService userService;
 
   @Bean
-  public Job voteProcessJob(JobRepository jobRepository, Step step) {
+  public Job voteProcessJob(JobRepository jobRepository, Step voteProcessStep) {
     return new JobBuilder("voteProcessJob", jobRepository)
-        .start(step)
+        .start(voteProcessStep)
         .build();
   }
 
