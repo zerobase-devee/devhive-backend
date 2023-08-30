@@ -10,9 +10,9 @@ import com.devee.devhive.domain.project.review.repository.ProjectReviewRepositor
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -23,10 +23,16 @@ public class ProjectReviewService {
 
   private final ApplicationEventPublisher eventPublisher;
   private final ProjectReviewRepository projectReviewRepository;
+  private final UserRepository userRepository;
 
   // 프로젝트에서 유저가 받은 리뷰의 평균점수
   public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId) {
     return projectReviewRepository.getAverageTotalScoreByTargetUserIdAndProjectId(targetUserId, projectId);
+  }
+
+  // 리뷰 했는지
+  public boolean isReviewed(Long projectId, Long reviewerUserId, Long targetUserId) {
+    return projectReviewRepository.existsByProjectIdAndReviewerUserIdAndTargetUserId(projectId, reviewerUserId, targetUserId);
   }
 
   // 정보를 바탕으로 리뷰 등록
@@ -38,7 +44,7 @@ public class ProjectReviewService {
       throw new CustomException(PROJECT_NOT_COMPLETE);
     }
 
-    if (projectReviewRepository.existsByProjectIdAndTargetUserId(projectId, targetUserId)) {
+    if (isReviewed(projectId, user.getId(), targetUserId)) {
       throw new CustomException(ALREADY_SUBMIT_TARGETUSER);
     }
 
@@ -49,9 +55,16 @@ public class ProjectReviewService {
             .targetUser(targetUser)
             .totalScore(form.getTotalScore())
             .build());
+
     int count = projectReviewRepository.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
+    // 타겟 유저에 대한 팀원 평가가 모두 완료된 경우
     if (count == project.getTeamSize()-1) {
-      // 타겟 유저에 대한 팀원 평가가 모두 완료된 경우 알림 이벤트 발행
+      // 팀원평가 평균점수를 타겟유저 랭킹포인트에 더하기
+      double averagePoint = getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId);
+      targetUser.setRankPoint(targetUser.getRankPoint() + averagePoint);
+      userRepository.save(targetUser);
+
+      // 평가 완료 알림 이벤트 발행
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(targetUser)
           .project(project)
@@ -61,9 +74,5 @@ public class ProjectReviewService {
     }
 
     return saveReview;
-  }
-
-  public List<ProjectReview> findByProjectIdAndTargetUserId(Long projectId, Long targetUserId) {
-    return projectReviewRepository.findAllByProjectIdAndTargetUserId(projectId, targetUserId);
   }
 }
