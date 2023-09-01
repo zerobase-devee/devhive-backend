@@ -69,11 +69,11 @@ public class VoteProcessBatchConfig {
         if (projectMemberService.isLeaderOfProject(projectId, exitedUser.getId())) {
           log.info("해당 프로젝트의 리더입니다. 프로젝트를 삭제합니다.");
 
-          projectMemberService.deleteAllOfMembersFromProject(projectId);
+          projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
           projectService.deleteLeadersProject(projectId);
 
         } else {
-          projectMemberService.deleteMemberFromProject(projectId, exitedUser.getId());
+          projectMemberService.deleteMemberFromProjectAndSendAlarm(projectId, exitedUser.getId());
         }
 
         ExitHistory savedExitHistory = exitHistoryService.saveExitHistory(currentExitHistory);

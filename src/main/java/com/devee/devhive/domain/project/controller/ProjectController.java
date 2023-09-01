@@ -3,8 +3,6 @@ package com.devee.devhive.domain.project.controller;
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
-import com.devee.devhive.domain.project.comment.entity.dto.CommentAndReplyDto;
-import com.devee.devhive.domain.project.comment.reply.entity.dto.ReplyDto;
 import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
@@ -19,7 +17,7 @@ import com.devee.devhive.domain.project.entity.dto.UpdateProjectStatusDto;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
-import com.devee.devhive.domain.project.service.ProjectTechStackService;
+import com.devee.devhive.domain.project.techstack.service.ProjectTechStackService;
 import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.bookmark.service.BookmarkService;
@@ -27,7 +25,7 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.dto.SimpleUserDto;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.domain.user.service.UserTechStackService;
+import com.devee.devhive.domain.user.techstack.service.UserTechStackService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
@@ -85,9 +83,9 @@ public class ProjectController {
     projectTechStackService.createProjectTechStacks(project, techStacks);
     projectMemberService.saveProjectLeader(user, project);
     // 관심유저로 등록한 유저들에게 알림 발행
-    favoriteService.favoriteUserUploadProject(user, user.getId(), project);
+    favoriteService.favoriteUserUploadAlarmOfProject(user, user.getId(), project);
     // 프로젝트에 등록되는 기술, 지역이 포함된 유저들에게 알림 발행
-    userTechStackService.recommendProject(project, techStacks);
+    userTechStackService.recommendAlarmOfProject(project, techStacks);
     return ResponseEntity.ok(SimpleProjectDto.from(project));
   }
 
@@ -99,7 +97,7 @@ public class ProjectController {
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
-    projectService.updateProjectStatus(user, projectId, statusDto, members);
+    projectService.updateProjectStatusAndAlarmToMembers(user, projectId, statusDto, members);
   }
 
   // 프로젝트 수정
@@ -175,15 +173,15 @@ public class ProjectController {
 
     Project project = projectService.updateViewPoint(projectId);
     List<TechStackDto> techStacks = getTechStacks(projectId);
+
     List<SimpleUserDto> projectMembers = getProjectMembers(projectId);
-    List<CommentAndReplyDto> commentAndReplyDtoList = getCommentAndReplyDtoList(projectId);
+
     User loggedInUser = getLoggedInUser(authentication);
     boolean isBookmark = isLoggedInUserBookmark(loggedInUser, projectId);
     ApplyStatus applyStatus = getApplyStatus(loggedInUser, project);
 
     return ResponseEntity.ok(ProjectInfoDto.of(
-        project, techStacks, projectMembers, commentAndReplyDtoList,
-        loggedInUser, isBookmark, applyStatus)
+        project, techStacks, projectMembers, loggedInUser, isBookmark, applyStatus)
     );
   }
 
@@ -197,16 +195,6 @@ public class ProjectController {
     return projectMemberService.getProjectMemberByProjectId(projectId).stream()
         .map(projectMember -> SimpleUserDto.from(projectMember.getUser()))
         .toList();
-  }
-
-  private List<CommentAndReplyDto> getCommentAndReplyDtoList(Long projectId) {
-    return commentService.getCommentsByProjectId(projectId).stream()
-        .map(comment -> {
-          List<ReplyDto> replies = replyService.getRepliesByCommentId(comment.getId()).stream()
-              .map(ReplyDto::from)
-              .toList();
-          return CommentAndReplyDto.of(comment, replies);
-        }).toList();
   }
 
   private User getLoggedInUser(Authentication authentication) {

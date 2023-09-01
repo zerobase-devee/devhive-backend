@@ -1,4 +1,4 @@
-package com.devee.devhive.domain.user.badge.entity.dto;
+package com.devee.devhive.domain.badge.entity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -4,7 +4,9 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.project.vote.dto.ProjectExitVoteDto;
 import com.devee.devhive.domain.project.vote.dto.VoteDto;
+import com.devee.devhive.domain.project.vote.dto.VotedDto;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
 import com.devee.devhive.domain.user.entity.User;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -26,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/projects/{projectId}/vote/{targetUserId}")
+@RequestMapping("/api/projects/{projectId}/vote")
 @RequiredArgsConstructor
 public class ExitVoteController {
 
@@ -35,7 +38,7 @@ public class ExitVoteController {
   private final ProjectService projectService;
   private final ProjectMemberService projectMemberService;
 
-  @PostMapping
+  @PostMapping("/{targetUserId}")
   public ResponseEntity<String> createExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId
@@ -54,10 +57,10 @@ public class ExitVoteController {
         .collect(Collectors.toList());
 
     return ResponseEntity.ok(
-        exitVoteService.createExitVote(project, registeringUser, targetUser, votingUsers));
+        exitVoteService.createExitVoteAndSendAlarm(project, registeringUser, targetUser, votingUsers));
   }
 
-  @PutMapping
+  @PutMapping("/{targetUserId}")
   public ResponseEntity<VoteDto> submitExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId, @RequestParam boolean vote
@@ -73,5 +76,17 @@ public class ExitVoteController {
     ProjectMemberExitVote myVote = exitVoteService.submitExitVote(project, votingUser, targetUser, vote);
 
     return ResponseEntity.ok(VoteDto.from(myVote));
+  }
+
+  // 프로젝트에 퇴출투표가 있으면 투표정보와 각 팀원들의 투표 참여 여부
+  @GetMapping
+  public ResponseEntity<ProjectExitVoteDto> getExitVote(@PathVariable Long projectId) {
+    List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
+    ProjectExitVoteDto projectExitVoteDto = null;
+    if (!exitVotes.isEmpty()) {
+      List<VotedDto> votedDtoList = exitVotes.stream().map(VotedDto::from).collect(Collectors.toList());
+      projectExitVoteDto = ProjectExitVoteDto.of(exitVotes.get(0), votedDtoList);
+    }
+    return ResponseEntity.ok(projectExitVoteDto);
   }
 }

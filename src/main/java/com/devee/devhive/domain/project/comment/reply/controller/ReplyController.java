@@ -38,7 +38,7 @@ public class ReplyController {
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
         Comment comment = commentService.getCommentById(commentId);
-        Reply reply = replyService.create(user, comment, form);
+        Reply reply = replyService.createAndSendAlarmToCommentUser(user, comment, form);
         return ResponseEntity.ok(ReplyDto.from(reply));
     }
 

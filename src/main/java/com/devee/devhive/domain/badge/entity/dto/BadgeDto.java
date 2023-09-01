@@ -1,6 +1,6 @@
-package com.devee.devhive.domain.user.badge.entity.dto;
+package com.devee.devhive.domain.badge.entity.dto;
 
-import com.devee.devhive.domain.user.badge.entity.Badge;
+import com.devee.devhive.domain.badge.entity.Badge;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

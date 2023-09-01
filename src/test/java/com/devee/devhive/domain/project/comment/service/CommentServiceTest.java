@@ -47,7 +47,7 @@ class CommentServiceTest {
     Project project = Project.builder().user(writer).build();
     CommentForm form = new CommentForm("안녕하세요");
     // When
-    commentService.create(user, project, form);
+    commentService.createAndSendAlarmToProjectUser(user, project, form);
     // Then
     verify(eventPublisher, times(1)).publishEvent(any(AlarmForm.class));
   }

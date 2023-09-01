@@ -1,7 +1,8 @@
-package com.devee.devhive.domain.user.entity;
+package com.devee.devhive.domain.user.badge.entity;
 
+import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.entity.BaseEntity;
-import com.devee.devhive.domain.user.badge.entity.Badge;
+import com.devee.devhive.domain.badge.entity.Badge;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

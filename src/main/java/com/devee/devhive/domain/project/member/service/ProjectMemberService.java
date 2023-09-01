@@ -79,7 +79,7 @@ public class ProjectMemberService {
   }
 
   @Transactional
-  public void deleteAllOfMembersFromProject(Long projectId) {
+  public void deleteAllOfMembersFromProjectAndSendAlarm(Long projectId) {
     List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
     projectMemberRepository.deleteAll(projectMembers);
 
@@ -91,7 +91,7 @@ public class ProjectMemberService {
   }
 
   @Transactional
-  public void deleteMemberFromProject(Long projectId, Long userId) {
+  public void deleteMemberFromProjectAndSendAlarm(Long projectId, Long userId) {
     ProjectMember projectMember = projectMemberRepository.findByProjectIdAndUserId(projectId, userId);
     List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
 

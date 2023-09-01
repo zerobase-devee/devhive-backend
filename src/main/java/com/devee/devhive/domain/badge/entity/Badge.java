@@ -1,4 +1,4 @@
-package com.devee.devhive.domain.user.badge.entity;
+package com.devee.devhive.domain.badge.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

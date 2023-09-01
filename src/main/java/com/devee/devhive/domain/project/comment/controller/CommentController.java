@@ -3,8 +3,10 @@ package com.devee.devhive.domain.project.comment.controller;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.comment.entity.Comment;
+import com.devee.devhive.domain.project.comment.entity.dto.CommentAndReplyDto;
 import com.devee.devhive.domain.project.comment.entity.dto.CommentDto;
 import com.devee.devhive.domain.project.comment.entity.form.CommentForm;
+import com.devee.devhive.domain.project.comment.reply.entity.dto.ReplyDto;
 import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
@@ -14,11 +16,13 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,7 +48,7 @@ public class CommentController {
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
         Project project = projectService.findById(projectId);
-        Comment saveComment = commentService.create(user, project, form);
+        Comment saveComment = commentService.createAndSendAlarmToProjectUser(user, project, form);
 
         return ResponseEntity.ok(CommentDto.from(saveComment));
     }
@@ -74,5 +78,17 @@ public class CommentController {
         // 댓글 관련 대댓글 먼저 모두 삭제
         replyService.deleteRepliesByCommentId(commentId);
         commentService.delete(comment);
+    }
+
+    @GetMapping("/projects/{projectId}")
+    public ResponseEntity<List<CommentAndReplyDto>> getCommentAndReplyDtoList(
+        @PathVariable("projectId") Long projectId) {
+        return ResponseEntity.ok(commentService.getCommentsByProjectId(projectId).stream()
+            .map(comment -> {
+                List<ReplyDto> replies = replyService.getRepliesByCommentId(comment.getId()).stream()
+                    .map(ReplyDto::from)
+                    .toList();
+                return CommentAndReplyDto.of(comment, replies);
+            }).toList());
     }
 }

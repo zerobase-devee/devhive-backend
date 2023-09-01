@@ -12,8 +12,9 @@ import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.techstack.service.TechStackService;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.entity.UserTechStack;
+import com.devee.devhive.domain.user.techstack.entity.UserTechStack;
 import com.devee.devhive.domain.user.repository.UserTechStackRepository;
+import com.devee.devhive.domain.user.techstack.service.UserTechStackService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +76,7 @@ class UserTechStackServiceTest {
     ).thenReturn(usersWithTechStacks);
 
     // When
-    userTechStackService.recommendProject(project, techStacks);
+    userTechStackService.recommendAlarmOfProject(project, techStacks);
 
     // Then
     verify(eventPublisher, times(1)).publishEvent(any(AlarmForm.class));

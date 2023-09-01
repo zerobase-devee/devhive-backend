@@ -40,7 +40,7 @@ public class FavoriteService {
     return favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 
-  public void favoriteUserUploadProject(User favoriteUser, Long favoriteUserId, Project project) {
+  public void favoriteUserUploadAlarmOfProject(User favoriteUser, Long favoriteUserId, Project project) {
     List<Favorite> users = favoriteRepository.findAllByFavoriteUserId(favoriteUserId);
     if (!users.isEmpty()) {
       for (Favorite favorite : users) {

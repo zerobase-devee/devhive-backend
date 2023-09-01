@@ -7,8 +7,6 @@ import com.devee.devhive.domain.project.member.entity.dto.ProjectMemberDto;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.project.service.ProjectService;
-import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
-import com.devee.devhive.domain.project.vote.service.ExitVoteService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
@@ -36,7 +34,6 @@ public class UserProjectController {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final ProjectReviewService projectReviewService;
-    private final ExitVoteService exitVoteService;
 
     // 내가 생성한 프로젝트 페이지
     @GetMapping("/write")
@@ -77,12 +74,11 @@ public class UserProjectController {
                     boolean isReviewed = projectReviewService.isReviewed(projectId, userId, projectMember.getUser().getId());
                     return ProjectMemberDto.of(projectMember, isReviewed);
                 }).toList();
-        List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
 
         boolean leader = Objects.equals(project.getUser().getId(), userId);
 
         return ResponseEntity.ok(
-            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader, exitVotes)
+            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader)
         );
     }
 }

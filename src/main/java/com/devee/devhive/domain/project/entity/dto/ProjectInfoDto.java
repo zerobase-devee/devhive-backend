@@ -1,6 +1,5 @@
 package com.devee.devhive.domain.project.entity.dto;
 
-import com.devee.devhive.domain.project.comment.entity.dto.CommentAndReplyDto;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.project.type.DevelopmentType;
@@ -38,16 +37,13 @@ public class ProjectInfoDto {
   private SimpleUserDto writerInfo;
   // 프로젝트 멤버리스트
   private List<SimpleUserDto> projectMembers;
-  // 댓글, 대댓글
-  private List<CommentAndReplyDto> commentAndReplyDtoList;
   // 본인
   private SimpleUserDto userInfo;
   private boolean isBookmark;
   private ApplyStatus applyStatus;
 
   public static ProjectInfoDto of(Project project, List<TechStackDto> techStacks,
-      List<SimpleUserDto> projectMembers, List<CommentAndReplyDto> commentAndReplyDtoList,
-      User user, boolean isBookmark, ApplyStatus applyStatus) {
+      List<SimpleUserDto> projectMembers, User user, boolean isBookmark, ApplyStatus applyStatus) {
     return ProjectInfoDto.builder()
         .status(project.getStatus())
         .projectTitle(project.getTitle())
@@ -63,7 +59,6 @@ public class ProjectInfoDto {
         .techStacks(techStacks)
         .writerInfo(SimpleUserDto.from(project.getUser()))
         .projectMembers(projectMembers)
-        .commentAndReplyDtoList(commentAndReplyDtoList)
         .userInfo(SimpleUserDto.from(user))
         .isBookmark(isBookmark)
         .applyStatus(applyStatus)

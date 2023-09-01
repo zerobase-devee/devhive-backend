@@ -5,8 +5,8 @@ import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
 import com.devee.devhive.domain.techstack.service.TechStackService;
-import com.devee.devhive.domain.user.badge.entity.dto.CreateBadgeDto;
-import com.devee.devhive.domain.user.badge.service.BadgeService;
+import com.devee.devhive.domain.badge.entity.dto.CreateBadgeDto;
+import com.devee.devhive.domain.badge.service.BadgeService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;

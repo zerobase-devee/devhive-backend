@@ -36,7 +36,7 @@ public class ReplyService {
   }
   // 대댓글 생성
   @Transactional
-  public Reply create(User user, Comment comment, ReplyForm form) {
+  public Reply createAndSendAlarmToCommentUser(User user, Comment comment, ReplyForm form) {
     Reply saveReply = replyRepository.save(Reply.builder()
         .comment(comment)
         .user(user)
@@ -44,7 +44,7 @@ public class ReplyService {
         .build());
 
     // 댓글 작성자에게 대댓글 알림 이벤트 발행
-    alarmEventPub(comment.getUser(), comment.getProject());
+    replyAlarmEventPub(comment.getUser(), comment.getProject());
 
     return saveReply;
   }
@@ -82,7 +82,7 @@ public class ReplyService {
     }
   }
 
-  private void alarmEventPub(User user, Project project) {
+  private void replyAlarmEventPub(User user, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
         .project(project)

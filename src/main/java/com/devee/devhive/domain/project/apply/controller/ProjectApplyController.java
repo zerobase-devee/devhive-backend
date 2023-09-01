@@ -46,7 +46,7 @@ public class ProjectApplyController {
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
         Project project = projectService.findById(projectId);
-        projectApplyService.projectApply(user, project);
+        projectApplyService.projectApplyAndSendAlarmToProjectUser(user, project);
     }
 
     // 신청 취소
@@ -102,7 +102,7 @@ public class ProjectApplyController {
             throw new CustomException(RECRUITMENT_ALREADY_COMPLETED);
         }
         // 승인
-        projectApplyService.accept(projectApply);
+        projectApplyService.acceptAndSendAlarmToApplicant(projectApply);
         // 프로젝트 멤버 저장
         projectMemberService.saveProjectMember(projectApply.getUser(), project);
     }
@@ -114,6 +114,6 @@ public class ProjectApplyController {
         @PathVariable("applicationId") Long applicationId
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
-        projectApplyService.reject(user, applicationId);
+        projectApplyService.rejectAndSendAlarmToApplicant(user, applicationId);
     }
 }

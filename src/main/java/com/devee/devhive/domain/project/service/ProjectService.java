@@ -71,7 +71,7 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
-  public void updateProjectStatus(User user, Long projectId,
+  public void updateProjectStatusAndAlarmToMembers(User user, Long projectId,
       UpdateProjectStatusDto statusDto, List<ProjectMember> members) {
     Project project = findById(projectId);
     User writerUser = project.getUser();
@@ -93,9 +93,7 @@ public class ProjectService {
 
     if (saveProject.getStatus() == COMPLETE) {
       // 프로젝트 멤버들에게 팀원 평가 권유 알림 이벤트 발행
-      for (ProjectMember projectMember : members) {
-        alarmEventPub(projectMember.getUser(), saveProject);
-      }
+      reviewRequestAlarmEventPub(saveProject, members);
     }
   }
 
@@ -161,13 +159,15 @@ public class ProjectService {
     return projectRepository.save(project);
   }
 
-  private void alarmEventPub(User user, Project project) {
-    AlarmForm alarmForm = AlarmForm.builder()
-        .receiverUser(user)
-        .project(project)
-        .content(AlarmContent.REVIEW_REQUEST)
-        .build();
-    eventPublisher.publishEvent(alarmForm);
+  private void reviewRequestAlarmEventPub(Project project, List<ProjectMember> members) {
+    for (ProjectMember projectMember : members) {
+      AlarmForm alarmForm = AlarmForm.builder()
+          .receiverUser(projectMember.getUser())
+          .project(project)
+          .content(AlarmContent.REVIEW_REQUEST)
+          .build();
+      eventPublisher.publishEvent(alarmForm);
+    }
   }
 
   public Page<Project> getProject(SearchProjectDto searchRequest, String sort, Pageable pageable) {

@@ -1,6 +1,6 @@
-package com.devee.devhive.domain.user.badge.repository;
+package com.devee.devhive.domain.badge.repository;
 
-import com.devee.devhive.domain.user.badge.entity.Badge;
+import com.devee.devhive.domain.badge.entity.Badge;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

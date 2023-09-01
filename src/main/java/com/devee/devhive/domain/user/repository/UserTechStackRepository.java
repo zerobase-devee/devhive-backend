@@ -1,6 +1,6 @@
 package com.devee.devhive.domain.user.repository;
 
-import com.devee.devhive.domain.user.entity.UserTechStack;
+import com.devee.devhive.domain.user.techstack.entity.UserTechStack;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
