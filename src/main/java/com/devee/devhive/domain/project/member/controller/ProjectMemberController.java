@@ -4,7 +4,7 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
-import com.devee.devhive.domain.user.entity.dto.ProjectHistoryDto;
+import com.devee.devhive.domain.project.member.entity.dto.ProjectHistoryDto;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
