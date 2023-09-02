@@ -48,7 +48,7 @@ public class ProjectApplyService {
 
   // 신청
   @Transactional
-  public void projectApply(User user, Project project) {
+  public void projectApplyAndSendAlarmToProjectUser(User user, Project project) {
     // 자기가 작성한 프로젝트에 신청하는 경우
     Long userId = user.getId();
     if (Objects.equals(project.getUser().getId(), userId)) {
@@ -105,7 +105,7 @@ public class ProjectApplyService {
   }
 
   // 신청 승인
-  public void accept(ProjectApply projectApply) {
+  public void acceptAndSendAlarmToApplicant(ProjectApply projectApply) {
     // 신청 대기 상태가 아닌 경우 (이미 승인/거절된 경우)
     if (projectApply.getStatus() != ApplyStatus.PENDING) {
       throw new CustomException(APPLICATION_STATUS_NOT_PENDING);
@@ -118,7 +118,7 @@ public class ProjectApplyService {
   }
 
   // 신청 거절
-  public void reject(User user, Long applicationId) {
+  public void rejectAndSendAlarmToApplicant(User user, Long applicationId) {
     ProjectApply projectApply = getProjectApplyById(applicationId);
     // 프로젝트 작성자가 아닌 경우
     if (!Objects.equals(projectApply.getProject().getUser().getId(), user.getId())) {

@@ -3,7 +3,7 @@ package com.devee.devhive.domain.project.repository.impl;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.QProject;
-import com.devee.devhive.domain.project.entity.QProjectTechStack;
+import com.devee.devhive.domain.project.techstack.entity.QProjectTechStack;
 import com.devee.devhive.domain.project.repository.custom.CustomProjectRepository;
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.RecruitmentType;

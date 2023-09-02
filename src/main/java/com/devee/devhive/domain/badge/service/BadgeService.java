@@ -1,11 +1,11 @@
-package com.devee.devhive.domain.user.badge.service;
+package com.devee.devhive.domain.badge.service;
 
 import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_BADGE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_BADGE;
 
-import com.devee.devhive.domain.user.badge.entity.Badge;
-import com.devee.devhive.domain.user.badge.entity.dto.CreateBadgeDto;
-import com.devee.devhive.domain.user.badge.repository.BadgeRepository;
+import com.devee.devhive.domain.badge.entity.Badge;
+import com.devee.devhive.domain.badge.repository.BadgeRepository;
+import com.devee.devhive.domain.badge.entity.dto.CreateBadgeDto;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import java.net.URLDecoder;

@@ -64,12 +64,21 @@ public class SecurityConfig {
               "/api/auth/**",
               "/api/projects/list",
               "/api/projects/{projectId}",
+              "/api/projects/image",
               "/api/users/rank",
               "/api/users/{userId}",
+              "api/members/users/{userId}/hive-level",
+              "api/users/{userId}/exit-num",
+              "api/members/users/{userId}/project-histories",
+              "api/users/{userId}/badges",
+              "/api/tech-stacks/users/{userId}",
+              "/api/careers/users/{userId}",
+              "/api/projects/{projectId}/vote",
+              "api/comments/projects/{projectId}",
               "/login/**"
           ).permitAll();
           authorizeRequests.requestMatchers(
-              "/api/users/**",
+              "/api/**/users/**",
               "/api/favorite/**",
               "/api/bookmark/**",
               "/api/projects/**",

@@ -37,7 +37,7 @@ public class CommentService {
 
   // 댓글 생성
   @Transactional
-  public Comment create(User user, Project project, CommentForm form) {
+  public Comment createAndSendAlarmToProjectUser(User user, Project project, CommentForm form) {
     Comment comment = commentRepository.save(Comment.builder()
         .project(project)
         .user(user)
@@ -45,7 +45,7 @@ public class CommentService {
         .build());
 
     // 게시글 작성자에게 댓글 알림 이벤트 발행
-    alarmEventPub(project.getUser(), project);
+    commentAlarmEventPub(project.getUser(), project);
     return comment;
   }
 
@@ -72,7 +72,7 @@ public class CommentService {
     return comments.stream().map(Comment::getId).collect(Collectors.toList());
   }
 
-  private void alarmEventPub(User user, Project project) {
+  private void commentAlarmEventPub(User user, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
         .project(project)

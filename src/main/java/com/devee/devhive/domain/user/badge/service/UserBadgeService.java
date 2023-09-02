@@ -1,6 +1,6 @@
-package com.devee.devhive.domain.user.service;
+package com.devee.devhive.domain.user.badge.service;
 
-import com.devee.devhive.domain.user.entity.UserBadge;
+import com.devee.devhive.domain.user.badge.entity.UserBadge;
 import com.devee.devhive.domain.user.repository.UserBadgeRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.devee.devhive.domain.user.service;
+package com.devee.devhive.domain.user.techstack.service;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.type.RecruitmentType;
@@ -7,7 +7,7 @@ import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.techstack.service.TechStackService;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.entity.UserTechStack;
+import com.devee.devhive.domain.user.techstack.entity.UserTechStack;
 import com.devee.devhive.domain.user.repository.UserTechStackRepository;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class UserTechStackService {
     return userTechStackRepository.findAllByTechStackIdIn(techStackIds);
   }
 
-  public void recommendProject(Project project, List<TechStackDto> techStacks) {
+  public void recommendAlarmOfProject(Project project, List<TechStackDto> techStacks) {
     List<Long> techStackIds = techStacks.stream().map(TechStackDto::getId).toList();
     // 프로젝트에 등록된 기술을 포함하고 있는 유저 목록
     List<UserTechStack> usersWithTechStacks = findUsersWithTechStacks(techStackIds);
@@ -43,17 +43,17 @@ public class UserTechStackService {
     for (UserTechStack userTechStack : usersWithTechStacks) {
       User user = userTechStack.getUser();
       if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
-        alarmEventPub(user, project);
+        recommendAlarmEventPub(user, project);
       } else {
         // 프로젝트가 오프라인이면 지역이 일치하는 유저들에게만 알림 이벤트 발행
         if (project.getRegion().equals(user.getRegion())) {
-          alarmEventPub(user, project);
+          recommendAlarmEventPub(user, project);
         }
       }
     }
   }
 
-  private void alarmEventPub(User receiver, Project project) {
+  private void recommendAlarmEventPub(User receiver, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(receiver)
         .project(project)

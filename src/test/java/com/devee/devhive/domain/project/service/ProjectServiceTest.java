@@ -150,7 +150,7 @@ class ProjectServiceTest {
     when(projectRepository.save(any(Project.class))).thenReturn(project);
 
     // When
-    projectService.updateProjectStatus(user, project.getId(), statusDto, members);
+    projectService.updateProjectStatusAndAlarmToMembers(user, project.getId(), statusDto, members);
 
     // Then
     verify(projectRepository, times(1)).findById(project.getId());
@@ -181,7 +181,7 @@ class ProjectServiceTest {
 
     // When
     assertThrows(CustomException.class,
-        () -> projectService.updateProjectStatus(user, project.getId(), statusDto, members));
+        () -> projectService.updateProjectStatusAndAlarmToMembers(user, project.getId(), statusDto, members));
 
     // Then
     verify(projectRepository, times(1)).findById(project.getId());

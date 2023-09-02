@@ -55,7 +55,7 @@ class ProjectApplyServiceTest {
 
     when(projectApplyRepository.findByUserIdAndProjectId(user.getId(), project.getId())).thenReturn(Optional.empty());
     // When
-    projectApplyService.projectApply(user, project);
+    projectApplyService.projectApplyAndSendAlarmToProjectUser(user, project);
 
     // Then
     verify(projectApplyRepository, times(1)).save(any(ProjectApply.class));
@@ -75,7 +75,7 @@ class ProjectApplyServiceTest {
 
     // When
     CustomException exception = assertThrows(CustomException.class,
-        () -> projectApplyService.projectApply(user, project));
+        () -> projectApplyService.projectApplyAndSendAlarmToProjectUser(user, project));
 
     // then
     assertEquals(UNAUTHORIZED, exception.getErrorCode());
@@ -95,7 +95,7 @@ class ProjectApplyServiceTest {
 
     // When
     CustomException exception = assertThrows(CustomException.class,
-        () -> projectApplyService.projectApply(user, project));
+        () -> projectApplyService.projectApplyAndSendAlarmToProjectUser(user, project));
 
     // then
     assertEquals(RECRUITMENT_ALREADY_COMPLETED, exception.getErrorCode());
@@ -124,7 +124,7 @@ class ProjectApplyServiceTest {
         .thenReturn(Optional.of(projectApply));
     // When
     CustomException exception = assertThrows(CustomException.class,
-        () -> projectApplyService.projectApply(user, project));
+        () -> projectApplyService.projectApplyAndSendAlarmToProjectUser(user, project));
 
     // then
     assertEquals(PROJECT_ALREADY_APPLIED, exception.getErrorCode());
@@ -181,7 +181,7 @@ class ProjectApplyServiceTest {
         .build();
 
     // When
-    projectApplyService.accept(projectApply);
+    projectApplyService.acceptAndSendAlarmToApplicant(projectApply);
 
     // Then
     assertEquals(ApplyStatus.ACCEPT, projectApply.getStatus());
@@ -203,7 +203,7 @@ class ProjectApplyServiceTest {
     when(projectApplyRepository.findById(projectApply.getId())).thenReturn(Optional.of(projectApply));
     when(projectApplyRepository.save(any(ProjectApply.class))).thenReturn(projectApply);
     // When
-    projectApplyService.reject(user, projectApply.getId());
+    projectApplyService.rejectAndSendAlarmToApplicant(user, projectApply.getId());
 
     // Then
     assertEquals(ApplyStatus.REJECT, projectApply.getStatus());

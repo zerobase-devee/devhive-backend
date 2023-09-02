@@ -1,8 +1,8 @@
-package com.devee.devhive.domain.project.service;
+package com.devee.devhive.domain.project.techstack.service;
 
 import com.devee.devhive.domain.project.entity.Project;
-import com.devee.devhive.domain.project.entity.ProjectTechStack;
-import com.devee.devhive.domain.project.repository.ProjectTechStackRepository;
+import com.devee.devhive.domain.project.techstack.entity.ProjectTechStack;
+import com.devee.devhive.domain.project.techstack.repository.ProjectTechStackRepository;
 import com.devee.devhive.domain.techstack.entity.TechStack;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.techstack.repository.TechStackRepository;

@@ -1,5 +1,6 @@
-package com.devee.devhive.domain.user.entity;
+package com.devee.devhive.domain.user.techstack.entity;
 
+import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.entity.BaseEntity;
 import com.devee.devhive.domain.techstack.entity.TechStack;
 import jakarta.persistence.Entity;

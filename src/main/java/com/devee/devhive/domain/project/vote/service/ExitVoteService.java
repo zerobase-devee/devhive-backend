@@ -39,7 +39,7 @@ public class ExitVoteService {
     return exitVoteRepository.findAllByProjectId(projectId);
   }
 
-  public String createExitVote(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
+  public String createExitVoteAndSendAlarm(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
     if (exitVoteRepository.existsByProjectId(project.getId())) {
       throw new CustomException(ALREADY_REGISTERED_VOTE);
     }
