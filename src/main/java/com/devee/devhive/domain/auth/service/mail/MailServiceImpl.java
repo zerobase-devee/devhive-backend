@@ -42,6 +42,7 @@ public class MailServiceImpl implements MailService {
     String authCode = createKey();
     MimeMessage message = createMessage(to, authCode);
     redisService.setDataExpire(to, authCode, 60 * 5L);
+    redisService.setDataExpire(authCode, to, 60 * 5L);
     try {
       emailSender.send(message);
     } catch (MailException es) {

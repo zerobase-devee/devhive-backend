@@ -9,6 +9,7 @@ import static com.devee.devhive.global.exception.ErrorCode.INCORRECT_VERIFY_CODE
 import com.devee.devhive.domain.auth.dto.EmailDto;
 import com.devee.devhive.domain.auth.dto.JoinDto;
 import com.devee.devhive.domain.auth.dto.NicknameDto;
+import com.devee.devhive.domain.auth.dto.VerifyDto;
 import com.devee.devhive.domain.auth.service.mail.MailService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
@@ -37,18 +38,26 @@ public class AuthService {
     mailService.sendAuthEmail(emailDto.getEmail());
   }
 
-  // 유저 회원가입
-  @Transactional
-  public void signUp(JoinDto joinDto) {
-    if (!redisService.existData(joinDto.getEmail())) {
+  // 인증 코드 검증
+  public boolean checkVerificationCode(VerifyDto verifyDto) {
+    String email = redisService.getData(verifyDto.getVerificationCode());
+
+    if (!redisService.existData(email)) {
       throw new CustomException(EXPIRED_VERIFY_CODE);
     }
 
-    String enteredCode = joinDto.getVerificationCode();
-    String cachedCode = redisService.getData(joinDto.getEmail());
+    String enteredCode = verifyDto.getVerificationCode();
+    String cachedCode = redisService.getData(email);
     if (!cachedCode.equals(enteredCode)) {
       throw new CustomException(INCORRECT_VERIFY_CODE);
     }
+
+    return true;
+  }
+
+  // 유저 회원가입
+  @Transactional
+  public void signUp(JoinDto joinDto) {
 
     if (userRepository.existsByNickName(joinDto.getNickName())) {
       throw new CustomException(DUPLICATE_NICKNAME);

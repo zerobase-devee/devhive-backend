@@ -15,6 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class JoinDto {
+
   @NotBlank(message = "필수 입력")
   @Pattern(regexp = "^.+@.+\\..+$", message = "이메일 형식에 맞게 입력해 주세요.")
   private String email;
@@ -29,6 +30,4 @@ public class JoinDto {
   @Pattern(regexp = "^(?!.*\\s)[a-zA-Z0-9가-힣]*$",
       message = "닉네임 형식을 확인해주세요. 공백이나 특수문자는 사용할 수 없습니다.")
   private String nickName;
-
-  private String verificationCode;
 }

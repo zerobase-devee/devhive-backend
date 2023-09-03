@@ -3,6 +3,7 @@ package com.devee.devhive.domain.auth.controller;
 import com.devee.devhive.domain.auth.dto.EmailDto;
 import com.devee.devhive.domain.auth.dto.JoinDto;
 import com.devee.devhive.domain.auth.dto.NicknameDto;
+import com.devee.devhive.domain.auth.dto.VerifyDto;
 import com.devee.devhive.domain.auth.service.AuthService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
@@ -33,9 +34,15 @@ public class AuthController {
   private final TokenService tokenService;
 
   // 인증 코드 전송
-  @PostMapping("/verify")
+  @PostMapping("/verify/send")
   public void sendVerificationCode(@RequestBody @Valid EmailDto emailDto) throws Exception {
     authService.sendVerificationCode(emailDto);
+  }
+
+  // 인증 코드 검증
+  @PostMapping("/verify/check")
+  public boolean checkVerificationCode(@RequestBody VerifyDto verifyDto) {
+    return authService.checkVerificationCode(verifyDto);
   }
 
   // 유저 회원가입
