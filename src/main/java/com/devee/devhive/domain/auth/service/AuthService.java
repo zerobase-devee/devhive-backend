@@ -5,6 +5,7 @@ import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_EMAIL;
 import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.EXPIRED_VERIFY_CODE;
 import static com.devee.devhive.global.exception.ErrorCode.INCORRECT_VERIFY_CODE;
+import static com.devee.devhive.global.exception.ErrorCode.NONE_CORRECT_PW;
 
 import com.devee.devhive.domain.auth.dto.EmailDto;
 import com.devee.devhive.domain.auth.dto.JoinDto;
@@ -16,6 +17,7 @@ import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.redis.RedisService;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,18 +42,14 @@ public class AuthService {
 
   // 인증 코드 검증
   public boolean checkVerificationCode(VerifyDto verifyDto) {
-    String email = redisService.getData(verifyDto.getVerificationCode());
-
-    if (!redisService.existData(email)) {
+    if (!redisService.existData(verifyDto.getEmail())) {
       throw new CustomException(EXPIRED_VERIFY_CODE);
     }
-
     String enteredCode = verifyDto.getVerificationCode();
-    String cachedCode = redisService.getData(email);
+    String cachedCode = redisService.getData(verifyDto.getEmail());
     if (!cachedCode.equals(enteredCode)) {
       throw new CustomException(INCORRECT_VERIFY_CODE);
     }
-
     return true;
   }
 
@@ -61,6 +59,9 @@ public class AuthService {
 
     if (userRepository.existsByNickName(joinDto.getNickName())) {
       throw new CustomException(DUPLICATE_NICKNAME);
+    }
+    if (!Objects.equals(joinDto.getPassword(), joinDto.getRePassword())) {
+      throw new CustomException(NONE_CORRECT_PW);
     }
     userRepository.save(User.builder()
         .email(joinDto.getEmail())

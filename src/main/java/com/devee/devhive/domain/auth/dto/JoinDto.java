@@ -25,6 +25,8 @@ public class JoinDto {
       message = "비밀번호는 최소 8자 이상, 영문 대 소문자, 숫자, 특수문자를 사용하세요. 특수문자는 반드시 포함 해주세요.")
   private String password;
 
+  private String rePassword;
+
   @NotBlank
   @Size(min = 1, max = 6) // 1~6자
   @Pattern(regexp = "^(?!.*\\s)[a-zA-Z0-9가-힣]*$",

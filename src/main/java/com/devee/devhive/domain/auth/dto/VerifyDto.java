@@ -12,5 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class VerifyDto {
+
+  private String email;
   private String verificationCode;
 }
