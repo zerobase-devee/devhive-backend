@@ -29,8 +29,8 @@ public class AuthService {
   private final RedisService redisService;
   private final PasswordEncoder passwordEncoder;
 
-  // 인증 코드
-  public void getVerificationCode(EmailDto emailDto) throws Exception {
+  // 인증 코드 전송
+  public void sendVerificationCode(EmailDto emailDto) throws Exception {
     if (userRepository.existsByEmail(emailDto.getEmail())) {
       throw new CustomException(DUPLICATE_EMAIL);
     }

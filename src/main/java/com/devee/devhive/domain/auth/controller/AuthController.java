@@ -32,10 +32,10 @@ public class AuthController {
   private final AuthService authService;
   private final TokenService tokenService;
 
-  // 인증 코드
+  // 인증 코드 전송
   @PostMapping("/verify")
   public void sendVerificationCode(@RequestBody @Valid EmailDto emailDto) throws Exception {
-    authService.getVerificationCode(emailDto);
+    authService.sendVerificationCode(emailDto);
   }
 
   // 유저 회원가입
