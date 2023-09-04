@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ExitHistoryRepository extends JpaRepository<ExitHistory, Long> {
-
+    int countExitHistoryByUserId(Long userId);
 }

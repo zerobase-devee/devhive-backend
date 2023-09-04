@@ -1,10 +1,11 @@
 package com.devee.devhive.domain.user.entity;
 
-import com.devee.devhive.global.entity.BaseEntity;
-import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
-import com.devee.devhive.domain.user.favorite.entity.Favorite;
+import static com.devee.devhive.domain.user.type.Role.USER;
+
 import com.devee.devhive.domain.user.type.ActivityStatus;
-import com.devee.devhive.domain.user.type.GenderType;
+import com.devee.devhive.domain.user.type.ProviderType;
+import com.devee.devhive.domain.user.type.Role;
+import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,9 +14,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,46 +28,56 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class User extends BaseEntity {
 
-    @Column(nullable = false, unique = true)
-    private String email;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private String password;
+  @Column(nullable = false, unique = true)
+  private String email;
 
-    @Column(nullable = false, unique = true)
-    private String nickName;
+  @Column(nullable = false)
+  private String password;
 
-    private String name;
+  @Column(nullable = false, unique = true)
+  private String nickName;
 
-    @Enumerated(EnumType.STRING)
-    private GenderType gender;
+  private String region;
 
-    private String region;
+  private String profileImage;
 
-    private String profileImage;
+  private String intro;
 
-    private String intro;
+  private double rankPoint;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserTechStack> userTechStacks;
+  @Enumerated(EnumType.STRING)
+  private ActivityStatus status;
 
-    private double rankPoint;
+  @Builder.Default
+  @Enumerated(EnumType.STRING)
+  private Role role = USER;
 
-    @Enumerated(EnumType.STRING)
-    private ActivityStatus status;
+  @LastModifiedDate
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+  private LocalDateTime modifiedDate;
 
-    @OneToMany(mappedBy = "user")
-    private List<Favorite> favorites;
+  private String refreshToken;
 
-    @OneToMany(mappedBy = "user")
-    private List<Bookmark> bookmarks;
+  @Enumerated(EnumType.STRING)
+  private ProviderType providerType;
+  private String providerId;
 
-    @LastModifiedDate
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime modifiedDate;
+  public void updateRefreshToken(String updateRefreshToken) {
+    this.refreshToken = updateRefreshToken;
+  }
+
+  @Builder
+  public User(String nickName, String password, String email, ProviderType providerType, String providerId) {
+    this.nickName = nickName;
+    this.email = email;
+    this.password = password;
+    this.providerType = providerType;
+    this.providerId = providerId;
+  }
 }

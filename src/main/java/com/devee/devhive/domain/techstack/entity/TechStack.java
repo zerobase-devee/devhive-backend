@@ -1,6 +1,6 @@
 package com.devee.devhive.domain.techstack.entity;
 
-import com.devee.devhive.global.entity.BaseEntity;
+import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class TechStack extends BaseEntity {
+public class TechStack {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,4 +25,12 @@ public class TechStack extends BaseEntity {
     private String name;
 
     private String image;
+
+    public static TechStack from(TechStackDto techStackDto) {
+        return TechStack.builder()
+            .id(techStackDto.getId())
+            .name(techStackDto.getName())
+            .image(techStackDto.getImage())
+            .build();
+    }
 }

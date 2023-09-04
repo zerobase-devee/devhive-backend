@@ -1,6 +1,7 @@
 package com.devee.devhive.domain.user.exithistory.entity;
 
 import com.devee.devhive.domain.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,5 +28,6 @@ public class ExitHistory {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private Instant exitDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private Instant reActiveDate;
 }
