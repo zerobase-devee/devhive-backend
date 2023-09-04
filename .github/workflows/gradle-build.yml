@@ -88,6 +88,7 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
 
         script: |
+          sudo docker login 
           sudo docker kill ${{ secrets.PROJECT_NAME }}
           sudo docker rm -f ${{ secrets.PROJECT_NAME }}
           sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}
