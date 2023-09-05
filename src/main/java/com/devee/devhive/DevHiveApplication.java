@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableScheduling
+@EnableBatchProcessing
 @EnableConfigurationProperties({CorsProperties.class, AppProperties.class})
 public class DevHiveApplication {
 
