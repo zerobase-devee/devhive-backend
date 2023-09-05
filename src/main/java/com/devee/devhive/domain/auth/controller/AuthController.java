@@ -14,7 +14,6 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -81,7 +80,7 @@ public class AuthController {
   }
 
   @GetMapping("/check-nickname")
-  public ResponseEntity<Boolean> checkNickname(@RequestBody NicknameDto nicknameDto) {
-    return ResponseEntity.ok(authService.isNicknameAvailable(nicknameDto));
+  public boolean checkNickname(@RequestBody NicknameDto nicknameDto) {
+    return authService.isNicknameAvailable(nicknameDto);
   }
 }
