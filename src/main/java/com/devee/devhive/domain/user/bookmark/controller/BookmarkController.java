@@ -7,6 +7,8 @@ import com.devee.devhive.domain.user.bookmark.service.BookmarkService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/bookmark/projects")
 @RequiredArgsConstructor
+@Tag(name = "BOOKMARK API", description = "북마크 API")
 public class BookmarkController {
 
   private final UserService userService;
@@ -33,6 +36,7 @@ public class BookmarkController {
 
   // 프로젝트 북마크 등록
   @PostMapping("/{projectId}")
+  @Operation(summary = "프로젝트 북마크 등록")
   public void register(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable("projectId") Long projectId
@@ -44,6 +48,7 @@ public class BookmarkController {
 
   // 프로젝트 북마크 해제
   @DeleteMapping("/{projectId}")
+  @Operation(summary = "프로젝트 북마크 해제")
   public void delete(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable("projectId") Long projectId
@@ -54,6 +59,7 @@ public class BookmarkController {
 
   // 북마크 프로젝트 목록 조회
   @GetMapping
+  @Operation(summary = "북마크 프로젝트 목록 조회")
   public ResponseEntity<Page<BookmarkProjectDto>> getBookmarkProjects(
       @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
   ) {

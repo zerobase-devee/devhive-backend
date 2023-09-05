@@ -5,6 +5,8 @@ import com.devee.devhive.domain.user.entity.dto.SimpleUserDto;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/favorite/users")
 @RequiredArgsConstructor
+@Tag(name = "FAVORITE API", description = "관심유저 API")
 public class FavoriteController {
 
   private final FavoriteService favoriteService;
@@ -30,6 +33,7 @@ public class FavoriteController {
 
   // 관심 유저 등록
   @PostMapping("/{userId}")
+  @Operation(summary = "관심 유저 등록")
   public void register(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable("userId") Long targetUserId
@@ -41,6 +45,7 @@ public class FavoriteController {
 
   // 관심 유저 삭제
   @DeleteMapping("/{userId}")
+  @Operation(summary = "관심 유저 삭제")
   public void delete(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable("userId") Long targetUserId
@@ -51,6 +56,7 @@ public class FavoriteController {
 
   // 관심 유저 목록 조회
   @GetMapping
+  @Operation(summary = "관심 유저 목록 조회")
   public ResponseEntity<Page<SimpleUserDto>> getFavoriteUsers(
       @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
   ) {

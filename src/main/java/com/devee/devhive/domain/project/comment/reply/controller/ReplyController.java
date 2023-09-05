@@ -9,6 +9,8 @@ import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/reply")
 @RequiredArgsConstructor
+@Tag(name = "REPLY API", description = "답글 API")
 public class ReplyController {
 
     private final ReplyService replyService;
@@ -32,6 +35,7 @@ public class ReplyController {
 
     // 대댓글 생성
     @PostMapping("/comments/{commentId}")
+    @Operation(summary = "답글 작성")
     public ResponseEntity<ReplyDto> create(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("commentId") Long commentId, @RequestBody @Valid ReplyForm form
@@ -44,6 +48,7 @@ public class ReplyController {
 
     // 대댓글 수정
     @PutMapping("/{replyId}")
+    @Operation(summary = "답글 수정")
     public ResponseEntity<ReplyDto> update(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("replyId") Long replyId, @RequestBody @Valid ReplyForm form
@@ -55,6 +60,7 @@ public class ReplyController {
 
     // 대댓글 삭제
     @DeleteMapping("/{replyId}")
+    @Operation(summary = "답글 삭제")
     public void delete(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("replyId") Long replyId

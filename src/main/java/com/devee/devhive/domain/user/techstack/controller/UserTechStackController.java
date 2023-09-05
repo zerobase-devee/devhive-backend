@@ -6,6 +6,8 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.techstack.entity.form.UpdateTechStackForm;
 import com.devee.devhive.domain.user.techstack.service.UserTechStackService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/tech-stacks/users")
 @RequiredArgsConstructor
+@Tag(name = "USER TECH STACK API", description = "유저 테크스택 API")
 public class UserTechStackController {
 
   private final UserService userService;
@@ -28,6 +31,7 @@ public class UserTechStackController {
 
   // 내 기술스택 수정
   @PutMapping("/my-profile")
+  @Operation(summary = "내 기술스택 수정")
   public void updateUserTechStacks(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody UpdateTechStackForm form
@@ -38,6 +42,7 @@ public class UserTechStackController {
 
   // 유저 기술 스택 조회
   @GetMapping("/{userId}")
+  @Operation(summary = "유저 기술 스택 조회")
   public ResponseEntity<List<TechStackDto>> getUserTechStacks(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(userTechStackService.getUserTechStacks(userId).stream()
         .map(userTechStack -> TechStackDto.from(userTechStack.getTechStack()))

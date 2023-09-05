@@ -29,6 +29,8 @@ import com.devee.devhive.domain.user.techstack.service.UserTechStackService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +58,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects")
+@Tag(name = "PROJECT API", description = "프로젝트 API")
 public class ProjectController {
 
   private final UserService userService;
@@ -72,6 +75,7 @@ public class ProjectController {
 
   // 프로젝트 작성
   @PostMapping
+  @Operation(summary = "프로젝트 생성")
   public ResponseEntity<SimpleProjectDto> createProject(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody @Valid CreateProjectDto createProjectDto
@@ -91,6 +95,7 @@ public class ProjectController {
 
   // 상태변경
   @PutMapping("/{projectId}/status")
+  @Operation(summary = "프로젝트 상태 변경", description = "프로젝트 고유 ID로 프로젝트 상태 변경 - 글 작성자만 변경 가능(모집중, 모집 완료, 재모집, 완료)")
   public void updateProjectStatus(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable Long projectId, @RequestBody UpdateProjectStatusDto statusDto
@@ -102,6 +107,7 @@ public class ProjectController {
 
   // 프로젝트 수정
   @PutMapping("/{projectId}")
+  @Operation(summary = "프로젝트 수정", description = "프로젝트 고유 ID로 프로젝트 수정 - 글 작성자만 수정 가능")
   public void updateProject(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable Long projectId, @RequestBody @Valid UpdateProjectDto updateProjectDto
@@ -113,6 +119,7 @@ public class ProjectController {
 
   // 프로젝트 삭제
   @DeleteMapping("/{projectId}")
+  @Operation(summary = "프로젝트 상태 변경", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
   public void deleteProject(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
   ) {
@@ -130,6 +137,7 @@ public class ProjectController {
   }
 
   @PostMapping("/list")
+  @Operation(summary = "프로젝트 목록 조회", description = "키워드(제목,내용), 백/프론트, 온/오프라인, 테크스택 고유 ID 리스트")
   public ResponseEntity<Page<ProjectListDto>> getProjects(
       @RequestBody(required = false) SearchProjectDto searchRequest,
       @RequestParam(defaultValue = "desc") String sort, Pageable pageable
@@ -140,12 +148,14 @@ public class ProjectController {
     Page<Project> projectPage = projectService.getProject(searchRequest, sort, pageable);
 
     Page<ProjectListDto> projectListDtoPage = projectPage.map(project -> {
-      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(project)
+      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(
+              project)
           .stream()
           .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
           .collect(Collectors.toList());
 
-      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(project.getId())
+      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(
+              project.getId())
           .stream()
           .map(projectMember -> SimpleUserDto.from(projectMember.getUser()))
           .collect(Collectors.toList());
@@ -168,6 +178,7 @@ public class ProjectController {
 
   // 프로젝트 상세 조회
   @GetMapping("/{projectId}")
+  @Operation(summary = "프로젝트 상세 조회", description = "프로젝트 고유 ID로 프로젝트 조회")
   public ResponseEntity<ProjectInfoDto> getProjectInfo(@PathVariable("projectId") Long projectId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

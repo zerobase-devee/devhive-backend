@@ -6,6 +6,8 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.career.entity.form.UpdateCareerForm;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/careers/users")
 @RequiredArgsConstructor
+@Tag(name = "CAREER API", description = "경력 API")
 public class CareerController {
   private final UserService userService;
   private final CareerService careerService;
 
   // 내 기타 정보 수정 (기술스택, 경력)
   @PutMapping("/my-profile")
+  @Operation(summary = "내 정보 수정 (기술스택, 경력)")
   public void updateEtcInfo(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody UpdateCareerForm form
@@ -37,6 +41,7 @@ public class CareerController {
 
   // 유저 경력 조회
   @GetMapping("/{userId}")
+  @Operation(summary = "유저 경력 조회")
   public ResponseEntity<List<CareerDto>> getUserCareers(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(careerService.getUserCareers(userId).stream()
         .map(CareerDto::from)

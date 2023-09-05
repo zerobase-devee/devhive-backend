@@ -14,6 +14,8 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@Tag(name = "PROJECT APPLY API", description = "프로젝트 참가 신청 API")
 public class ProjectApplyController {
 
     private final UserService userService;
@@ -40,6 +43,7 @@ public class ProjectApplyController {
 
     // 프로젝트 참가 신청
     @PostMapping("/{projectId}/application")
+    @Operation(summary = "프로젝트 참가 신청", description = "프로젝트 고유 ID로 프로젝트 참가 신청")
     public void projectApply(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId
@@ -51,6 +55,7 @@ public class ProjectApplyController {
 
     // 신청 취소
     @DeleteMapping("/{projectId}/application")
+    @Operation(summary = "프로젝트 신청 취소", description = "프로젝트 고유 ID로 프로젝트 참가 신청 취소")
     public void deleteApplication(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId
@@ -61,6 +66,7 @@ public class ProjectApplyController {
 
     // 프로젝트 신청자 목록 조회
     @GetMapping("/{projectId}/application")
+    @Operation(summary = "프로젝트 신청자 목록 조회", description = "프로젝트 고유 ID로 프로젝트 신청자 목록 조회")
     public ResponseEntity<List<ApplicantUserDto>> getApplicants(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId
@@ -78,6 +84,7 @@ public class ProjectApplyController {
 
     // 신청 승인
     @PutMapping("/application/{applicationId}/accept")
+    @Operation(summary = "프로젝트 신청 승인")
     public void accept(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("applicationId") Long applicationId
@@ -109,6 +116,7 @@ public class ProjectApplyController {
 
     // 신청 거절
     @PutMapping("/application/{applicationId}/reject")
+    @Operation(summary = "프로젝트 신청 거절")
     public void reject(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("applicationId") Long applicationId

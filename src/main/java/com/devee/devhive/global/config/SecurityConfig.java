@@ -79,6 +79,19 @@ public class SecurityConfig {
               "api/comments/projects/{projectId}",
               "/login/**"
           ).permitAll();
+
+          authorizeRequests.requestMatchers(
+              "/v2/api-docs",
+              "/swagger-resources",
+              "/swagger-resources/**",
+              "/configuration/ui",
+              "/configuration/security",
+              "/swagger-ui.html",
+              "/webjars/**",
+              "/v3/api-docs/**",
+              "/swagger-ui/**"
+          ).permitAll();
+
           authorizeRequests.requestMatchers(
               "/api/**/users/**",
               "/api/favorite/**",
@@ -156,7 +169,8 @@ public class SecurityConfig {
 
   @Bean
   public OAuth2LoginSuccessHandler oAuth2AuthenticationSuccessHandler() {
-    return new OAuth2LoginSuccessHandler(tokenService, userRepository, oAuth2AuthorizationRequestRepository(), appProperties
+    return new OAuth2LoginSuccessHandler(tokenService, userRepository,
+        oAuth2AuthorizationRequestRepository(), appProperties
     );
   }
 
