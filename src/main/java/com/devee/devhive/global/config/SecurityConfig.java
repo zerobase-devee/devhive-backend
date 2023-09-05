@@ -100,7 +100,7 @@ public class SecurityConfig {
                     .baseUri("/oauth2/authorization")
                     .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
             .redirectionEndpoint(
-                redirectionEndpoint -> redirectionEndpoint.baseUri("/api/oauth2/code/*"))
+                redirectionEndpoint -> redirectionEndpoint.baseUri("/*/oauth2/code/*"))
             .userInfoEndpoint(
                 userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
             .successHandler(oAuth2AuthenticationSuccessHandler())
