@@ -87,7 +87,7 @@ public class AuthController {
     return reIssuedRefreshToken;
   }
 
-  @GetMapping("/check-nickname")
+  @PostMapping("/check-nickname")
   @Operation(summary = "닉네임 중복 체크")
   public boolean checkNickname(@RequestBody NicknameDto nicknameDto) {
     return authService.isNicknameAvailable(nicknameDto);
