@@ -97,7 +97,9 @@ public class SecurityConfig {
                 "/api/users/{userId}/careers",
                 "/api/projects/{projectId}/vote",
                 "api/comments/projects/{projectId}",
-                "/login/"
+                "/login/",
+                "/api/admin/tech-stacks",
+                "/api/admin/badges"
             ).permitAll()
 
             .requestMatchers(

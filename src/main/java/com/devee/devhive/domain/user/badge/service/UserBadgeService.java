@@ -1,7 +1,6 @@
 package com.devee.devhive.domain.user.badge.service;
 
 import com.devee.devhive.domain.badge.entity.Badge;
-import com.devee.devhive.domain.badge.entity.dto.BadgeDto;
 import com.devee.devhive.domain.badge.service.BadgeService;
 import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.user.badge.entity.UserBadge;
@@ -25,13 +24,13 @@ public class UserBadgeService {
     }
 
     public List<UserBadge> create(User user) {
-        List<BadgeDto> badgeDtoList = badgeService.getAllBadges();
+        List<Badge> badges = badgeService.getAllBadges();
 
-        List<UserBadge> userBadges = badgeDtoList.stream()
-            .map(badgeDto -> UserBadge.builder()
+        List<UserBadge> userBadges = badges.stream()
+            .map(badge -> UserBadge.builder()
             .user(user)
             .totalScore(0)
-            .badge(Badge.from(badgeDto))
+            .badge(badge)
             .build()).toList();
 
         return userBadgeRepository.saveAll(userBadges);
