@@ -21,15 +21,14 @@ public class BadgeService {
   private final BadgeRepository badgeRepository;
   private final S3Service s3Service;
 
-  public void createBadge(CreateBadgeDto badgeDto, MultipartFile imageFile) {
+  public void createBadge(CreateBadgeDto badgeDto) {
     if (badgeRepository.existsByName(badgeDto.getName())) {
       throw new CustomException(DUPLICATE_BADGE);
     }
-    String imageUrl = s3Service.upload(imageFile);
 
     Badge badge = Badge.builder()
         .name(badgeDto.getName())
-        .imageUrl(imageUrl)
+        .imageUrl(badgeDto.getImageUrl())
         .build();
 
     badgeRepository.save(badge);

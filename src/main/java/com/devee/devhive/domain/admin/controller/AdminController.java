@@ -11,6 +11,7 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
+import com.devee.devhive.global.s3.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,19 +34,34 @@ public class AdminController {
   private final UserService userService;
   private final TechStackService techStackService;
   private final BadgeService badgeService;
+  private final S3Service s3Service;
 
-  @PostMapping("/tech-stack")
-  @Operation(summary = "테크스택 생성", description = "이름과 이미지를 RequestPart로 받아서 테크스택 생성")
-  public void createTechStack(
+  @PostMapping("/image")
+  @Operation(summary = "이미지 업로드", description = "이미지의 URL을 반환")
+  public String uploadImage(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @RequestPart(value = "techStackDto") CreateTechStackDto techStackDto,
-      @RequestPart(value = "image") MultipartFile imageFile
+      @RequestPart(value = "image", required = false) MultipartFile multipartFile
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     if (user.getRole() != ADMIN) {
       throw new CustomException(UNAUTHORIZED);
     }
-    techStackService.createTechStack(techStackDto, imageFile);
+
+    return s3Service.upload(multipartFile);
+  }
+
+  @PostMapping("/tech-stack")
+  @Operation(summary = "테크스택 생성", description = "이름과 이미지 URL을 사용하여 테크스택 생성")
+  public void createTechStack(
+      @AuthenticationPrincipal PrincipalDetails principal,
+      @RequestBody CreateTechStackDto createTechStackDto
+  ) {
+    User user = userService.getUserByEmail(principal.getEmail());
+    if (user.getRole() != ADMIN) {
+      throw new CustomException(UNAUTHORIZED);
+    }
+
+    techStackService.createTechStack(createTechStackDto);
   }
 
   @DeleteMapping("/tech-stack/{techStackId}")
@@ -62,17 +79,17 @@ public class AdminController {
   }
 
   @PostMapping("/badge")
-  @Operation(summary = "뱃지 생성", description = "이름과 이미지를 RequestPart로 받아서 뱃지 생성")
+  @Operation(summary = "뱃지 생성", description = "이름과 이미지 URL을 사용하여 뱃지 생성")
   public void createBadge(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @RequestPart(value = "badgeDto") CreateBadgeDto badgeDto,
-      @RequestPart(value = "image") MultipartFile imageFile
+      @RequestBody CreateBadgeDto createBadgeDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     if (user.getRole() != ADMIN) {
       throw new CustomException(UNAUTHORIZED);
     }
-    badgeService.createBadge(badgeDto, imageFile);
+
+    badgeService.createBadge(createBadgeDto);
   }
 
   @DeleteMapping("/badge/{badgeId}")

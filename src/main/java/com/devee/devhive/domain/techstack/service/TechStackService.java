@@ -26,16 +26,14 @@ public class TechStackService {
     return techStackRepository.findAllById(techStackIds);
   }
 
-  public void createTechStack(CreateTechStackDto techStackDto, MultipartFile imageFile) {
+  public void createTechStack(CreateTechStackDto techStackDto) {
     if (techStackRepository.existsByName(techStackDto.getName())) {
       throw new CustomException(DUPLICATE_TECH_STACK);
     }
 
-    String imageUrl = s3Service.upload(imageFile);
-
     TechStack techStack = TechStack.builder()
         .name(techStackDto.getName())
-        .image(imageUrl)
+        .image(techStackDto.getImageUrl())
         .build();
 
     techStackRepository.save(techStack);
