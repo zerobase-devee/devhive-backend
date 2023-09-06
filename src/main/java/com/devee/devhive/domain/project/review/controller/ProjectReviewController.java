@@ -8,6 +8,7 @@ import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.project.review.evaluation.service.EvaluationService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.user.badge.service.UserBadgeService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
@@ -36,20 +37,24 @@ public class ProjectReviewController {
   private final EvaluationService evaluationService;
   private final UserService userService;
   private final ProjectService projectService;
+  private final UserBadgeService userBadgeService;
 
   @PostMapping("{projectId}/review/{targetUserId}")
   @Operation(summary = "프로젝트 완료 후 리뷰 작성")
   public ResponseEntity<ReviewDto> submitReview(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable(name = "targetUserId") Long targetUserId,
-      @RequestBody EvaluationForm form
+      @RequestBody List<EvaluationForm> forms
   ) {
     User user = userService.getUserByEmail(principalDetails.getEmail());
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 
-    ProjectReview newReview = reviewService.submitReview(projectId, targetUserId, user, project, targetUser, form);
-    List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, form);
+    ProjectReview newReview = reviewService.submitReview(projectId, targetUserId, user, project, targetUser, forms);
+    List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, forms);
+
+    // 타겟유저의 유저뱃지리스트들 점수 업데이트
+    userBadgeService.updatePoint(targetUser, evaluationList);
 
     int count = reviewService.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
     if (count == project.getTeamSize()-1) {

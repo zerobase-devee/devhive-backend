@@ -1,12 +1,14 @@
 package com.devee.devhive.domain.project.review.service;
 
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_NOT_COMPLETE;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.devee.devhive.domain.badge.entity.dto.BadgeDto;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
@@ -14,6 +16,7 @@ import com.devee.devhive.domain.project.review.repository.ProjectReviewRepositor
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,32 +47,25 @@ class ProjectReviewServiceTest {
         .id(1L)
         .status(ProjectStatus.COMPLETE)
         .build();
+    List<EvaluationForm> forms = List.of(
+        EvaluationForm.builder()
+            .badgeDto(BadgeDto.builder().id(1L).build())
+            .point(3)
+            .build(),
+        EvaluationForm.builder()
+            .badgeDto(BadgeDto.builder().id(2L).build())
+            .point(4)
+            .build());
 
-    EvaluationForm form = EvaluationForm.builder()
-        .manner(5)
-        .contribution(5)
-        .communication(5)
-        .schedule(5)
-        .professionalism(5)
-        .build();
-
-    ProjectReview projectReview = ProjectReview.builder()
-        .id(1L)
-        .reviewerUser(user)
-        .targetUser(targetUser)
-        .totalScore(form.getTotalScore())
-        .build();
-
-    when(projectReviewRepository.saveAndFlush(any(ProjectReview.class)))
-        .thenReturn(projectReview);
+    when(projectReviewRepository.existsByProjectIdAndReviewerUserIdAndTargetUserId(project.getId(),user.getId(), targetUser.getId()))
+        .thenReturn(false);
 
     // when
-    ProjectReview newReview = projectReviewService.submitReview(project.getId(), targetUser.getId(),
-        user, project, targetUser, form);
+    projectReviewService.submitReview(
+        project.getId(), targetUser.getId(), user, project, targetUser, forms);
 
     // then
-    assertThat(newReview).isNotNull();
-    assertThat(newReview.getTotalScore()).isEqualTo(25);
+    verify(projectReviewRepository, times(1)).save(any(ProjectReview.class));
   }
 
   @Test
@@ -89,8 +85,9 @@ class ProjectReviewServiceTest {
 
     // when
     CustomException exception = assertThrows(CustomException.class,
-        () -> projectReviewService.submitReview(project.getId(), targetUser.getId(),
-            user, project, targetUser, form));
+        () -> projectReviewService.submitReview(project.getId(),
+            targetUser.getId(),
+            user, project, targetUser, List.of(form)));
 
     // then
     assertEquals(PROJECT_NOT_COMPLETE, exception.getErrorCode());
