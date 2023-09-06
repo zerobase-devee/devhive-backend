@@ -2,8 +2,6 @@ package com.devee.devhive.domain.project.review.dto;
 
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
 import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,22 +15,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReviewDto {
 
-  @JsonProperty(value = "reviewer_id")
   private Long reviewerId;
-  @JsonProperty(value = "target_user_id")
   private Long targetUserId;
-
   private int manner;
   private int contribution;
   private int communication;
   private int schedule;
   private int professionalism;
-
-  @JsonProperty(value = "total_score")
   private int totalScore;
-
-  @JsonProperty(value = "create_date")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime createDateTime;
 
   public static ReviewDto of(ProjectReview review, List<Evaluation> evaluationList) {

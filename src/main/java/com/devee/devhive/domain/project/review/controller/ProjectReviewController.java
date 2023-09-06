@@ -41,7 +41,7 @@ public class ProjectReviewController {
   @Operation(summary = "프로젝트 완료 후 리뷰 작성")
   public ResponseEntity<ReviewDto> submitReview(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @PathVariable Long projectId, @PathVariable Long targetUserId,
+      @PathVariable Long projectId, @PathVariable(name = "targetUserId") Long targetUserId,
       @RequestBody EvaluationForm form
   ) {
     User user = userService.getUserByEmail(principalDetails.getEmail());
