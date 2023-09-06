@@ -3,9 +3,11 @@ package com.devee.devhive.domain.admin.controller;
 import static com.devee.devhive.domain.user.type.Role.ADMIN;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
+import com.devee.devhive.domain.badge.entity.dto.BadgeDto;
 import com.devee.devhive.domain.badge.entity.dto.CreateBadgeDto;
 import com.devee.devhive.domain.badge.service.BadgeService;
 import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
+import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.techstack.service.TechStackService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
@@ -14,9 +16,13 @@ import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,7 +72,6 @@ public class AdminController {
 
   @DeleteMapping("/tech-stack/{techStackId}")
   @Operation(summary = "테크스택 삭제", description = "테크스택의 고유 ID로 테크스택 삭제")
-
   public void deleteTechStack(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long techStackId
   ) {
@@ -76,6 +81,15 @@ public class AdminController {
     }
 
     techStackService.deleteTechStack(techStackId);
+  }
+
+  @GetMapping("/tech-stacks")
+  @Operation(summary = "테크스택 목록 조회", description = "서버에 등록된 모든 테크스택 목록 조회")
+  public ResponseEntity<List<TechStackDto>> getAllTechStacks() {
+    return ResponseEntity.ok(techStackService.getAllTechStacks().stream()
+        .map(TechStackDto::from)
+        .collect(Collectors.toList())
+    );
   }
 
   @PostMapping("/badge")
@@ -102,5 +116,14 @@ public class AdminController {
       throw new CustomException(UNAUTHORIZED);
     }
     badgeService.deleteBadge(badgeId);
+  }
+
+  @GetMapping("/badges")
+  @Operation(summary = "뱃지 목록 조회", description = "서버에 등록된 모든 뱃지 목록 조회")
+  public ResponseEntity<List<BadgeDto>> getAllBadges() {
+    return ResponseEntity.ok(badgeService.getAllBadges().stream()
+        .map(BadgeDto::from)
+        .collect(Collectors.toList())
+    );
   }
 }

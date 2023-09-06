@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -48,5 +47,9 @@ public class TechStackService {
     s3Service.delete(filename);
 
     techStackRepository.delete(techStack);
+  }
+
+  public List<TechStack> getAllTechStacks() {
+    return techStackRepository.findAllByOrderByNameAsc();
   }
 }

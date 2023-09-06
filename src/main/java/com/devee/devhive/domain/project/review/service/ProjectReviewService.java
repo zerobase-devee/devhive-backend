@@ -10,6 +10,7 @@ import com.devee.devhive.domain.project.review.repository.ProjectReviewRepositor
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,7 @@ public class ProjectReviewService {
 
   // 정보를 바탕으로 리뷰 등록
   public ProjectReview submitReview(Long projectId, Long targetUserId, User user,
-      Project project, User targetUser, EvaluationForm form
+      Project project, User targetUser, List<EvaluationForm> forms
   ) {
     // 리뷰는 프로젝트가 완료된 상태에서만 작성 가능
     if (project.getStatus() != ProjectStatus.COMPLETE) {
@@ -41,13 +42,14 @@ public class ProjectReviewService {
     if (isReviewed(projectId, user.getId(), targetUserId)) {
       throw new CustomException(ALREADY_SUBMIT_TARGETUSER);
     }
+    // 총 합계
+    int totalScore = forms.stream().mapToInt(EvaluationForm::getPoint).sum();
 
-    return projectReviewRepository.saveAndFlush(
-        ProjectReview.builder()
+    return projectReviewRepository.save(ProjectReview.builder()
             .project(project)
             .reviewerUser(user)
             .targetUser(targetUser)
-            .totalScore(form.getTotalScore())
+            .totalScore(totalScore)
             .build());
   }
 

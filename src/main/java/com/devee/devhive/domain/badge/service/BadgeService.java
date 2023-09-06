@@ -4,15 +4,15 @@ import static com.devee.devhive.global.exception.ErrorCode.DUPLICATE_BADGE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_BADGE;
 
 import com.devee.devhive.domain.badge.entity.Badge;
-import com.devee.devhive.domain.badge.repository.BadgeRepository;
 import com.devee.devhive.domain.badge.entity.dto.CreateBadgeDto;
+import com.devee.devhive.domain.badge.repository.BadgeRepository;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +20,10 @@ public class BadgeService {
 
   private final BadgeRepository badgeRepository;
   private final S3Service s3Service;
+
+  public List<Badge> getAllBadges() {
+    return badgeRepository.findAllByOrderByNameAsc();
+  }
 
   public void createBadge(CreateBadgeDto badgeDto) {
     if (badgeRepository.existsByName(badgeDto.getName())) {
