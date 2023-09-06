@@ -30,7 +30,7 @@ public class BatchProcessingScheduler {
   }
 
   // 매 0분마다 처리
-  @Scheduled(cron = "* 0 * * * *")
+//  @Scheduled(cron = "* 0 * * * *")
   public void processVote() {
     JobParameters jobParameters = getJobParameters();
 
@@ -41,7 +41,7 @@ public class BatchProcessingScheduler {
     }
   }
 
-  @Scheduled(cron = "* 0 * * * *")
+//  @Scheduled(cron = "* 0 * * * *")
   public void userReactivation() {
     JobParameters jobParameters = getJobParameters();
 
@@ -52,7 +52,7 @@ public class BatchProcessingScheduler {
     }
   }
 
-  @Scheduled(cron = "* 0 * * * *")
+//  @Scheduled(cron = "* 0 * * * *")
   public void projectRecruitProcess() {
     JobParameters jobParameters = getJobParameters();
 
