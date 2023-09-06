@@ -49,6 +49,7 @@ public class AdminController {
 
     return s3Service.upload(multipartFile);
   }
+
   @PostMapping("/tech-stack")
   @Operation(summary = "테크스택 생성", description = "이름과 이미지 URL을 사용하여 테크스택 생성")
   public void createTechStack(
