@@ -61,17 +61,6 @@ public class SecurityConfig {
         .sessionManagement(sessionManagement -> sessionManagement
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .headers(headers -> headers.frameOptions(FrameOptionsConfig::disable))
-        .oauth2Login(oauth2Login -> oauth2Login
-            .authorizationEndpoint(
-                authorizationEndpoint -> authorizationEndpoint
-                    .baseUri("/oauth2/authorization")
-                    .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
-            .redirectionEndpoint(
-                redirectionEndpoint -> redirectionEndpoint.baseUri("/*/oauth2/code/*"))
-            .userInfoEndpoint(
-                userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
-            .successHandler(oAuth2AuthenticationSuccessHandler())
-            .failureHandler(oAuth2AuthenticationFailureHandler()))
         .authorizeHttpRequests(authorizeRequests -> authorizeRequests
             .requestMatchers(
                 "/v2/api-docs",
@@ -83,7 +72,7 @@ public class SecurityConfig {
                 "/webjars/",
                 "/v3/api-docs/",
                 "/swagger-ui/",
-                "/api/auth/",
+                "/api/auth/**",
                 "/api/projects/list",
                 "/api/projects/{projectId}",
                 "/api/projects/image",
@@ -117,6 +106,17 @@ public class SecurityConfig {
             .anyRequest().authenticated()
         )
         .logout(logout -> logout.logoutSuccessUrl("/"))
+        .oauth2Login(oauth2Login -> oauth2Login
+            .authorizationEndpoint(
+                authorizationEndpoint -> authorizationEndpoint
+                    .baseUri("/oauth2/authorization")
+                    .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
+            .redirectionEndpoint(
+                redirectionEndpoint -> redirectionEndpoint.baseUri("/*/oauth2/code/*"))
+            .userInfoEndpoint(
+                userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
+            .successHandler(oAuth2AuthenticationSuccessHandler())
+            .failureHandler(oAuth2AuthenticationFailureHandler()))
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),
