@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class CreateBadgeDto {
 
   private String name;
+  private String imageUrl;
 }

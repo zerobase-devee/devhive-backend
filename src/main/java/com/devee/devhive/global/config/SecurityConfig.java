@@ -110,12 +110,13 @@ public class SecurityConfig {
               "/api/projects/**",
               "/api/chat/**",
               "/api/comments/**",
-              "/api/reply/**"
+              "/api/reply/**",
+              "/api/admin/**"
           ).hasAnyRole("USER", "ADMIN");
 
-          authorizeRequests.requestMatchers(
-              "/api/admin/**"
-          ).hasRole("ADMIN");
+//          authorizeRequests.requestMatchers(
+//              "/api/admin/**"
+//          ).hasRole("ADMIN");
         })
         .logout(logout -> logout.logoutSuccessUrl("/"))
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
