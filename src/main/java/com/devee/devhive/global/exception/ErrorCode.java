@@ -44,6 +44,8 @@ public enum ErrorCode {
 
     NOT_FOUND_ALARM(HttpStatus.BAD_REQUEST, "해당 알림을 찾을 수 없습니다."),
 
+    NOT_FOUND_CAREER(HttpStatus.BAD_REQUEST, "해당 경력을 찾을 수 없습니다."),
+
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),
     S3_FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "파일용량은 5MB 이하만 업로드 가능합니다."),
