@@ -1,16 +1,12 @@
 package com.devee.devhive.domain.user.career.service;
 
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import com.devee.devhive.domain.user.career.entity.Career;
-import com.devee.devhive.domain.user.career.entity.dto.CareerDto;
+import com.devee.devhive.domain.user.career.entity.form.CareerForm;
 import com.devee.devhive.domain.user.career.repository.CareerRepository;
-import com.devee.devhive.domain.user.entity.User;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,30 +29,27 @@ class CareerServiceTest {
 
   @Test
   @DisplayName("유저 경력 업데이트 - 성공")
-  void testUpdateCareers() {
+  void testUpdateCareer() {
     // Given
-    User user = User.builder().id(1L).build();
-
-    CareerDto careerDto = CareerDto.builder()
-        .company("ABC Company")
-        .position("Developer")
-        .startDate(LocalDateTime.of(2022,1,1,0,0,0))
-        .endDate(LocalDateTime.of(2023,1,1,0,0,0))
+    Career career = Career.builder()
+        .id(3L)
+        .company("Old Company")
+        .position("ceo")
+        .startDate(LocalDateTime.of(2020,1,1,0,0))
+        .endDate(null).build();
+    CareerForm form = CareerForm.builder()
+        .company("New Company")
+        .position("New Position")
+        .startDate(LocalDateTime.now())
+        .endDate(LocalDateTime.now().plusYears(1))
         .build();
-    List<CareerDto> newCareers = List.of(careerDto);
-
-    List<Career> existingCareers = List.of(Career.builder()
-        .user(user)
-        .company("XYZ Company")
-        .position("Designer")
-        .build());
-
-    when(careerRepository.findAllByUserIdOrderByStartDateAsc(user.getId())).thenReturn(existingCareers);
+    when(careerRepository.save(career)).thenReturn(career);
     // When
-    careerService.updateCareers(user, newCareers);
-
+    Career updatedCareer = careerService.update(career, form);
     // Then
-    verify(careerRepository, times(1)).deleteAll(existingCareers);
-    verify(careerRepository, times(1)).saveAll(anyList());
+    assertEquals("New Company", updatedCareer.getCompany());
+    assertEquals("New Position", updatedCareer.getPosition());
+    assertEquals(form.getStartDate(), updatedCareer.getStartDate());
+    assertEquals(form.getEndDate(), updatedCareer.getEndDate());
   }
 }
