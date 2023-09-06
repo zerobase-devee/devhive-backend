@@ -1,5 +1,7 @@
 package com.devee.devhive.global.security.handler;
 
+import com.devee.devhive.domain.auth.dto.LoginUserDto;
+import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.security.dto.TokenDto;
 import com.devee.devhive.global.entity.PrincipalDetails;
@@ -8,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -35,12 +38,16 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
           user.updateRefreshToken(refreshToken);
           userRepository.saveAndFlush(user);
         });
+
     log.info("로그인에 성공하였습니다. 이메일 : {}", email);
     log.info("로그인에 성공하였습니다. AccessToken : {}", accessToken);
+
+    User user = userRepository.findByEmail(email).orElse(null);
 
     TokenDto tokenDto = TokenDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
+        .userDto(LoginUserDto.from(Objects.requireNonNull(user)))
         .build();
 
     String tokenJson = new ObjectMapper().writeValueAsString(tokenDto); // TokenDto 객체를 JSON 문자열로 변환

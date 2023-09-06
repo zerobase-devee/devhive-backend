@@ -43,7 +43,6 @@ public class AuthController {
 
   // 인증 코드 검증
   @PostMapping("/verify/check")
-
   @Operation(summary = "이메일 인증코드 검증", description = "사용자가 입력한 이메일 인증코드를 검증")
   public boolean checkVerificationCode(@RequestBody VerifyDto verifyDto) {
     return authService.checkVerificationCode(verifyDto);
