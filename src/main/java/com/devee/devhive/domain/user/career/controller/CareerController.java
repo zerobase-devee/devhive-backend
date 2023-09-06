@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/careers/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class CareerController {
   private final UserService userService;
   private final CareerService careerService;
 
   // 내 기타 정보 수정 (기술스택, 경력)
-  @PutMapping("/my-profile")
+  @PutMapping("/my-profile/careers")
   public void updateEtcInfo(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody UpdateCareerForm form
@@ -36,7 +36,7 @@ public class CareerController {
   }
 
   // 유저 경력 조회
-  @GetMapping("/{userId}")
+  @GetMapping("/{userId}/careers")
   public ResponseEntity<List<CareerDto>> getUserCareers(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(careerService.getUserCareers(userId).stream()
         .map(CareerDto::from)
