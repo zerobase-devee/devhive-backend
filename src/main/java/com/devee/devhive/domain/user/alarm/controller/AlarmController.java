@@ -9,6 +9,8 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.domain.user.type.RelatedUrlType;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/api/users/alarms")
 @RequiredArgsConstructor
+@Tag(name = "ALARM API", description = "알람 API")
 public class AlarmController {
 
     private final AlarmService alarmService;
@@ -33,6 +36,7 @@ public class AlarmController {
 
     // 알람 sse 구독
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "알람 구독")
     public ResponseEntity<SseEmitter> subscribe(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
@@ -46,6 +50,7 @@ public class AlarmController {
 
     // 내 알림 목록 조회
     @GetMapping
+    @Operation(summary = "내 알람 목록 조회")
     public ResponseEntity<List<AlarmDto>> alarms(@AuthenticationPrincipal PrincipalDetails principal) {
         User user = userService.getUserByEmail(principal.getEmail());
         List<Alarm> alarms = alarmService.getAlarms(user.getId());
@@ -74,6 +79,7 @@ public class AlarmController {
     }
 
     @DeleteMapping("/{alarmId}")
+    @Operation(summary = "알람 삭제")
     public void delete(
         @AuthenticationPrincipal PrincipalDetails principal,
         @PathVariable("alarmId") Long alarmId

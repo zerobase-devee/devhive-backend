@@ -9,6 +9,8 @@ import com.devee.devhive.domain.user.career.service.CareerService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.devee.devhive.global.exception.CustomException;
 import java.util.List;
 import java.util.Objects;
@@ -28,12 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "CAREER API", description = "경력 API")
 public class CareerController {
   private final UserService userService;
   private final CareerService careerService;
 
   // 경력 등록
   @PostMapping("/my-profile/careers")
+  @Operation(summary = "내 경력 등록)")
   public ResponseEntity<CareerDto> createCareer(
       @AuthenticationPrincipal PrincipalDetails principal, @RequestBody CareerForm form
   ) {
@@ -45,6 +49,7 @@ public class CareerController {
 
   // 경력 수정
   @PutMapping("/my-profile/careers/{careerId}")
+  @Operation(summary = "내 경력 수정")
   public ResponseEntity<CareerDto> updateCareer(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable("careerId") Long careerId,
@@ -61,6 +66,7 @@ public class CareerController {
 
   // 경력 삭제
   @DeleteMapping("/my-profile/careers/{careerId}")
+  @Operation(summary = "내 경력 삭제")
   public void deleteCareer(
       @AuthenticationPrincipal PrincipalDetails principal,
       @PathVariable("careerId") Long careerId
@@ -75,6 +81,7 @@ public class CareerController {
 
   // 유저 경력 조회
   @GetMapping("/{userId}/careers")
+  @Operation(summary = "유저 경력 조회")
   public ResponseEntity<List<CareerDto>> getUserCareers(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(careerService.getUserCareers(userId).stream()
         .map(CareerDto::from)

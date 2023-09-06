@@ -3,14 +3,16 @@ package com.devee.devhive.domain.admin.controller;
 import static com.devee.devhive.domain.user.type.Role.ADMIN;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
-import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
-import com.devee.devhive.domain.techstack.service.TechStackService;
 import com.devee.devhive.domain.badge.entity.dto.CreateBadgeDto;
 import com.devee.devhive.domain.badge.service.BadgeService;
+import com.devee.devhive.domain.techstack.entity.dto.CreateTechStackDto;
+import com.devee.devhive.domain.techstack.service.TechStackService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import com.devee.devhive.global.exception.CustomException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
+@Tag(name = "ADMIN API", description = "관리자 API")
 public class AdminController {
 
   private final UserService userService;
@@ -31,6 +34,7 @@ public class AdminController {
   private final BadgeService badgeService;
 
   @PostMapping("/tech-stack")
+  @Operation(summary = "테크스택 생성", description = "이름과 이미지를 RequestPart로 받아서 테크스택 생성")
   public void createTechStack(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestPart(value = "techStackDto") CreateTechStackDto techStackDto,
@@ -44,6 +48,8 @@ public class AdminController {
   }
 
   @DeleteMapping("/tech-stack/{techStackId}")
+  @Operation(summary = "테크스택 삭제", description = "테크스택의 고유 ID로 테크스택 삭제")
+
   public void deleteTechStack(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long techStackId
   ) {
@@ -56,6 +62,7 @@ public class AdminController {
   }
 
   @PostMapping("/badge")
+  @Operation(summary = "뱃지 생성", description = "이름과 이미지를 RequestPart로 받아서 뱃지 생성")
   public void createBadge(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestPart(value = "badgeDto") CreateBadgeDto badgeDto,
@@ -69,6 +76,7 @@ public class AdminController {
   }
 
   @DeleteMapping("/badge/{badgeId}")
+  @Operation(summary = "뱃지 삭제", description = "뱃지의 고유 ID로 뱃지 삭제")
   public void deleteBadge(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long badgeId
   ) {

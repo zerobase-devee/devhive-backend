@@ -11,6 +11,8 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@Tag(name = "PROJECT REVIEW API", description = "프로젝트 리뷰 API")
 public class ProjectReviewController {
 
   private final ProjectReviewService reviewService;
@@ -35,6 +38,7 @@ public class ProjectReviewController {
   private final ProjectService projectService;
 
   @PostMapping("{projectId}/review/{targetUserId}")
+  @Operation(summary = "프로젝트 완료 후 리뷰 작성")
   public ResponseEntity<ReviewDto> submitReview(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId,

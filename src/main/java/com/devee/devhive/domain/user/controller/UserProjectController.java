@@ -10,6 +10,8 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users/project")
 @RequiredArgsConstructor
+@Tag(name = "USER PROJECT API", description = "유저 프로젝트 API")
 public class UserProjectController {
 
     private final UserService userService;
@@ -37,6 +40,7 @@ public class UserProjectController {
 
     // 내가 생성한 프로젝트 페이지
     @GetMapping("/write")
+    @Operation(summary = "내가 생성한 프로젝트 목록 조회")
     public ResponseEntity<Page<SimpleProjectDto>> getWriteProjects(
         @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
@@ -48,6 +52,7 @@ public class UserProjectController {
 
     // 내가 참여한 프로젝트 페이지
     @GetMapping("/participation")
+    @Operation(summary = "내가 참여한 프로젝트 목록 조회")
     public ResponseEntity<Page<SimpleProjectDto>> getParticipationProjects(
         @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
@@ -60,6 +65,7 @@ public class UserProjectController {
 
     // 내 프로젝트 정보 조회
     @GetMapping("/{projectId}")
+    @Operation(summary = "내 프로젝트 상세 정보 조회")
     public ResponseEntity<MyProjectInfoDto> getProjectInfo(
         @PathVariable("projectId") Long projectId,
         @AuthenticationPrincipal PrincipalDetails principal

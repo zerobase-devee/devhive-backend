@@ -14,6 +14,8 @@ import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.exception.ErrorCode;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/projects/{projectId}/vote")
 @RequiredArgsConstructor
+@Tag(name = "EXIT VOTE API", description = "프로젝트 퇴출 투표 API")
 public class ExitVoteController {
 
   private final ExitVoteService exitVoteService;
@@ -39,6 +42,7 @@ public class ExitVoteController {
   private final ProjectMemberService projectMemberService;
 
   @PostMapping("/{targetUserId}")
+  @Operation(summary = "프로젝트 퇴출 투표 생성")
   public ResponseEntity<String> createExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId
@@ -61,6 +65,7 @@ public class ExitVoteController {
   }
 
   @PutMapping("/{targetUserId}")
+  @Operation(summary = "프로젝트 퇴출 투표 제출")
   public ResponseEntity<VoteDto> submitExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId, @RequestParam boolean vote
@@ -80,6 +85,7 @@ public class ExitVoteController {
 
   // 프로젝트에 퇴출투표가 있으면 투표정보와 각 팀원들의 투표 참여 여부
   @GetMapping
+  @Operation(summary = "프로젝트 퇴출 투표 정보 조회")
   public ResponseEntity<ProjectExitVoteDto> getExitVote(@PathVariable Long projectId) {
     List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
     ProjectExitVoteDto projectExitVoteDto = null;

@@ -15,6 +15,8 @@ import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
+@Tag(name = "COMMNENT API", description = "댓글 API")
 public class CommentController {
 
     private final UserService userService;
@@ -42,6 +45,7 @@ public class CommentController {
 
     // 댓글 생성
     @PostMapping("/projects/{projectId}")
+    @Operation(summary = "프로젝트 댓글 작성")
     public ResponseEntity<CommentDto> create(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("projectId") Long projectId, @RequestBody @Valid CommentForm form
@@ -55,6 +59,7 @@ public class CommentController {
 
     // 댓글 수정
     @PutMapping("/{commentId}")
+    @Operation(summary = "프로젝트 댓글 수정")
     public ResponseEntity<CommentDto> update(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("commentId") Long commentId, @RequestBody @Valid CommentForm form
@@ -66,6 +71,7 @@ public class CommentController {
 
     // 댓글 삭제
     @DeleteMapping("/{commentId}")
+    @Operation(summary = "프로젝트 댓글 삭제")
     public void delete(
         @AuthenticationPrincipal PrincipalDetails principalDetails,
         @PathVariable("commentId") Long commentId
@@ -81,6 +87,7 @@ public class CommentController {
     }
 
     @GetMapping("/projects/{projectId}")
+    @Operation(summary = "프로젝트 댓글 & 답글")
     public ResponseEntity<List<CommentAndReplyDto>> getCommentAndReplyDtoList(
         @PathVariable("projectId") Long projectId) {
         return ResponseEntity.ok(commentService.getCommentsByProjectId(projectId).stream()
