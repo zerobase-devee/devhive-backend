@@ -84,15 +84,15 @@ public class SecurityConfig {
               "api/users/{userId}/exit-num",
               "api/members/users/{userId}/project-histories",
               "api/users/{userId}/badges",
-              "/api/tech-stacks/users/{userId}",
-              "/api/careers/users/{userId}",
+              "/api/users/{userId}/tech-stacks",
+              "/api/users/{userId}/careers",
               "/api/projects/{projectId}/vote",
               "api/comments/projects/{projectId}",
               "/login/**"
           ).permitAll();
 
           authorizeRequests.requestMatchers(
-              "/api/**/users/**",
+              "/api/users/**",
               "/api/favorite/**",
               "/api/bookmark/**",
               "/api/projects/**",

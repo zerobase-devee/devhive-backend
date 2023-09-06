@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/tech-stacks/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserTechStackController {
 
@@ -27,7 +27,7 @@ public class UserTechStackController {
   private final UserTechStackService userTechStackService;
 
   // 내 기술스택 수정
-  @PutMapping("/my-profile")
+  @PutMapping("/my-profile/tech-stacks")
   public void updateUserTechStacks(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody UpdateTechStackForm form
@@ -37,7 +37,7 @@ public class UserTechStackController {
   }
 
   // 유저 기술 스택 조회
-  @GetMapping("/{userId}")
+  @GetMapping("/{userId}/tech-stacks")
   public ResponseEntity<List<TechStackDto>> getUserTechStacks(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(userTechStackService.getUserTechStacks(userId).stream()
         .map(userTechStack -> TechStackDto.from(userTechStack.getTechStack()))
