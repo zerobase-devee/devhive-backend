@@ -2,11 +2,13 @@ package com.devee.devhive.domain.auth.controller;
 
 import com.devee.devhive.domain.auth.dto.EmailDto;
 import com.devee.devhive.domain.auth.dto.JoinDto;
+import com.devee.devhive.domain.auth.dto.LoginUserDto;
 import com.devee.devhive.domain.auth.dto.NicknameDto;
 import com.devee.devhive.domain.auth.dto.VerifyDto;
 import com.devee.devhive.domain.auth.service.AuthService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.global.security.dto.TokenDto;
 import com.devee.devhive.global.security.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,7 +62,7 @@ public class AuthController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   @Operation(summary = "토큰 리프레쉬", description = "사용자의 Refresh Token 으로 Access Token 재발급")
-  public String reissueAccessToken(HttpServletResponse response, @RequestBody String refreshToken) {
+  public ResponseEntity<TokenDto> reissueAccessToken(HttpServletResponse response, @RequestBody String refreshToken) {
     log.info("전달받은 refreshToken : {}", refreshToken);
     // AccessToken 재발급
     Optional<User> userOptional = userRepository.findByRefreshToken(refreshToken);
@@ -75,7 +78,13 @@ public class AuthController {
     log.info("reIssuedRefreshToken : {}", reIssuedRefreshToken);
     tokenService.sendAccessToken(response, accessToken);
     tokenService.sendAccessAndRefreshToken(response, accessToken, reIssuedRefreshToken);
-    return accessToken;
+
+    return ResponseEntity.ok(TokenDto.builder()
+        .accessToken(accessToken)
+        .refreshToken(reIssuedRefreshToken)
+        .userDto(LoginUserDto.from(user))
+        .build()
+    );
   }
 
   private String reIssueRefreshToken(User user) {
