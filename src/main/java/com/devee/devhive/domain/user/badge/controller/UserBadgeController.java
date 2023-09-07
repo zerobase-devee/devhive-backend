@@ -1,6 +1,6 @@
 package com.devee.devhive.domain.user.badge.controller;
 
-import com.devee.devhive.domain.badge.entity.dto.BadgeDto;
+import com.devee.devhive.domain.user.badge.entity.dto.UserBadgeDto;
 import com.devee.devhive.domain.user.badge.service.UserBadgeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,9 +20,9 @@ public class UserBadgeController {
 
   @GetMapping("/api/users/{userId}/badges")
   @Operation(summary = "유저 뱃지 목록 조회")
-  public ResponseEntity<List<BadgeDto>> getUserBadges(@PathVariable("userId") Long userId) {
+  public ResponseEntity<List<UserBadgeDto>> getUserBadges(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(userBadgeService.getUserBadges(userId).stream()
-        .map(badge -> BadgeDto.from(badge.getBadge()))
+        .map(UserBadgeDto::from)
         .collect(Collectors.toList())
     );
   }

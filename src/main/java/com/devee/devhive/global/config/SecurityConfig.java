@@ -76,44 +76,44 @@ public class SecurityConfig {
             .requestMatchers(
                 "/v2/api-docs",
                 "/swagger-resources",
-                "/swagger-resources/",
+                "/swagger-resources/**",
                 "/configuration/ui",
                 "/configuration/security",
                 "/swagger-ui.html",
-                "/webjars/",
-                "/v3/api-docs/",
-                "/swagger-ui/",
+                "/webjars/**",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
                 "/api/auth/**",
                 "/api/projects/list",
                 "/api/projects/{projectId}",
                 "/api/projects/image",
                 "/api/users/rank",
                 "/api/users/{userId}",
-                "api/members/users/{userId}/hive-level",
-                "api/users/{userId}/exit-num",
-                "api/members/users/{userId}/project-histories",
-                "api/users/{userId}/badges",
+                "/api/members/users/{userId}/hive-level",
+                "/api/users/{userId}/exit-num",
+                "/api/members/users/{userId}/project-histories",
+                "/api/users/{userId}/badges",
                 "/api/users/{userId}/tech-stacks",
                 "/api/users/{userId}/careers",
                 "/api/projects/{projectId}/vote",
-                "api/comments/projects/{projectId}",
-                "/login/",
+                "/api/comments/projects/{projectId}",
+                "/login/**",
                 "/api/admin/tech-stacks",
                 "/api/admin/badges"
             ).permitAll()
 
             .requestMatchers(
-                "/api/users/",
-                "/api/favorite/",
-                "/api/bookmark/",
-                "/api/projects/",
-                "/api/chat/",
-                "/api/comments/",
-                "/api/reply/"
+                "/api/users/**",
+                "/api/favorite/**",
+                "/api/bookmark/**",
+                "/api/projects/**",
+                "/api/chat/**",
+                "/api/comments/**",
+                "/api/reply/**"
             ).hasAnyRole("USER", "ADMIN")
 
             .requestMatchers(
-                "/api/admin/"
+                "/api/admin/**"
             ).hasRole("ADMIN")
 
             .anyRequest().authenticated()
