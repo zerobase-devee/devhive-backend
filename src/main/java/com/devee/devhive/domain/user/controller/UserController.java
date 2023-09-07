@@ -4,7 +4,6 @@ import static com.devee.devhive.global.exception.ErrorCode.AVAILABLE_LOCAL_LOGIN
 
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.dto.MyInfoDto;
-import com.devee.devhive.domain.user.entity.dto.RankUserDto;
 import com.devee.devhive.domain.user.entity.dto.UserInfoDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
@@ -17,8 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -120,12 +117,5 @@ public class UserController {
   public void deleteProfileImage(@AuthenticationPrincipal PrincipalDetails principal) {
     User user = userService.getUserByEmail(principal.getEmail());
     userService.deleteProfileImage(user);
-  }
-
-  // 랭킹 목록 페이징 처리
-  @GetMapping("/rank")
-  @Operation(summary = "랭킹 목록 조회")
-  public ResponseEntity<Page<RankUserDto>> getRankUsers(Pageable pageable) {
-    return ResponseEntity.ok(userService.getRankUsers(pageable).map(RankUserDto::from));
   }
 }
