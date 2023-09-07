@@ -1,4 +1,4 @@
-package com.devee.devhive.domain.user.repository;
+package com.devee.devhive.domain.user.techstack.repository;
 
 import com.devee.devhive.domain.user.techstack.entity.UserTechStack;
 import java.util.List;

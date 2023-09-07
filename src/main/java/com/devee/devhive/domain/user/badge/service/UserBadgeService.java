@@ -5,7 +5,7 @@ import com.devee.devhive.domain.badge.service.BadgeService;
 import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.user.badge.entity.UserBadge;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.repository.UserBadgeRepository;
+import com.devee.devhive.domain.user.badge.repository.UserBadgeRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
