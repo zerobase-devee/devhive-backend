@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -14,6 +16,7 @@ public class RankUserDto {
     private Long userId;
     private String nickName;
     private String profileImage;
+    private Long rank;
     private double rankPoint;
 
     public static RankUserDto from(User user) {

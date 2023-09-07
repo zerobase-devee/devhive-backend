@@ -9,11 +9,8 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
 import com.devee.devhive.domain.project.review.evaluation.repository.EvaluationRepository;
-import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.ProjectStatus;
-import com.devee.devhive.domain.project.type.RecruitmentType;
 import com.devee.devhive.domain.user.entity.User;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,18 +54,6 @@ class EvaluationServiceTest {
         .targetUser(targetUser)
         .project(Project.builder()
             .id(1L)
-            .user(user)
-            .name("project")
-            .content("모집원 구함")
-            .title("구함")
-            .recruitmentType(RecruitmentType.ONLINE)
-            .developmentType(DevelopmentType.BACKEND)
-            .deadline(LocalDateTime.now().plusMonths(1))
-            .startDate(LocalDateTime.now().minusWeeks(1))
-            .endDate(LocalDateTime.now())
-            .viewCount(3)
-            .teamSize(3)
-            .modifiedDate(LocalDateTime.now().minusDays(1))
             .status(ProjectStatus.RECRUITMENT_COMPLETE).build())
         .totalScore(7)
         .build();

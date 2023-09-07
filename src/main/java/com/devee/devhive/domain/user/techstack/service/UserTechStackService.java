@@ -8,7 +8,7 @@ import com.devee.devhive.domain.techstack.service.TechStackService;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.techstack.entity.UserTechStack;
-import com.devee.devhive.domain.user.repository.UserTechStackRepository;
+import com.devee.devhive.domain.user.techstack.repository.UserTechStackRepository;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import java.util.ArrayList;
 import java.util.List;
