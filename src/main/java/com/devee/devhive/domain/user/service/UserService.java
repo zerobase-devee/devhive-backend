@@ -58,8 +58,9 @@ public class UserService {
   @Transactional
   public void updateProfileImage(MultipartFile multipartFile, User user) {
     // 기존 프로필 있으면 s3에 저장한 이미지 삭제
-    if (!user.getProfileImage().isEmpty() || user.getProfileImage() != null) {
-      String imageUrl = URLDecoder.decode(user.getProfileImage(), StandardCharsets.UTF_8);
+    String currentProfileImage = user.getProfileImage();
+    if (currentProfileImage != null && !currentProfileImage.isEmpty()) {
+      String imageUrl = URLDecoder.decode(currentProfileImage, StandardCharsets.UTF_8);
       String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
 
       s3Service.delete(filename);
