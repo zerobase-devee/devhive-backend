@@ -76,6 +76,8 @@ public class SecurityConfig {
           authorizeRequests.requestMatchers(
               "/api/admin/**"
           ).hasRole("ADMIN");
+
+          authorizeRequests.requestMatchers("/ws").permitAll();
         })
         .logout(logout -> logout.logoutSuccessUrl("/"))
         .oauth2Login(oauth2Login -> oauth2Login
