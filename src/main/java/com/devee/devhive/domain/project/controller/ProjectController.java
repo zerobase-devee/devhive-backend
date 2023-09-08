@@ -1,13 +1,13 @@
 package com.devee.devhive.domain.project.controller;
 
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
+import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
 import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
-import com.devee.devhive.domain.project.entity.dto.ProjectImageDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectInfoDto;
 import com.devee.devhive.domain.project.entity.dto.ProjectListDto;
 import com.devee.devhive.domain.project.entity.dto.SearchProjectDto;
@@ -26,6 +26,7 @@ import com.devee.devhive.domain.user.entity.dto.SimpleUserDto;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.techstack.service.UserTechStackService;
+import com.devee.devhive.domain.user.type.Role;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
@@ -169,11 +170,16 @@ public class ProjectController {
   }
 
   // 이미지 업로드 후 url 얻는 api
-  @GetMapping("/image")
-  public ResponseEntity<ProjectImageDto> getImageUrl(
+  @PostMapping("/image")
+  public String getImageUrl(
+      @AuthenticationPrincipal PrincipalDetails principal,
       @RequestPart(value = "image", required = false) MultipartFile multipartFile
   ) {
-    return ResponseEntity.ok(ProjectImageDto.from(s3Service.upload(multipartFile)));
+    User user = userService.getUserByEmail(principal.getEmail());
+    if (!(user.getRole() == Role.ADMIN || user.getRole() == Role.USER)) {
+      throw new CustomException(UNAUTHORIZED);
+    }
+    return s3Service.upload(multipartFile);
   }
 
   // 프로젝트 상세 조회

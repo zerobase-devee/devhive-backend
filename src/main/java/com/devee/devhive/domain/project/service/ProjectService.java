@@ -3,6 +3,7 @@ package com.devee.devhive.domain.project.service;
 import static com.devee.devhive.domain.project.type.ProjectStatus.COMPLETE;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITING;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITMENT_COMPLETE;
+import static com.devee.devhive.domain.project.type.RecruitmentType.ALL;
 import static com.devee.devhive.domain.project.type.RecruitmentType.OFFLINE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_PROJECT;
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
@@ -63,7 +64,7 @@ public class ProjectService {
         .status(RECRUITING)
         .build();
 
-    if (createProjectDto.getRecruitmentType() == OFFLINE) {
+    if (createProjectDto.getRecruitmentType() == OFFLINE || createProjectDto.getRecruitmentType() == ALL) {
       project.setRegion(createProjectDto.getRegion());
     }
 
@@ -128,14 +129,12 @@ public class ProjectService {
     if (!Objects.equals(project.getDeadline(), updateProjectDto.getDeadline())) {
       project.setDeadline(updateProjectDto.getDeadline());
     }
-    if (updateProjectDto.getRecruitmentType() == OFFLINE && !Objects.equals(project.getRegion(),
-        updateProjectDto.getRegion())) {
+    if (updateProjectDto.getRecruitmentType() == OFFLINE || updateProjectDto.getRecruitmentType() == ALL) {
       project.setRegion(updateProjectDto.getRegion());
     }
 
     return projectRepository.save(project);
   }
-
 
   // 프로젝트 삭제
   @Transactional

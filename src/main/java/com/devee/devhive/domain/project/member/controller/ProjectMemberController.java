@@ -2,13 +2,14 @@ package com.devee.devhive.domain.project.member.controller;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
+import com.devee.devhive.domain.project.member.entity.dto.ProjectHistoryDto;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
-import com.devee.devhive.domain.project.member.entity.dto.ProjectHistoryDto;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,11 +32,17 @@ public class ProjectMemberController {
     List<Project> projects = projectMemberService.findAllByUserId(userId).stream()
         .map(ProjectMember::getProject)
         .toList();
-    return ResponseEntity.ok(projects.stream()
-        .map(project -> ProjectHistoryDto.of(project.getName(),
-            projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, project.getId()))
-        ).collect(Collectors.toList())
-    );
+    List<ProjectHistoryDto> projectHistoryList = new ArrayList<>();
+
+    for (Project project : projects) {
+      if (project.getStatus() == ProjectStatus.COMPLETE) {
+        ProjectHistoryDto projectHistory = ProjectHistoryDto.of(project.getName(),
+            projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, project.getId()));
+        projectHistoryList.add(projectHistory);
+      }
+    }
+
+    return ResponseEntity.ok(projectHistoryList);
   }
 
   @GetMapping("/{userId}/hive-level")

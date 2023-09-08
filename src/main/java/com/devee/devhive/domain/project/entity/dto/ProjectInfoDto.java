@@ -56,6 +56,7 @@ public class ProjectInfoDto {
         .recruitmentNum(project.getTeamSize() - projectMembers.size())
         .deadline(project.getDeadline())
         .projectName(project.getName())
+        .content(project.getContent())
         .techStacks(techStacks)
         .writerInfo(SimpleUserDto.from(project.getUser()))
         .projectMembers(projectMembers)
