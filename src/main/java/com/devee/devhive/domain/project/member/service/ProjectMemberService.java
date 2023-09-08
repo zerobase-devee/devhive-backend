@@ -3,6 +3,7 @@ package com.devee.devhive.domain.project.member.service;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.repository.ProjectMemberRepository;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.type.AlarmContent;
@@ -27,7 +28,13 @@ public class ProjectMemberService {
 
   // 유저가 참여한 완료된 프로젝트 갯수 (벌집레벨)
   public int countCompletedProjectsByUserId(Long userId) {
-    return projectMemberRepository.countCompletedProjectsByUserId(userId);
+    List<ProjectMember> projectMembers = projectMemberRepository.findAllByUserIdOrderByCreatedDateDesc(userId);
+    long completedProjectCount = projectMembers.stream()
+        .map(ProjectMember::getProject)
+        .filter(project -> project.getStatus() == ProjectStatus.COMPLETE)
+        .count();
+
+    return (int) completedProjectCount;
   }
 
   // 유저가 참여한 프로젝트 목록(최신순)
