@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -54,23 +53,26 @@ public class UserService {
 
   // 랭킹 목록 조회
   public List<RankUserDto> getRankUsers(Pageable pageable) {
-    Page<User> usersPage = userRepository.findAllByOrderByRankPointDesc(pageable);
-    long startRank = pageable.getOffset() + 1;
-    return rankUsersWithTies(usersPage.getContent(), startRank);
+    List<User> allUsers = userRepository.findAllByOrderByRankPointDesc();
+    List<RankUserDto> rankedUsers = rankUsersWithTies(allUsers);
+
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), rankedUsers.size());
+
+    return rankedUsers.subList(start, end);
   }
 
   // 공동 순위 처리(1,2,2,4식으로)
-  private List<RankUserDto> rankUsersWithTies(List<User> users, long startRank) {
+  private List<RankUserDto> rankUsersWithTies(List<User> users) {
     List<RankUserDto> rankUsers = new ArrayList<>();
-    long rank = startRank;
+    long rank = 1;
 
     for (int i = 0; i < users.size(); i++) {
       User currentUser = users.get(i);
 
       int tieLength = 1;
-      int j = i;
-      while (j < users.size() - 1 && currentUser.getRankPoint() == users.get(j + 1)
-          .getRankPoint()) {
+      int j = i + 1;
+      while (j < users.size() && currentUser.getRankPoint() == users.get(j).getRankPoint()) {
         tieLength++;
         j++;
       }
@@ -84,7 +86,8 @@ public class UserService {
       }
 
       rank += tieLength;
-      i = j; // i 값을 j로 업데이트하여 중복 계산을 방지
+
+      i += tieLength - 1;
     }
 
     return rankUsers;
