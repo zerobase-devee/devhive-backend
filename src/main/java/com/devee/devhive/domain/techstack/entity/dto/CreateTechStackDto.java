@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CreateTechStackDto {
   private String name;
+  private String imageUrl;
 }

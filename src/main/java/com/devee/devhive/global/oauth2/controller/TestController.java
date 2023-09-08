@@ -16,6 +16,11 @@ public class TestController {
 
   private final HttpSession httpSession;
 
+  @GetMapping("/api/auth/hello")
+  public String hello() {
+    return "Hello!!!!!!!!!!!";
+  }
+
   @GetMapping("/test")
   public Map<String, Object> test(Model model, Authentication authentication) {
 

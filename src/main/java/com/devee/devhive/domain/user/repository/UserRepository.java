@@ -1,9 +1,9 @@
 package com.devee.devhive.domain.user.repository;
 
 import com.devee.devhive.domain.user.entity.User;
+import com.devee.devhive.domain.user.type.ProviderType;
+import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,5 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByRefreshToken(String refreshToken);
 
-  Page<User> findAllByOrderByRankPointDesc(Pageable pageable);
+  List<User> findAllByOrderByRankPointDesc();
+
+  Optional<User> findByProviderTypeAndProviderId(ProviderType providerType, String providerId);
 }

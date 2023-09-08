@@ -10,6 +10,7 @@ import com.devee.devhive.domain.project.review.repository.ProjectReviewRepositor
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,29 +22,48 @@ public class ProjectReviewService {
 
   // 프로젝트에서 유저가 받은 리뷰의 평균점수
   public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId) {
-    return projectReviewRepository.getAverageTotalScoreByTargetUserIdAndProjectId(targetUserId,
-        projectId);
+    List<ProjectReview> reviews = projectReviewRepository.findAllByProjectIdAndTargetUserId(targetUserId, projectId);
+    int count = reviews.size();
+    if (count == 0) {
+      return 0.0; // 0으로 나누는 경우 처리
+    }
+
+    int sumTotalScore = reviews.stream().mapToInt(ProjectReview::getTotalScore).sum();
+    double average = (double) sumTotalScore / count;
+
+    // 결과를 소수점 첫째 자리까지 반올림
+    return Math.round(average * 10.0) / 10.0;
+  }
+
+  // 리뷰 했는지
+  public boolean isReviewed(Long projectId, Long reviewerUserId, Long targetUserId) {
+    return projectReviewRepository.existsByProjectIdAndReviewerUserIdAndTargetUserId(projectId, reviewerUserId, targetUserId);
   }
 
   // 정보를 바탕으로 리뷰 등록
-  public ProjectReview submitReview(User user, Project project, User targetUser,
-      EvaluationForm form) {
+  public ProjectReview submitReview(Long projectId, Long targetUserId, User user,
+      Project project, User targetUser, List<EvaluationForm> forms
+  ) {
     // 리뷰는 프로젝트가 완료된 상태에서만 작성 가능
     if (project.getStatus() != ProjectStatus.COMPLETE) {
       throw new CustomException(PROJECT_NOT_COMPLETE);
     }
 
-    if (projectReviewRepository.existsByProjectAndTargetUser(project, targetUser)) {
+    if (isReviewed(projectId, user.getId(), targetUserId)) {
       throw new CustomException(ALREADY_SUBMIT_TARGETUSER);
     }
+    // 총 합계
+    int totalScore = forms.stream().mapToInt(EvaluationForm::getPoint).sum();
 
-    ProjectReview newReview = ProjectReview.builder()
-        .project(project)
-        .reviewerUser(user)
-        .targetUser(targetUser)
-        .totalScore(form.getTotalScore())
-        .build();
+    return projectReviewRepository.save(ProjectReview.builder()
+            .project(project)
+            .reviewerUser(user)
+            .targetUser(targetUser)
+            .totalScore(totalScore)
+            .build());
+  }
 
-    return projectReviewRepository.saveAndFlush(newReview);
+  public int countAllByProjectIdAndTargetUserId(Long projectId, Long targetUserId) {
+    return projectReviewRepository.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
   }
 }

@@ -8,11 +8,14 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.domain.user.service.UserService;
+import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,32 +30,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users/project")
 @RequiredArgsConstructor
+@Tag(name = "USER PROJECT API", description = "유저 프로젝트 API")
 public class UserProjectController {
 
+    private final UserService userService;
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final ProjectReviewService projectReviewService;
 
     // 내가 생성한 프로젝트 페이지
     @GetMapping("/write")
+    @Operation(summary = "내가 생성한 프로젝트 목록 조회")
     public ResponseEntity<Page<SimpleProjectDto>> getWriteProjects(
-        @AuthenticationPrincipal PrincipalDetails principal
+        @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(0, 3);
-        User user = principal.getUser();
+        User user = userService.getUserByEmail(principal.getEmail());
         return ResponseEntity.ok(
-            projectService.getWriteProjects(user.getId(), pageable)
-            .map(SimpleProjectDto::from)
+            projectService.getWriteProjects(user.getId(), pageable).map(SimpleProjectDto::from)
         );
     }
 
     // 내가 참여한 프로젝트 페이지
     @GetMapping("/participation")
+    @Operation(summary = "내가 참여한 프로젝트 목록 조회")
     public ResponseEntity<Page<SimpleProjectDto>> getParticipationProjects(
-        @AuthenticationPrincipal PrincipalDetails principal
+        @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(0, 3);
-        User user = principal.getUser();
+        User user = userService.getUserByEmail(principal.getEmail());
         return ResponseEntity.ok(
             projectMemberService.getParticipationProjects(user.getId(), pageable)
                 .map(projectMember -> SimpleProjectDto.from(projectMember.getProject()))
@@ -61,20 +65,26 @@ public class UserProjectController {
 
     // 내 프로젝트 정보 조회
     @GetMapping("/{projectId}")
+    @Operation(summary = "내 프로젝트 상세 정보 조회")
     public ResponseEntity<MyProjectInfoDto> getProjectInfo(
         @PathVariable("projectId") Long projectId,
         @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        User user = principal.getUser();
+        User user = userService.getUserByEmail(principal.getEmail());
+        Long userId = user.getId();
         Project project = projectService.findById(projectId);
-        double totalAverageScore =
-            projectReviewService.getAverageTotalScoreByTargetUserAndProject(user.getId(), projectId);
+        double totalAverageScore = projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, projectId);
         List<ProjectMemberDto> projectMemberDtoList =
-            projectMemberService.getProjectMemberByProjectId(projectId)
-            .stream().map(ProjectMemberDto::from).toList();
+            projectMemberService.getProjectMemberByProjectId(projectId).stream()
+                .map(projectMember -> {
+                    boolean isReviewed = projectReviewService.isReviewed(projectId, userId, projectMember.getUser().getId());
+                    return ProjectMemberDto.of(projectMember, isReviewed);
+                }).toList();
+
+        boolean leader = Objects.equals(project.getUser().getId(), userId);
 
         return ResponseEntity.ok(
-            MyProjectInfoDto.of(project, projectMemberDtoList, totalAverageScore)
+            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader)
         );
     }
 }

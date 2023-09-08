@@ -20,7 +20,11 @@ public enum ErrorCode {
     NONE_CORRECT_PW(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다. "),
     NONE_CORRECT_EMAIL_AND_PW(HttpStatus.NOT_FOUND, "이메일 혹은 비밀번호를 확인하세요."),
 
+    // OAuth2
+    CHECK_SOCIAL_SERVER(HttpStatus.NOT_FOUND, "소셜로그인에 실패하였습니다. 서버를 확인 하세요."),
+
     ALREADY_CHANGED_NICKNAME(HttpStatus.BAD_REQUEST, "최초 1회만 변경 가능하며, 이미 닉네임을 변경한 적이 있어 변경 불가합니다."),
+    AVAILABLE_LOCAL_LOGIN(HttpStatus.BAD_REQUEST, "소셜 로그인 유저는 변경 불가."),
     USER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "기존 비밀번호가 일치하지 않습니다."),
     USER_PASSWORD_EQUALS_NEW_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 새 비밀번호가 일치합니다."),
     NEW_PASSWORD_MISMATCH_RE_PASSWORD(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
@@ -38,6 +42,10 @@ public enum ErrorCode {
     NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다."),
     NOT_FOUND_REPLY(HttpStatus.BAD_REQUEST, "해당 대댓글을 찾을 수 없습니다."),
 
+    NOT_FOUND_ALARM(HttpStatus.BAD_REQUEST, "해당 알림을 찾을 수 없습니다."),
+
+    NOT_FOUND_CAREER(HttpStatus.BAD_REQUEST, "해당 경력을 찾을 수 없습니다."),
+
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),
     S3_FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "파일용량은 5MB 이하만 업로드 가능합니다."),
@@ -53,7 +61,7 @@ public enum ErrorCode {
 
     // Vote
     NOT_FOUND_VOTE(HttpStatus.BAD_REQUEST, "해당 투표를 찾을 수 없습니다."),
-    ALREADY_REGISTERED_VOTE(HttpStatus.BAD_REQUEST, "해당 유저에 대한 투표는 이미 등록되었습니다."),
+    ALREADY_REGISTERED_VOTE(HttpStatus.BAD_REQUEST, "진행중인 투표가 있습니다."),
     ALREADY_SUBMIT_VOTE(HttpStatus.BAD_REQUEST, "투표를 이미 진행했습니다."),
 
     NOT_FOUND_TECH_STACK(HttpStatus.NOT_FOUND, "테크스택을 찾을 수 없습니다. "),

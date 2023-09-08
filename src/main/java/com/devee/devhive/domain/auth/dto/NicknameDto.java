@@ -7,7 +7,6 @@ import lombok.Data;
 
 @Data
 public class NicknameDto {
-
   @NotBlank
   @Size(min = 1, max = 6) // 1~6자
   @Pattern(regexp = "^(?!.*\\s)[a-zA-Z0-9가-힣]*$",

@@ -3,6 +3,7 @@ package com.devee.devhive.domain.user.entity;
 import static com.devee.devhive.domain.user.type.Role.USER;
 
 import com.devee.devhive.domain.user.type.ActivityStatus;
+import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.domain.user.type.Role;
 import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -42,8 +43,6 @@ public class User extends BaseEntity {
   @Column(nullable = false, unique = true)
   private String nickName;
 
-  private boolean isNickNameChanged;
-
   private String region;
 
   private String profileImage;
@@ -65,15 +64,20 @@ public class User extends BaseEntity {
 
   private String refreshToken;
 
+  @Enumerated(EnumType.STRING)
+  private ProviderType providerType;
+  private String providerId;
+
   public void updateRefreshToken(String updateRefreshToken) {
     this.refreshToken = updateRefreshToken;
   }
 
-  public User update(String nickName, String profileImage) {
+  @Builder
+  public User(String nickName, String password, String email, ProviderType providerType, String providerId) {
     this.nickName = nickName;
-    this.profileImage = profileImage;
-
-    return this;
+    this.email = email;
+    this.password = password;
+    this.providerType = providerType;
+    this.providerId = providerId;
   }
-
 }

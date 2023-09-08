@@ -8,8 +8,11 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.repository.ProjectMemberExitVoteRepository;
+import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
+import com.devee.devhive.domain.user.exithistory.repository.ExitHistoryRepository;
+import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -17,8 +20,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -26,12 +31,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ExitVoteService {
 
+  private final ApplicationEventPublisher eventPublisher;
   private final ProjectMemberExitVoteRepository exitVoteRepository;
+  private final ExitHistoryRepository exitHistoryRepository;
 
-  public String createExitVote(Project project, User registeringUser, User targetUser,
-      List<ProjectMember> votingUsers) {
-    if (exitVoteRepository.existsByProjectIdAndVoterUserIdAndTargetUserId(project.getId(),
-        registeringUser.getId(), targetUser.getId())) {
+  public List<ProjectMemberExitVote> findByProjectId(Long projectId) {
+    return exitVoteRepository.findAllByProjectId(projectId);
+  }
+
+  public String createExitVoteAndSendAlarm(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
+    if (exitVoteRepository.existsByProjectId(project.getId())) {
       throw new CustomException(ALREADY_REGISTERED_VOTE);
     }
 
@@ -49,18 +58,27 @@ public class ExitVoteService {
       exitVoteList.add(exitVote);
     }
 
-//    List<ProjectMemberExitVote> exitVoteList = votingUsers.stream()
-//        .map(member -> ProjectMemberExitVote.of(project, targetUser, member.getUser(), currentTime))
-//        .collect(Collectors.toList());
-
     exitVoteRepository.saveAllAndFlush(exitVoteList);
+
+    // 팀원(퇴출 대상자와 등록자 제외한)들에게 퇴출 투표 생성 알림 이벤트 발행
+    for (ProjectMember projectMember : votingUsers) {
+      if (Objects.equals(registeringUser.getId(), projectMember.getUser().getId())) {
+        continue; // 등록자 알림 제외
+      }
+      AlarmForm alarmForm = AlarmForm.builder()
+          .receiverUser(projectMember.getUser()) // 팀원들
+          .project(project)
+          .content(AlarmContent.EXIT_VOTE)
+          .user(targetUser) // 퇴출 대상자
+          .build();
+      eventPublisher.publishEvent(alarmForm);
+    }
 
     return targetUser.getNickName() + " 유저에 대한 퇴출 투표 생성이 완료되었습니다.";
   }
 
   // 투표 제출 및 결과 저장
-  public ProjectMemberExitVote submitExitVote(Project project, User votingUser, User targetUser,
-      boolean vote) {
+  public ProjectMemberExitVote submitExitVote(Project project, User votingUser, User targetUser, boolean vote) {
     ProjectMemberExitVote myVote = getMyVote(project.getId(), votingUser.getId(),
         targetUser.getId());
 
@@ -88,12 +106,11 @@ public class ExitVoteService {
   public Map<Long, List<ProjectMemberExitVote>> getSortedVotes() {
     List<ProjectMemberExitVote> closedVotes = findAllClosedVotes();
     Map<Long, List<ProjectMemberExitVote>> sortedVotesMap = new HashMap<>();
-    closedVotes.forEach(vote -> {
-      if (sortedVotesMap.get(vote.getProject().getId()) == null) {
-        sortedVotesMap.put(vote.getProject().getId(), new ArrayList<>());
-      }
-      sortedVotesMap.get(vote.getProject().getId()).add(vote);
-    });
+
+    for (ProjectMemberExitVote vote : closedVotes) {
+      Long projectId = vote.getProject().getId();
+      sortedVotesMap.computeIfAbsent(projectId, key -> new ArrayList<>()).add(vote);
+    }
 
     return sortedVotesMap;
   }
@@ -111,13 +128,23 @@ public class ExitVoteService {
         int agreedCount = (int) currentVotes.stream()
             .filter(ProjectMemberExitVote::isAccept)
             .count();
+        // 찬성이 과반수를 넘은 경우
         if (isOverHalf(votedCount, agreedCount)) {
-          log.info("투표가 과반수를 넘었으므로 해당 유저를 퇴출 처리합니다.");
+          log.info("찬성이 과반수를 넘었으므로 해당 유저를 퇴출 처리합니다.");
+
+          int exitedCount = exitHistoryRepository.countExitHistoryByUserId(targetUser.getId());
+          // 퇴출 횟수 당 1주로 유저 비활성화 기간 설정(이번이 10회째인 경우 영구 비활성화)
+          Instant reActiveDate = exitedCount >= 9 ?
+              Instant.MAX : Instant.now().plus(exitedCount + 1, ChronoUnit.WEEKS);
+
           ExitHistory exitHistory = ExitHistory.builder()
               .user(targetUser)
-              .exitDate(Instant.now())
+              .reActiveDate(reActiveDate)
               .build();
+
           exitHistoryMap.put(projectId, exitHistory);
+        } else {
+          log.info("찬성이 과반수를 넘지 않았으므로 투표를 무효 처리합니다.");
         }
       } else {
         log.info("투표에 전부 참여하지 않아 처리할 수 없습니다.");
@@ -128,6 +155,7 @@ public class ExitVoteService {
     }
     return exitHistoryMap;
   }
+
   // 과반수를 넘었는지 확인
   private boolean isOverHalf(int a, int b) {
     return Math.round(a / 2.0) <= b;

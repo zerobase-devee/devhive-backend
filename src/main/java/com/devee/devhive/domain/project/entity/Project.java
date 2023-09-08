@@ -6,6 +6,7 @@ import com.devee.devhive.domain.project.type.RecruitmentType;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,10 +37,11 @@ public class Project extends BaseEntity {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "writer_user_id")
-  private User writerUser;
+  @JoinColumn(name = "user_id")
+  private User user;
 
   private String title;
+  @Column(length = 1000)
   private String content;
   private String name;
   private int teamSize;
@@ -56,8 +58,11 @@ public class Project extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private DevelopmentType developmentType;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime startDate; // 프로젝트 시작일자
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime endDate;   // 프로젝트 종료일자
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime deadline;  // 모집 마감 종료일자
 
   @LastModifiedDate

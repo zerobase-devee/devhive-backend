@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-
-  List<Comment> findAllByProjectId(Long projectId);
+  List<Comment> findAllByProjectIdOrderByCreatedDateAsc(Long projectId);
 }

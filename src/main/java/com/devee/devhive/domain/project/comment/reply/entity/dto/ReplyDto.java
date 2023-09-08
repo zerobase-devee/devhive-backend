@@ -1,7 +1,6 @@
 package com.devee.devhive.domain.project.comment.reply.entity.dto;
 
 import com.devee.devhive.domain.project.comment.reply.entity.Reply;
-import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.dto.SimpleUserDto;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -21,10 +20,10 @@ public class ReplyDto {
     private LocalDateTime createDate;
     private LocalDateTime modifyDate;
 
-    public static ReplyDto of(Reply reply, User user) {
+    public static ReplyDto from(Reply reply) {
         return ReplyDto.builder()
             .replyId(reply.getId())
-            .userDto(SimpleUserDto.from(user))
+            .userDto(SimpleUserDto.from(reply.getUser()))
             .content(reply.getContent())
             .createDate(reply.getCreatedDate())
             .modifyDate(reply.getModifiedDate())

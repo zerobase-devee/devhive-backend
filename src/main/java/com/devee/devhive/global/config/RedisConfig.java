@@ -37,13 +37,4 @@ public class RedisConfig {
     redisTemplate.setValueSerializer(new StringRedisSerializer());
     return redisTemplate;
   }
-
-  @Bean
-  public RedisTemplate<String, String> lockRedisTemplate(
-      RedisConnectionFactory redisConnectionFactory) {
-    RedisTemplate<String, String> template = new RedisTemplate<>();
-    template.setConnectionFactory(redisConnectionFactory);
-    return template;
-  }
-
 }

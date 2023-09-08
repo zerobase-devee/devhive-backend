@@ -2,6 +2,7 @@ package com.devee.devhive.domain.project.vote.entity;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -42,10 +43,11 @@ public class ProjectMemberExitVote {
 
   private boolean isVoted;
   private boolean isAccept;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private Instant createdDate;
 
-  public static ProjectMemberExitVote of(Project project, User targetUser, User votingUser,
-      Instant currentTime) {
+  public static ProjectMemberExitVote of(Project project, User targetUser, User votingUser, Instant currentTime) {
     return ProjectMemberExitVote.builder()
         .project(project)
         .targetUser(targetUser)

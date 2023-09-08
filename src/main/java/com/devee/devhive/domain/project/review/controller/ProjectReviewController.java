@@ -8,9 +8,12 @@ import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.project.review.evaluation.service.EvaluationService;
 import com.devee.devhive.domain.project.review.service.ProjectReviewService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.user.badge.service.UserBadgeService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.global.security.service.PrincipalDetails;
+import com.devee.devhive.global.entity.PrincipalDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,26 +30,38 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@Tag(name = "PROJECT REVIEW API", description = "프로젝트 리뷰 API")
 public class ProjectReviewController {
 
   private final ProjectReviewService reviewService;
   private final EvaluationService evaluationService;
   private final UserService userService;
   private final ProjectService projectService;
+  private final UserBadgeService userBadgeService;
 
   @PostMapping("{projectId}/review/{targetUserId}")
+  @Operation(summary = "프로젝트 완료 후 리뷰 작성")
   public ResponseEntity<ReviewDto> submitReview(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @PathVariable Long projectId, @PathVariable Long targetUserId,
-      @RequestBody EvaluationForm form
+      @PathVariable(name = "projectId") Long projectId, @PathVariable(name = "targetUserId") Long targetUserId,
+      @RequestBody List<EvaluationForm> forms
   ) {
-    User user = principalDetails.getUser();
+    User user = userService.getUserByEmail(principalDetails.getEmail());
     User targetUser = userService.getUserById(targetUserId);
     Project project = projectService.findById(projectId);
 
-    ProjectReview newReview = reviewService.submitReview(user, project, targetUser, form);
-    List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, form);
+    ProjectReview newReview = reviewService.submitReview(projectId, targetUserId, user, project, targetUser, forms);
+    List<Evaluation> evaluationList = evaluationService.saveAllEvaluations(newReview, forms);
 
-    return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
+    // 타겟유저의 유저뱃지리스트들 점수 업데이트
+    userBadgeService.updatePoint(targetUser, evaluationList);
+
+    int count = reviewService.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
+    if (count == project.getTeamSize()-1) {
+      // 팀원평가 평균점수를 타겟유저 랭킹포인트에 더하기
+      double averagePoint = reviewService.getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId);
+      userService.updateRankPoint(targetUser, project, averagePoint);
+    }
+      return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
   }
 }

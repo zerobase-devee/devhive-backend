@@ -13,16 +13,13 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 //로그인 처리 필터
-public class CustomJsonUsernamePasswordAuthenticationFilter extends
-    AbstractAuthenticationProcessingFilter {
+public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
   private static final String DEFAULT_LOGIN_REQUEST_URL = "/api/auth/signin"; // "/v1/auth/signin"으로 오는 요청을 처리
   private static final String HTTP_METHOD = "POST"; // 로그인 HTTP 메소드는 POST
   private static final String CONTENT_TYPE = "application/json"; // JSON 타입의 데이터로 오는 로그인 요청만 처리
   private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_REQUEST_MATCHER =
-      new AntPathRequestMatcher(DEFAULT_LOGIN_REQUEST_URL,
-          HTTP_METHOD);
-  // "/api/auth/signin" + POST로 온 요청에 매칭
+      new AntPathRequestMatcher(DEFAULT_LOGIN_REQUEST_URL, HTTP_METHOD); // "/api/auth/signin" + POST로 온 요청에 매칭
 
   private final ObjectMapper objectMapper;
 

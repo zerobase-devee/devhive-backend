@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface ProjectMemberRepository extends
     JpaRepository<ProjectMember, Long>, CustomProjectMemberRepository {
 
-    List<ProjectMember> findAllByProjectId(Long projectId);
+    List<ProjectMember> findAllByProjectIdOrderByCreatedDateAsc(Long projectId);
 
     List<ProjectMember> findAllByUserIdOrderByCreatedDateDesc(Long userId);
 
@@ -24,5 +24,5 @@ public interface ProjectMemberRepository extends
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
 
-    boolean existsByProjectIdAndUserIdAndIsReaderIsTrue(Long projectId, Long userId);
+    boolean existsByProjectIdAndUserIdAndLeaderIsTrue(Long projectId, Long userId);
 }

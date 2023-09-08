@@ -1,8 +1,10 @@
 package com.devee.devhive.global.security.handler;
 
+import com.devee.devhive.domain.auth.dto.LoginUserDto;
+import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.security.dto.TokenDto;
-import com.devee.devhive.global.security.service.PrincipalDetails;
 import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,31 +27,38 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
       Authentication authentication) throws IOException {
     String email = extractUsername(authentication); // 인증 정보에서 Username(email) 추출
 
-    String accessToken = tokenService.createAccessToken(email); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
-    String refreshToken = tokenService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
+    User user = userRepository.findByEmail(email).orElse(null);
 
-    tokenService.sendAccessAndRefreshToken(response, accessToken,
-        refreshToken); // 응답 헤더에 AccessToken, RefreshToken 실어서 응답
+    if (user != null) {
+      // AccessToken 및 RefreshToken 생성
+      String accessToken = tokenService.createAccessToken(email);
+      String refreshToken = tokenService.createRefreshToken();
 
-    userRepository.findByEmail(email)
-        .ifPresent(user -> {
-          user.updateRefreshToken(refreshToken);
-          userRepository.saveAndFlush(user);
-        });
-    log.info("로그인에 성공하였습니다. 이메일 : {}", email);
-    log.info("로그인에 성공하였습니다. AccessToken : {}", accessToken);
+      // 응답 헤더에 AccessToken 및 RefreshToken 추가
+      tokenService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
 
-    TokenDto tokenDto = TokenDto.builder()
-        .accessToken(accessToken)
-        .refreshToken(refreshToken)
-        .build();
+      // 사용자의 RefreshToken 업데이트
+      user.updateRefreshToken(refreshToken);
+      userRepository.saveAndFlush(user);
 
-    String tokenJson = new ObjectMapper().writeValueAsString(tokenDto); // TokenDto 객체를 JSON 문자열로 변환
+      log.info("로그인에 성공하였습니다. 이메일: {}", email);
+      log.info("로그인에 성공하였습니다. AccessToken: {}", accessToken);
 
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().write(tokenJson); // JSON 문자열을 응답으로 보내기
+      // TokenDto 생성
+      TokenDto tokenDto = TokenDto.builder()
+          .accessToken(accessToken)
+          .refreshToken(refreshToken)
+          .userDto(LoginUserDto.from(user))
+          .build();
+
+      // TokenDto를 JSON 문자열로 변환하여 응답
+      String tokenJson = new ObjectMapper().writeValueAsString(tokenDto);
+
+      response.setContentType("application/json");
+      response.setCharacterEncoding("UTF-8");
+      response.setStatus(HttpServletResponse.SC_OK);
+      response.getWriter().write(tokenJson);
+    }
   }
 
   private String extractUsername(Authentication authentication) {

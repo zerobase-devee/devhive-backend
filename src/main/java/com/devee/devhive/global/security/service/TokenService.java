@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -31,7 +32,6 @@ public class TokenService {
   private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
   private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
   private static final String EMAIL_CLAIM = "email";
-  private static final String ROLE_CLAIM = "role";
   private static final String BEARER = "Bearer ";
 
   private final UserRepository userRepository;
@@ -47,25 +47,15 @@ public class TokenService {
   @Value("${spring.jwt.refresh.header}")
   private String refreshHeader;
 
-  /**
-   * AccessToken 생성 메소드
-   */
   public String createAccessToken(String email) {
     Date now = new Date();
     return JWT.create() // JWT 토큰을 생성하는 빌더 반환
         .withSubject(ACCESS_TOKEN_SUBJECT) // JWT의 Subject 지정 -> AccessToken이므로 AccessToken
         .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod)) // 토큰 만료 시간 설정
-
-        //클레임으로는 저희는 email 하나만 사용합니다.
-        //추가적으로 식별자나, 이름 등의 정보를 더 추가하셔도 됩니다.
-        //추가하실 경우 .withClaim(클래임 이름, 클래임 값) 으로 설정해주시면 됩니다
         .withClaim(EMAIL_CLAIM, email)
         .sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용, application-jwt.yml에서 지정한 secret 키로 암호화
   }
 
-  /**
-   * RefreshToken 생성 RefreshToken은 Claim에 email도 넣지 않으므로 withClaim() X
-   */
   public String createRefreshToken() {
     Date now = new Date();
     return JWT.create()
@@ -87,13 +77,17 @@ public class TokenService {
   /**
    * AccessToken + RefreshToken 헤더에 실어서 보내기
    */
-  public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken,
-      String refreshToken) {
+  public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
     response.setStatus(HttpServletResponse.SC_OK);
 
-    setAccessTokenHeader(response, accessToken);
-    setRefreshTokenHeader(response, refreshToken);
+    setAccessTokenHeader(response, BEARER + accessToken);
+    setRefreshTokenHeader(response, BEARER + refreshToken);
     setRefreshTokenCookie(response, refreshToken);
+
+    response.setStatus(HttpStatus.OK.value());
+    response.setCharacterEncoding("UTF-8");
+    response.setContentType("application/json;charset=UTF-8");
+
     log.info("Access Token : " + accessToken);
     log.info("Refresh Token : " + refreshToken);
 
@@ -163,6 +157,11 @@ public class TokenService {
     cookie.setMaxAge(refreshTokenExpirationPeriod.intValue()); // 쿠키의 만료 시간 설정 (초 단위)
     cookie.setPath("/"); // 쿠키의 경로를 전체 서비스에 적용
     response.addCookie(cookie);
+  }
+
+  public void updateRefreshToken(String email, String refreshToken) {
+    userRepository.findByEmail(email)
+        .ifPresent(user -> user.updateRefreshToken(refreshToken));
   }
 
   public boolean isTokenValid(String token) {
