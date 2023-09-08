@@ -12,8 +12,8 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import com.devee.devhive.global.exception.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -105,13 +105,19 @@ public class ProjectApplyController {
         }
 
         // 승인 전 참가인원 체크, 이미 팀원이 다 찬 경우 예외
-        if (!projectMemberService.availableAccept(project)) {
+        int teamSize = project.getTeamSize();
+        int memberNums = projectMemberService.countAllByProjectId(project.getId());
+        if (memberNums < teamSize) {
             throw new CustomException(RECRUITMENT_ALREADY_COMPLETED);
         }
         // 승인
         projectApplyService.acceptAndSendAlarmToApplicant(projectApply);
         // 프로젝트 멤버 저장
         projectMemberService.saveProjectMember(projectApply.getUser(), project);
+        // 프로젝트 팀사이즈 다 찬 경우 프로젝트 모집마감 상태로 변경
+        if (memberNums + 1 == teamSize) {
+            projectService.updateProjectStatusRecruitmentComplete(project);
+        }
     }
 
     // 신청 거절

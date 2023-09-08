@@ -47,10 +47,9 @@ public class ProjectMemberService {
     return projectMemberRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 
-  // 신청자 승인 전 참가인원 체크
-  public boolean availableAccept(Project project) {
-    int memberNums = projectMemberRepository.countAllByProjectId(project.getId());
-    return memberNums < project.getTeamSize();
+  // 참가인원 수
+  public int countAllByProjectId(Long projectId) {
+    return projectMemberRepository.countAllByProjectId(projectId);
   }
 
   // 신청 승인된 유저 멤버 저장

@@ -98,6 +98,15 @@ public class ProjectService {
     }
   }
 
+  public void updateProjectStatusRecruitmentComplete(Project project) {
+    if (project.getStatus() == RECRUITING) {
+      project.setStartDate(LocalDateTime.now());
+    }
+    project.setStatus(RECRUITMENT_COMPLETE);
+
+    projectRepository.save(project);
+  }
+
   // 프로젝트 수정
   @Transactional
   public Project updateProject(User user, Long projectId, UpdateProjectDto updateProjectDto) {
