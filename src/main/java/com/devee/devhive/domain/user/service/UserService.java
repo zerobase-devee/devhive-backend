@@ -55,20 +55,22 @@ public class UserService {
   // 랭킹 목록 조회
   public List<RankUserDto> getRankUsers(Pageable pageable) {
     Page<User> usersPage = userRepository.findAllByOrderByRankPointDesc(pageable);
-    return rankUsersWithTies(usersPage.getContent());
+    long startRank = pageable.getOffset() + 1;
+    return rankUsersWithTies(usersPage.getContent(), startRank);
   }
 
   // 공동 순위 처리(1,2,2,4식으로)
-  private List<RankUserDto> rankUsersWithTies(List<User> users) {
+  private List<RankUserDto> rankUsersWithTies(List<User> users, long startRank) {
     List<RankUserDto> rankUsers = new ArrayList<>();
-    long rank = 1L;
+    long rank = startRank;
 
     for (int i = 0; i < users.size(); i++) {
       User currentUser = users.get(i);
 
       int tieLength = 1;
       int j = i;
-      while (j < users.size() - 1 && currentUser.getRankPoint() == users.get(j + 1).getRankPoint()) {
+      while (j < users.size() - 1 && currentUser.getRankPoint() == users.get(j + 1)
+          .getRankPoint()) {
         tieLength++;
         j++;
       }
