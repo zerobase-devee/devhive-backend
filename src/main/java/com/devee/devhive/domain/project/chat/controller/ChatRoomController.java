@@ -16,10 +16,13 @@ import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.security.service.PrincipalDetails;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +38,20 @@ public class ChatRoomController {
   private final ChatMemberService chatMemberService;
   private final ProjectService projectService;
   private final ProjectMemberService projectMemberService;
+
+  @GetMapping("/room")
+  public ResponseEntity<List<ChatRoomDto>> getChatRooms(
+      @AuthenticationPrincipal PrincipalDetails principalDetails
+  ) {
+    User user = principalDetails.getUser();
+
+    List<ChatRoomDto> chatRoomList = chatMemberService.findAllByUserId(user.getId())
+        .stream()
+        .map(member -> ChatRoomDto.from(member.getChatRoom()))
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(chatRoomList);
+  }
 
   @PostMapping("/room/{projectId}")
   public ResponseEntity<ChatRoomDto> createChatRoom(
