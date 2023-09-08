@@ -68,6 +68,12 @@ public enum ErrorCode {
     DUPLICATE_TECH_STACK(HttpStatus.BAD_REQUEST, "이미 등록된 테크스택입니다. "),
     NOT_FOUND_BADGE(HttpStatus.NOT_FOUND, "뱃지를 찾을 수 없습니다. "),
     DUPLICATE_BADGE(HttpStatus.BAD_REQUEST, "이미 등록된 뱃지입니다. "),
+
+    // Chat
+    ALREADY_CREATE_CHATROOM(HttpStatus.BAD_REQUEST, "해당 프로젝트에 대한 채팅방이 이미 존재합니다. "),
+    ALREADY_ENTER_CHATROOM(HttpStatus.BAD_REQUEST, "이미 참여한 채팅방입니다."),
+    NOT_FOUND_CHATROOM(HttpStatus.NOT_FOUND, "해당 채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATMEMBER(HttpStatus.NOT_FOUND, "해당 채팅방에 참여하고 있지 않습니다."),
     ;
     private final HttpStatus httpStatus;
     private final String detail;

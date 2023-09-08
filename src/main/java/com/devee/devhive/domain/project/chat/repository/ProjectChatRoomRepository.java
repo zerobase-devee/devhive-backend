@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProjectChatRoomRepository extends JpaRepository<ProjectChatRoom, Long> {
 
+  boolean existsByProjectId(Long projectId);
 }
