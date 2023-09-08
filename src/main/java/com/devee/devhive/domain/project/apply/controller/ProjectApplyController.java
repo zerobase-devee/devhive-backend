@@ -104,10 +104,10 @@ public class ProjectApplyController {
             throw new CustomException(RECRUITMENT_ALREADY_COMPLETED);
         }
 
-        // 승인 전 참가인원 체크, 이미 팀원이 다 찬 경우 예외
+        // 승인 전 팀원 수 체크, 이미 팀원이 다 찬 경우 예외
         int teamSize = project.getTeamSize();
         int memberNums = projectMemberService.countAllByProjectId(project.getId());
-        if (memberNums < teamSize) {
+        if (memberNums >= teamSize) {
             throw new CustomException(RECRUITMENT_ALREADY_COMPLETED);
         }
         // 승인
