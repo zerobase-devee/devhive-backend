@@ -10,7 +10,6 @@ import static com.devee.devhive.global.exception.ErrorCode.USER_PASSWORD_MISMATC
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.entity.dto.RankUserDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
 import com.devee.devhive.domain.user.repository.UserRepository;
@@ -20,11 +19,10 @@ import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.s3.S3Service;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,47 +50,9 @@ public class UserService {
   }
 
   // 랭킹 목록 조회
-  public List<RankUserDto> getRankUsers(Pageable pageable) {
-    List<User> allUsers = userRepository.findAllByOrderByRankPointDesc();
-    List<RankUserDto> rankedUsers = rankUsersWithTies(allUsers);
-
-    int start = (int) pageable.getOffset();
-    int end = Math.min((start + pageable.getPageSize()), rankedUsers.size());
-
-    return rankedUsers.subList(start, end);
+  public Page<User> getRankUsers(Pageable pageable) {
+    return userRepository.findAllByOrderByRankPointDesc(pageable);
   }
-
-  // 공동 순위 처리(1,2,2,4식으로)
-  private List<RankUserDto> rankUsersWithTies(List<User> users) {
-    List<RankUserDto> rankUsers = new ArrayList<>();
-    long rank = 1;
-
-    for (int i = 0; i < users.size(); i++) {
-      User currentUser = users.get(i);
-
-      int tieLength = 1;
-      int j = i + 1;
-      while (j < users.size() && currentUser.getRankPoint() == users.get(j).getRankPoint()) {
-        tieLength++;
-        j++;
-      }
-
-      // 공동 순위를 설정
-      for (int k = 0; k < tieLength; k++) {
-        User user = users.get(i + k);
-        RankUserDto commonRankUser = RankUserDto.from(user);
-        commonRankUser.setRank(rank);
-        rankUsers.add(commonRankUser);
-      }
-
-      rank += tieLength;
-
-      i += tieLength - 1;
-    }
-
-    return rankUsers;
-  }
-
 
   // 프로필 사진 수정
   @Transactional

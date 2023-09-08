@@ -16,7 +16,6 @@ public class RankUserDto {
     private Long userId;
     private String nickName;
     private String profileImage;
-    private Long rank;
     private double rankPoint;
 
     public static RankUserDto from(User user) {
