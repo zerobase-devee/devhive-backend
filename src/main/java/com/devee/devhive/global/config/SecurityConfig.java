@@ -61,7 +61,8 @@ public class SecurityConfig {
               "/api/projects/list",
               "/api/projects/{projectId}",
               "/api/users/rank",
-              "/api/users/{userId}"
+              "/api/users/{userId}",
+              "/chat"
           ).permitAll();
           authorizeRequests.requestMatchers(
               "/api/users/**",
@@ -76,8 +77,6 @@ public class SecurityConfig {
           authorizeRequests.requestMatchers(
               "/api/admin/**"
           ).hasRole("ADMIN");
-
-          authorizeRequests.requestMatchers("/ws").permitAll();
         })
         .logout(logout -> logout.logoutSuccessUrl("/"))
         .oauth2Login(oauth2Login -> oauth2Login
