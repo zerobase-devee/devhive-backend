@@ -9,6 +9,7 @@ import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
@@ -78,6 +79,7 @@ public class ProjectApplyController {
         }
         List<ProjectApply> projectApplies = projectApplyService.getProjectApplies(projectId);
         return ResponseEntity.ok(projectApplies.stream()
+            .filter(projectApply -> projectApply.getStatus() == ApplyStatus.PENDING)
             .map(projectApply -> ApplicantUserDto.of(projectApply.getUser(), projectApply.getId()))
             .collect(Collectors.toList()));
     }
