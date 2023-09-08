@@ -50,7 +50,7 @@ public class ProjectListDto {
         .recruitmentType(project.getRecruitmentType())
         .region(project.getRegion())
         .createDate(project.getCreatedDate())
-        .viewCount(project.getViewCount())
+        .viewCount(project.getViewCount().getCount())
         .techStackList(techStackList)
         .projectMemberList(projectMemberList)
         .bookmarked(bookmarkedProjectIds)

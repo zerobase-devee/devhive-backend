@@ -3,9 +3,11 @@ package com.devee.devhive.domain.project.entity;
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.project.type.RecruitmentType;
+import com.devee.devhive.domain.project.views.entity.ViewCount;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,7 +48,6 @@ public class Project extends BaseEntity {
   private String content;
   private String name;
   private int teamSize;
-  private int viewCount;
 
   @Enumerated(EnumType.STRING)
   private ProjectStatus status;
@@ -68,4 +70,7 @@ public class Project extends BaseEntity {
   @LastModifiedDate
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private LocalDateTime modifiedDate;
+
+  @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+  private ViewCount viewCount;
 }
