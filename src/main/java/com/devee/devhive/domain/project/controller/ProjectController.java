@@ -86,6 +86,7 @@ public class ProjectController {
     User user = userService.getUserByEmail(principal.getEmail());
 
     Project project = projectService.createProject(createProjectDto, user);
+    viewCountService.create(project);
     List<TechStackDto> techStacks = createProjectDto.getTechStacks();
     projectTechStackService.createProjectTechStacks(project, techStacks);
     projectMemberService.saveProjectLeader(user, project);

@@ -12,12 +12,13 @@ public class ViewCountService {
 
   private final ViewCountRepository viewCountRepository;
 
+  public void create(Project project) {
+    viewCountRepository.save(ViewCount.builder().project(project).count(0).build());
+  }
+
   public void incrementViewCount(Project project) {
     ViewCount viewCount = project.getViewCount();
-    if (viewCount == null) {
-      viewCount = new ViewCount();
-      viewCount.setProject(project);
-    }
+
     viewCount.incrementCount();
     viewCountRepository.save(viewCount);
   }
