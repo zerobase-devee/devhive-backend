@@ -6,6 +6,7 @@ import com.devee.devhive.domain.project.chat.repository.ProjectChatMemberReposit
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,10 @@ import org.springframework.stereotype.Service;
 public class ChatMemberService {
 
   private final ProjectChatMemberRepository chatMemberRepository;
+
+  public List<ProjectChatMember> findAllByUserId(Long userId) {
+    return chatMemberRepository.findAllByUserId(userId);
+  }
 
   public boolean isMemberOfChat(Long roomId, Long userId) {
     return chatMemberRepository.existsByChatRoomIdAndUserId(roomId, userId);
