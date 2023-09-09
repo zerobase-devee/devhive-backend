@@ -20,7 +20,7 @@ import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
@@ -97,8 +97,8 @@ public class ExitVoteController {
       boolean isTargetUserExit = exitVoteService.resultTargetUserExit(exitVotes);
       if (isTargetUserExit) {
         // 퇴출 횟수 당 1주로 유저 비활성화 기간 설정(이번이 10회째인 경우 영구 비활성화)
-        Instant reActiveDate = exitedCount >= 9 ?
-            Instant.MAX : Instant.now().plus(exitedCount + 1, ChronoUnit.WEEKS);
+        LocalDateTime reActiveDate = exitedCount < 9 ?
+            LocalDateTime.now().plus(exitedCount + 1, ChronoUnit.WEEKS) : LocalDateTime.MAX;
 
         exitHistoryService.saveExitHistory(ExitHistory.builder()
             .user(targetUser)

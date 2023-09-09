@@ -3,7 +3,7 @@ package com.devee.devhive.domain.user.exithistory.repository.impl;
 import com.devee.devhive.domain.user.exithistory.entity.QExitHistory;
 import com.devee.devhive.domain.user.exithistory.repository.custom.CustomExitHistoryRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class CustomExitHistoryRepositoryImpl implements CustomExitHistoryReposit
 
     return queryFactory.select(qExitHistory.user.id, qExitHistory.reActiveDate.max())
         .from(qExitHistory)
-        .where(qExitHistory.reActiveDate.before(Instant.now()))
+        .where(qExitHistory.reActiveDate.before(LocalDateTime.now()))
         .groupBy(QExitHistory.exitHistory.user.id)
         .fetch()
         .stream()
