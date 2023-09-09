@@ -29,6 +29,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -117,7 +118,12 @@ public class SecurityConfig {
 
             .anyRequest().authenticated()
         )
-        .logout(logout -> logout.logoutSuccessUrl("/"))
+        .logout(logout -> logout
+            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+            .logoutSuccessUrl("/")
+            .invalidateHttpSession(true)
+            .clearAuthentication(true)
+            .permitAll())
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),
