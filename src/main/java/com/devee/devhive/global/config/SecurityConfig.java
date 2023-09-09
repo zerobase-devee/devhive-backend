@@ -98,7 +98,8 @@ public class SecurityConfig {
                 "/api/comments/projects/{projectId}",
                 "/login/**",
                 "/api/admin/tech-stacks",
-                "/api/admin/badges"
+                "/api/admin/badges",
+                "/chat"
             ).permitAll()
 
             .requestMatchers(
