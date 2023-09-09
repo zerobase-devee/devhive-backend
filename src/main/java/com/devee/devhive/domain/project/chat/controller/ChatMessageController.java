@@ -47,4 +47,17 @@ public class ChatMessageController {
 
     sendingTemplate.convertAndSend("/sub/chat/" + chatRoom.getId(), messageDto);
   }
+
+  @MessageMapping("/message/exit/{roomId}/{userId}")
+  public void exitMember(@DestinationVariable("roomId") Long roomId,
+      @DestinationVariable("userId") Long userId) {
+    ProjectChatRoom chatRoom = chatRoomService.findByRoomId(roomId);
+    User senderUser = userService.getUserById(userId);
+    String exitMessage = senderUser.getNickName() + " 님이 채팅에서 나갔습니다.";
+
+    ChatMessageDto messageDto = chatMessageService.addMessage(chatRoom, senderUser,
+        exitMessage, ChatMessageType.EXIT);
+
+    sendingTemplate.convertAndSend("/sub/chat/" + chatRoom.getId(), messageDto);
+  }
 }
