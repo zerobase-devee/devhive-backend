@@ -100,7 +100,7 @@ public class SecurityConfig {
                 "/login/**",
                 "/api/admin/tech-stacks",
                 "/api/admin/badges",
-                "/chat"
+                "/chat/**"
             ).permitAll()
 
             .requestMatchers(
