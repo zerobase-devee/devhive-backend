@@ -12,6 +12,7 @@ import com.devee.devhive.global.security.handler.LoginSuccessHandler;
 import com.devee.devhive.global.security.service.CustomUserDetailService;
 import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +30,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -98,6 +98,8 @@ public class SecurityConfig {
                 "/api/projects/{projectId}/vote",
                 "/api/comments/projects/{projectId}",
                 "/login/**",
+                "/logout",
+                "/",
                 "/api/admin/tech-stacks",
                 "/api/admin/badges"
             ).permitAll()
@@ -119,10 +121,16 @@ public class SecurityConfig {
             .anyRequest().authenticated()
         )
         .logout(logout -> logout
-            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-            .logoutSuccessUrl("/")
-            .invalidateHttpSession(true)
-            .clearAuthentication(true)
+            .logoutUrl("/logout")
+            .addLogoutHandler((request, response, authentication) -> {
+              HttpSession session = request.getSession();
+              if (session != null) {
+                session.invalidate();
+              }
+            })
+            .logoutSuccessHandler((request, response, authentication) -> response.sendRedirect("/"))
+            .deleteCookies("RefreshToken")
+            .deleteCookies("JSESSIONID")
             .permitAll())
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
