@@ -79,11 +79,7 @@ public class ProjectMemberService {
   public boolean isMemberofProject(Long projectId, Long userId) {
     return projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
   }
-
-  public boolean isLeaderOfProject(Long projectId, Long userId) {
-    return projectMemberRepository.existsByProjectIdAndUserIdAndLeaderIsTrue(projectId, userId);
-  }
-
+  
   @Transactional
   public void deleteAllOfMembersFromProjectAndSendAlarm(Long projectId) {
     List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
@@ -106,7 +102,7 @@ public class ProjectMemberService {
     // 프로젝트 멤버들에게 퇴출자 알림 이벤트 발행
     for (ProjectMember member : projectMembers) {
       alarmEventPub(member.getUser(), member.getProject(),
-          AlarmContent.VOTE_RESULT_EXIT, projectMember.getUser());
+          AlarmContent.VOTE_RESULT_EXIT_SUCCESS, projectMember.getUser());
     }
   }
 
