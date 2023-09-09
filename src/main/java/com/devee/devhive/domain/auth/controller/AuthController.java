@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +63,8 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  public void logout(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+  public void logout(HttpSession session, HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
     // 세션 무효화
     session.invalidate();
 
@@ -81,6 +83,9 @@ public class AuthController {
         }
       }
     }
+    // 로그아웃 후 리디렉트
+    response.sendRedirect("/");
+
     log.info("로그아웃 및 쿠키 삭제 완료");
   }
 
