@@ -12,7 +12,6 @@ import com.devee.devhive.global.security.handler.LoginSuccessHandler;
 import com.devee.devhive.global.security.service.CustomUserDetailService;
 import com.devee.devhive.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpSession;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -98,8 +97,6 @@ public class SecurityConfig {
                 "/api/projects/{projectId}/vote",
                 "/api/comments/projects/{projectId}",
                 "/login/**",
-                "/logout",
-                "/",
                 "/api/admin/tech-stacks",
                 "/api/admin/badges"
             ).permitAll()
@@ -120,18 +117,7 @@ public class SecurityConfig {
 
             .anyRequest().authenticated()
         )
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .addLogoutHandler((request, response, authentication) -> {
-              HttpSession session = request.getSession();
-              if (session != null) {
-                session.invalidate();
-              }
-            })
-            .logoutSuccessHandler((request, response, authentication) -> response.sendRedirect("/"))
-            .deleteCookies("RefreshToken")
-            .deleteCookies("JSESSIONID")
-            .permitAll())
+        .logout(logout -> logout.logoutSuccessUrl("/"))
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),

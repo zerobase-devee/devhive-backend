@@ -12,7 +12,10 @@ import com.devee.devhive.global.security.dto.TokenDto;
 import com.devee.devhive.global.security.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +59,29 @@ public class AuthController {
   @Operation(summary = "회원가입")
   public void signUp(@RequestBody @Valid JoinDto joinDto) {
     authService.signUp(joinDto);
+  }
+
+  @PostMapping("/logout")
+  public void logout(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+    // 세션 무효화
+    session.invalidate();
+
+    // 쿠키 삭제
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        // 삭제하려는 쿠키의 이름을 지정하고 경로와 도메인을 설정해야 합니다.
+        if ("RefreshToken".equals(cookie.getName()) || "JSESSIONID".equals(cookie.getName())) {
+          Cookie deletedCookie = new Cookie(cookie.getName(), null);
+          deletedCookie.setMaxAge(0); // 쿠키 만료 시간을 0으로 설정하여 삭제
+          deletedCookie.setPath("/"); // 쿠키의 경로 설정 (루트 경로로 설정하면 모든 경로에서 쿠키 삭제 가능)
+          // 도메인 설정 (옵션)
+          // deletedCookie.setDomain("example.com"); // 쿠키의 도메인 설정
+          response.addCookie(deletedCookie); // 쿠키를 응답에 추가하여 삭제
+        }
+      }
+    }
+    log.info("로그아웃 및 쿠키 삭제 완료");
   }
 
   @PostMapping("/refresh")
