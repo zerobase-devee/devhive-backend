@@ -14,8 +14,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,10 +59,14 @@ public class UserProjectController {
         @AuthenticationPrincipal PrincipalDetails principal, Pageable pageable
     ) {
         User user = userService.getUserByEmail(principal.getEmail());
-        return ResponseEntity.ok(
-            projectMemberService.getParticipationProjects(user.getId(), pageable)
-                .map(projectMember -> SimpleProjectDto.from(projectMember.getProject()))
-        );
+
+        List<SimpleProjectDto> projectDtoList = projectMemberService.getParticipationProjects(user.getId(), pageable)
+            .stream()
+            .filter(projectMember -> !projectMember.isLeader())
+            .map(projectMember -> SimpleProjectDto.from(projectMember.getProject()))
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new PageImpl<>(projectDtoList, pageable, projectDtoList.size()));
     }
 
     // 내 프로젝트 정보 조회

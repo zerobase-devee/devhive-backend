@@ -19,6 +19,7 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.techstack.service.ProjectTechStackService;
 import com.devee.devhive.domain.project.type.ApplyStatus;
+import com.devee.devhive.domain.project.views.service.ViewCountService;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.bookmark.service.BookmarkService;
 import com.devee.devhive.domain.user.entity.User;
@@ -73,6 +74,7 @@ public class ProjectController {
   private final BookmarkService bookmarkService;
   private final ProjectApplyService projectApplyService;
   private final S3Service s3Service;
+  private final ViewCountService viewCountService;
 
   // 프로젝트 작성
   @PostMapping
@@ -84,6 +86,7 @@ public class ProjectController {
     User user = userService.getUserByEmail(principal.getEmail());
 
     Project project = projectService.createProject(createProjectDto, user);
+    viewCountService.create(project);
     List<TechStackDto> techStacks = createProjectDto.getTechStacks();
     projectTechStackService.createProjectTechStacks(project, techStacks);
     projectMemberService.saveProjectLeader(user, project);
@@ -188,7 +191,8 @@ public class ProjectController {
   public ResponseEntity<ProjectInfoDto> getProjectInfo(@PathVariable("projectId") Long projectId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    Project project = projectService.updateViewPoint(projectId);
+    Project project = projectService.findById(projectId);
+    viewCountService.incrementViewCount(project);
     List<TechStackDto> techStacks = getTechStacks(projectId);
 
     List<SimpleUserDto> projectMembers = getProjectMembers(projectId);

@@ -66,7 +66,8 @@ public class AlarmController {
         AlarmContent content = alarm.getContent();
 
         if (content == AlarmContent.FAVORITE_USER ||
-            content == AlarmContent.VOTE_RESULT_EXIT ||
+            content == AlarmContent.VOTE_RESULT_EXIT_SUCCESS ||
+            content == AlarmContent.VOTE_RESULT_EXIT_FAIL ||
             content == AlarmContent.EXIT_LEADER_DELETE_PROJECT ||
             content == AlarmContent.EXIT_VOTE) {
             User targetUser = userService.getUserById(alarm.getArgs());

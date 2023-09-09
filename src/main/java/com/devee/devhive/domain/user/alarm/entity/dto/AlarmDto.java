@@ -32,13 +32,17 @@ public class AlarmDto {
             .build();
 
         switch (alarmContent) {
-            case COMMENT, REPLY, APPLICANT_ACCEPT, APPLICANT_REJECT, FAVORITE_USER, RECOMMEND ->
-                alarmDto.setProjectDto(
-                    AlarmProjectDto.of(alarm.getProject(), RelatedUrlType.PROJECT_POST));
+            case COMMENT, REPLY, APPLICANT_ACCEPT, APPLICANT_REJECT, FAVORITE_USER, RECOMMEND
+                -> alarmDto.setProjectDto(
+                    AlarmProjectDto.of(alarm.getProject(), RelatedUrlType.PROJECT_POST)
+            );
             case PROJECT_APPLY -> alarmDto.setProjectDto(
-                AlarmProjectDto.of(alarm.getProject(), RelatedUrlType.PROJECT_APPLICANTS));
-            case REVIEW_REQUEST, REVIEW_RESULT, EXIT_VOTE, VOTE_RESULT_EXIT -> alarmDto.setProjectDto(
-                AlarmProjectDto.of(alarm.getProject(), RelatedUrlType.PROJECT_INFO));
+                AlarmProjectDto.of(alarm.getProject(), RelatedUrlType.PROJECT_APPLICANTS)
+            );
+            case REVIEW_REQUEST, REVIEW_RESULT, EXIT_VOTE, VOTE_RESULT_EXIT_SUCCESS, VOTE_RESULT_EXIT_FAIL
+                -> alarmDto.setProjectDto(
+                    AlarmProjectDto.of(alarm.getProject(), RelatedUrlType.PROJECT_INFO)
+            );
         }
 
         return alarmDto;

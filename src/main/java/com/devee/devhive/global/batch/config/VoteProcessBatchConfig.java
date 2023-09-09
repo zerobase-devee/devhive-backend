@@ -1,17 +1,7 @@
 package com.devee.devhive.global.batch.config;
 
 
-import com.devee.devhive.domain.project.member.service.ProjectMemberService;
-import com.devee.devhive.domain.project.service.ProjectService;
-import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
-import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
-import com.devee.devhive.domain.user.exithistory.service.ExitHistoryService;
-import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.domain.user.type.ActivityStatus;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -32,10 +22,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class VoteProcessBatchConfig {
 
   private final ExitVoteService exitVoteService;
-  private final ProjectMemberService projectMemberService;
-  private final ExitHistoryService exitHistoryService;
-  private final ProjectService projectService;
-  private final UserService userService;
 
   @Bean(name = "voteProcessJob")
   public Job voteProcessJob(JobRepository jobRepository, @Qualifier("voteProcessStep") Step step) {
@@ -55,36 +41,7 @@ public class VoteProcessBatchConfig {
   @Bean(name = "voteProcessTasklet")
   public Tasklet voteProcessTasklet() {
     return ((contribution, chunkContext) -> {
-      Map<Long, List<ProjectMemberExitVote>> sortedVotesMap
-          = exitVoteService.getSortedVotes();
-
-      Map<Long, ExitHistory> exitHistoryMap = exitVoteService
-          .processVotes(sortedVotesMap);
-
-      for (Long projectId : exitHistoryMap.keySet()) {
-        ExitHistory currentExitHistory = exitHistoryMap.get(projectId);
-        User exitedUser = currentExitHistory.getUser();
-
-        // 해당 프로젝트의 리더인 경우
-        if (projectMemberService.isLeaderOfProject(projectId, exitedUser.getId())) {
-          log.info("해당 프로젝트의 리더입니다. 프로젝트를 삭제합니다.");
-
-          projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
-          projectService.deleteLeadersProject(projectId);
-
-        } else {
-          projectMemberService.deleteMemberFromProjectAndSendAlarm(projectId, exitedUser.getId());
-        }
-
-        ExitHistory savedExitHistory = exitHistoryService.saveExitHistory(currentExitHistory);
-
-        String exitedUserName = savedExitHistory.getUser().getNickName();
-        int exitCount = exitHistoryService.countExitHistoryByUserId(exitedUser.getId());
-        userService.setUserStatus(exitedUser, ActivityStatus.INACTIVITY);
-
-        log.info("{} 유저 퇴출 완료. 누적 {}회", exitedUserName, exitCount);
-      }
-
+      exitVoteService.processVotes();
       return RepeatStatus.FINISHED;
     });
   }

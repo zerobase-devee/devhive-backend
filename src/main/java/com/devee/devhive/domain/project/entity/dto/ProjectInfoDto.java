@@ -49,7 +49,7 @@ public class ProjectInfoDto {
         .projectTitle(project.getTitle())
         .createDate(project.getCreatedDate())
         .modifiedDate(project.getModifiedDate())
-        .viewCount(project.getViewCount())
+        .viewCount(project.getViewCount().getCount())
         .recruitmentType(project.getRecruitmentType())
         .region(project.getRegion())
         .developmentType(project.getDevelopmentType())

@@ -47,10 +47,9 @@ public class ProjectMemberService {
     return projectMemberRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 
-  // 신청자 승인 전 참가인원 체크
-  public boolean availableAccept(Project project) {
-    int memberNums = projectMemberRepository.countAllByProjectId(project.getId());
-    return memberNums < project.getTeamSize();
+  // 참가인원 수
+  public int countAllByProjectId(Long projectId) {
+    return projectMemberRepository.countAllByProjectId(projectId);
   }
 
   // 신청 승인된 유저 멤버 저장
@@ -80,11 +79,7 @@ public class ProjectMemberService {
   public boolean isMemberofProject(Long projectId, Long userId) {
     return projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
   }
-
-  public boolean isLeaderOfProject(Long projectId, Long userId) {
-    return projectMemberRepository.existsByProjectIdAndUserIdAndLeaderIsTrue(projectId, userId);
-  }
-
+  
   @Transactional
   public void deleteAllOfMembersFromProjectAndSendAlarm(Long projectId) {
     List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
@@ -107,7 +102,7 @@ public class ProjectMemberService {
     // 프로젝트 멤버들에게 퇴출자 알림 이벤트 발행
     for (ProjectMember member : projectMembers) {
       alarmEventPub(member.getUser(), member.getProject(),
-          AlarmContent.VOTE_RESULT_EXIT, projectMember.getUser());
+          AlarmContent.VOTE_RESULT_EXIT_SUCCESS, projectMember.getUser());
     }
   }
 

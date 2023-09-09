@@ -2,7 +2,6 @@ package com.devee.devhive.domain.project.vote.dto;
 
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import java.time.Instant;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,16 +12,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ProjectExitVoteDto {
+  private Long voteId;
+  private Long userId;
   private Long targetUserId;
+  private boolean isVoted;
   private Instant createDate;
-  private List<VotedDto> votedDtoList;
 
-  public static ProjectExitVoteDto of(ProjectMemberExitVote memberExitVote, List<VotedDto> votedDtoList) {
+  public static ProjectExitVoteDto from(ProjectMemberExitVote memberExitVote) {
     return ProjectExitVoteDto.builder()
+        .voteId(memberExitVote.getId())
+        .userId(memberExitVote.getVoterUser().getId())
         .targetUserId(memberExitVote.getTargetUser().getId())
+        .isVoted(memberExitVote.isVoted())
         .createDate(memberExitVote.getCreatedDate())
-        .votedDtoList(votedDtoList)
         .build();
   }
-
 }

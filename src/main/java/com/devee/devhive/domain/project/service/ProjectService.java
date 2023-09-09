@@ -98,6 +98,15 @@ public class ProjectService {
     }
   }
 
+  public void updateProjectStatusRecruitmentComplete(Project project) {
+    if (project.getStatus() == RECRUITING) {
+      project.setStartDate(LocalDateTime.now());
+    }
+    project.setStatus(RECRUITMENT_COMPLETE);
+
+    projectRepository.save(project);
+  }
+
   // 프로젝트 수정
   @Transactional
   public Project updateProject(User user, Long projectId, UpdateProjectDto updateProjectDto) {
@@ -150,12 +159,6 @@ public class ProjectService {
   public void deleteLeadersProject(Long projectId) {
     Project project = findById(projectId);
     projectRepository.delete(project);
-  }
-
-  public Project updateViewPoint(Long projectId) {
-    Project project = findById(projectId);
-    project.setViewCount(project.getViewCount() + 1);
-    return projectRepository.save(project);
   }
 
   private void reviewRequestAlarmEventPub(Project project, List<ProjectMember> members) {
