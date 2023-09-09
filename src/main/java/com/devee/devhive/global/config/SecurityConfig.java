@@ -164,8 +164,7 @@ public class SecurityConfig {
 
   @Bean
   public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-    return new JwtAuthenticationProcessingFilter(
-        tokenService, userRepository);
+    return new JwtAuthenticationProcessingFilter(tokenService, userRepository);
   }
 
   @Bean
