@@ -1,4 +1,3 @@
-// CustomProjectRepositoryImpl.java
 package com.devee.devhive.domain.project.repository.impl;
 
 import com.devee.devhive.domain.project.entity.Project;
@@ -41,11 +40,19 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     }
 
     if (development != null) {
-      predicate.and(qProject.developmentType.eq(development));
+      if (development == DevelopmentType.ALL) {
+        predicate.and(qProject.developmentType.in(DevelopmentType.getAllDevelopmentTypes()));
+      } else {
+        predicate.and(qProject.developmentType.eq(development));
+      }
     }
 
     if (recruitment != null) {
-      predicate.and(qProject.recruitmentType.eq(recruitment));
+      if (recruitment == RecruitmentType.ALL) {
+        predicate.and(qProject.recruitmentType.in(RecruitmentType.getAllRecruitmentTypes()));
+      } else {
+        predicate.and(qProject.recruitmentType.eq(recruitment));
+      }
     }
 
     if (techStackIds != null && !techStackIds.isEmpty()) {
