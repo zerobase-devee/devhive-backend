@@ -58,27 +58,16 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     }
 
     JPAQuery<Project> query = queryFactory.selectFrom(qProject)
+        .distinct()
         .leftJoin(qProjectTechStack)
         .on(qProjectTechStack.project.eq(qProject))
-        .where(predicate);
-
-    if ("asc".equals(sort)) {
-      query = query.orderBy(qProject.createdDate.asc());
-    } else if ("desc".equals(sort)) {
-      query = query.orderBy(qProject.createdDate.desc());
-    } else if ("view".equals(sort)) {
-      query = query.orderBy(qProject.viewCount.count.desc());
-    } else {
-      query = query.orderBy(qProject.createdDate.desc());
-    }
-
-    // 중복된 결과를 제거하기 위해 distinct()를 사용
-    query = query.distinct();
+        .where(predicate)
+        .orderBy("asc".equals(sort) ? qProject.createdDate.asc() : qProject.createdDate.desc());
 
     long totalItems = query.fetchCount();
 
     // 페이지 크기와 오프셋 설정
-    query = query.offset(pageable.getPageNumber()).limit(pageable.getPageSize());
+    query = query.offset(pageable.getOffset()).limit(pageable.getPageSize());
 
     List<Project> projectList = query.fetch();
 
