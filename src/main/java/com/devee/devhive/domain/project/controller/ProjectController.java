@@ -21,6 +21,7 @@ import com.devee.devhive.domain.project.techstack.service.ProjectTechStackServic
 import com.devee.devhive.domain.project.type.ApplyStatus;
 import com.devee.devhive.domain.project.views.service.ViewCountService;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
+import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import com.devee.devhive.domain.user.bookmark.service.BookmarkService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.dto.SimpleUserDto;
@@ -152,8 +153,7 @@ public class ProjectController {
     Page<Project> projectPage = projectService.getProject(searchRequest, sort, pageable);
 
     Page<ProjectListDto> projectListDtoPage = projectPage.map(project -> {
-      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(
-              project)
+      List<TechStackDto> techStackDtoList = projectTechStackService.getProjectTechStacksByProject(project)
           .stream()
           .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
           .collect(Collectors.toList());
@@ -164,9 +164,9 @@ public class ProjectController {
           .map(projectMember -> SimpleUserDto.from(projectMember.getUser()))
           .collect(Collectors.toList());
 
-      boolean bookmarked = isLoggedInUserBookmark(user, project.getId());
+      Long bookmarkId = isLoggedInUserBookmark(user, project.getId());
 
-      return ProjectListDto.of(project, techStackDtoList, projectMemberDtoList, bookmarked);
+      return ProjectListDto.of(project, techStackDtoList, projectMemberDtoList, bookmarkId);
     });
 
     return ResponseEntity.ok(projectListDtoPage);
@@ -198,11 +198,11 @@ public class ProjectController {
     List<SimpleUserDto> projectMembers = getProjectMembers(projectId);
 
     User loggedInUser = getLoggedInUser(authentication);
-    boolean isBookmark = isLoggedInUserBookmark(loggedInUser, projectId);
+    Long bookmarkId = isLoggedInUserBookmark(loggedInUser, projectId);
     ApplyStatus applyStatus = getApplyStatus(loggedInUser, project);
 
     return ResponseEntity.ok(ProjectInfoDto.of(
-        project, techStacks, projectMembers, loggedInUser, isBookmark, applyStatus)
+        project, techStacks, projectMembers, loggedInUser, bookmarkId, applyStatus)
     );
   }
 
@@ -226,8 +226,15 @@ public class ProjectController {
     return null;
   }
 
-  private boolean isLoggedInUserBookmark(User loggedInUser, Long projectId) {
-    return loggedInUser != null && bookmarkService.isBookmark(loggedInUser.getId(), projectId);
+  private Long isLoggedInUserBookmark(User loggedInUser, Long projectId) {
+    Long bookmarkId = null;
+    if (loggedInUser != null) {
+      Bookmark bookmark = bookmarkService.findByUserIdAndProjectId(loggedInUser.getId(), projectId);
+      if (bookmark != null) {
+        bookmarkId = bookmark.getId();
+      }
+    }
+    return bookmarkId;
   }
 
   private ApplyStatus getApplyStatus(User loggedInUser, Project project) {

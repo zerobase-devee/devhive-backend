@@ -1,6 +1,7 @@
 package com.devee.devhive.domain.project.review.controller;
 
 import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.dto.ReviewDto;
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectReviewController {
 
   private final ProjectReviewService reviewService;
+  private final ProjectMemberService memberService;
   private final EvaluationService evaluationService;
   private final UserService userService;
   private final ProjectService projectService;
@@ -56,12 +58,12 @@ public class ProjectReviewController {
     // 타겟유저의 유저뱃지리스트들 점수 업데이트
     userBadgeService.updatePoint(targetUser, evaluationList);
 
-    int count = reviewService.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
-    if (count == project.getTeamSize()-1) {
-      // 팀원평가 평균점수를 타겟유저 랭킹포인트에 더하기
-      double averagePoint = reviewService.getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId);
+    long memberCount = memberService.getProjectMemberByProjectId(projectId).size();
+    // 팀원평가 모두 한 경우 평균점수를 타겟유저 랭킹포인트 업데이트
+    double averagePoint = reviewService.getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId, memberCount);
+    if (averagePoint != 0.0) {
       userService.updateRankPoint(targetUser, project, averagePoint);
     }
-      return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
+    return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
   }
 }

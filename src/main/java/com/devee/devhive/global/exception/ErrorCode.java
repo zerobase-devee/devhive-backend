@@ -45,6 +45,8 @@ public enum ErrorCode {
     NOT_FOUND_ALARM(HttpStatus.BAD_REQUEST, "해당 알림을 찾을 수 없습니다."),
 
     NOT_FOUND_CAREER(HttpStatus.BAD_REQUEST, "해당 경력을 찾을 수 없습니다."),
+    NOT_FOUND_BOOKMARK(HttpStatus.BAD_REQUEST, "해당 북마크를 찾을 수 없습니다."),
+    NOT_FOUND_FAVORITE(HttpStatus.BAD_REQUEST, "해당 관심유저를 찾을 수 없습니다."),
 
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),

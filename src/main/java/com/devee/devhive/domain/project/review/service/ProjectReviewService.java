@@ -11,6 +11,7 @@ import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,14 +22,17 @@ public class ProjectReviewService {
   private final ProjectReviewRepository projectReviewRepository;
 
   // 프로젝트에서 유저가 받은 리뷰의 평균점수
-  public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId) {
-    List<ProjectReview> reviews = projectReviewRepository.findAllByProjectIdAndTargetUserId(targetUserId, projectId);
-    int count = reviews.size();
-    if (count == 0) {
-      return 0.0; // 0으로 나누는 경우 처리
+  public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId, long memberCount) {
+    List<ProjectReview> projectReviews = getAllProjectReviewsById(projectId);
+    List<ProjectReview> userReviews = projectReviews.stream()
+        .filter(projectReview -> Objects.equals(projectReview.getTargetUser().getId(), targetUserId)).toList();
+
+    int count = userReviews.size();
+    if (memberCount -1 != count) {
+      return 0.0;
     }
 
-    int sumTotalScore = reviews.stream().mapToInt(ProjectReview::getTotalScore).sum();
+    int sumTotalScore = userReviews.stream().mapToInt(ProjectReview::getTotalScore).sum();
     double average = (double) sumTotalScore / count;
 
     // 결과를 소수점 첫째 자리까지 반올림
@@ -63,7 +67,7 @@ public class ProjectReviewService {
             .build());
   }
 
-  public int countAllByProjectIdAndTargetUserId(Long projectId, Long targetUserId) {
-    return projectReviewRepository.countAllByProjectIdAndTargetUserId(projectId, targetUserId);
+  public List<ProjectReview> getAllProjectReviewsById(Long projectId) {
+    return projectReviewRepository.findAllByProjectId(projectId);
   }
 }
