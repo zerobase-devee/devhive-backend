@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +59,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects")
@@ -149,6 +151,11 @@ public class ProjectController {
   ) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     User user = getLoggedInUser(authentication);
+    log.info("page = " + pageable.getPageNumber() + ", size = " + pageable.getPageSize() + ", sort = " + pageable.getSort());
+    log.info("keyword = "+searchRequest.getKeyword());
+    log.info("development = "+searchRequest.getDevelopment().name());
+    log.info("recruitment = "+searchRequest.getRecruitment().name());
+    log.info("techStackIds size = "+searchRequest.getTechStackIds().size());
 
     Page<Project> projectPage = projectService.getProject(searchRequest, sort, pageable);
 
