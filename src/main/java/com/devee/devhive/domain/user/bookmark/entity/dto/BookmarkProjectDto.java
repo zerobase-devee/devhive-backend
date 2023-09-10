@@ -1,6 +1,6 @@
 package com.devee.devhive.domain.user.bookmark.entity.dto;
 
-import com.devee.devhive.domain.project.entity.Project;
+import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,13 +12,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BookmarkProjectDto {
 
+    private Long bookmarkId;
     private Long projectId;
     private String title;
 
-    public static BookmarkProjectDto from(Project project) {
+    public static BookmarkProjectDto from(Bookmark bookmark) {
         return BookmarkProjectDto.builder()
-            .projectId(project.getId())
-            .title(project.getTitle())
+            .bookmarkId(bookmark.getId())
+            .projectId(bookmark.getProject().getId())
+            .title(bookmark.getProject().getTitle())
             .build();
     }
 }

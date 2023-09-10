@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 public class UserInfoDto {
 
     private Long userId;
-    private boolean isFavorite;
+    private Long favoriteId;
     private String nickName;
     private String profileImage;
     private String intro;
 
-    public static UserInfoDto of(User user, boolean isFavorite) {
+    public static UserInfoDto of(User user, Long favoriteId) {
         return UserInfoDto.builder()
             .userId(user.getId())
-            .isFavorite(isFavorite)
+            .favoriteId(favoriteId)
             .nickName(user.getNickName())
             .profileImage(user.getProfileImage())
             .intro(user.getIntro())

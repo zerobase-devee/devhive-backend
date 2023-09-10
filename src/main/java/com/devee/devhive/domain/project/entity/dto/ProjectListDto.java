@@ -31,12 +31,12 @@ public class ProjectListDto {
   private String region;
   private LocalDateTime createDate;
   private int viewCount;
-  private boolean bookmarked;
+  private Long bookmarkId;
   private List<TechStackDto> techStackList;
   private List<SimpleUserDto> projectMemberList;
 
   public static ProjectListDto of(Project project, List<TechStackDto> techStackList,
-      List<SimpleUserDto> projectMemberList, boolean bookmarkedProjectIds) {
+      List<SimpleUserDto> projectMemberList, Long bookmarkId) {
 
     return ProjectListDto.builder()
         .id(project.getId())
@@ -53,7 +53,7 @@ public class ProjectListDto {
         .viewCount(project.getViewCount().getCount())
         .techStackList(techStackList)
         .projectMemberList(projectMemberList)
-        .bookmarked(bookmarkedProjectIds)
+        .bookmarkId(bookmarkId)
         .build();
   }
 }

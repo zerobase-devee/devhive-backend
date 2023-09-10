@@ -39,11 +39,11 @@ public class ProjectInfoDto {
   private List<SimpleUserDto> projectMembers;
   // 본인
   private SimpleUserDto userInfo;
-  private boolean isBookmark;
+  private Long bookmarkId;
   private ApplyStatus applyStatus;
 
   public static ProjectInfoDto of(Project project, List<TechStackDto> techStacks,
-      List<SimpleUserDto> projectMembers, User user, boolean isBookmark, ApplyStatus applyStatus) {
+      List<SimpleUserDto> projectMembers, User user, Long bookmarkId, ApplyStatus applyStatus) {
     return ProjectInfoDto.builder()
         .status(project.getStatus())
         .projectTitle(project.getTitle())
@@ -61,7 +61,7 @@ public class ProjectInfoDto {
         .writerInfo(SimpleUserDto.from(project.getUser()))
         .projectMembers(projectMembers)
         .userInfo(SimpleUserDto.from(user))
-        .isBookmark(isBookmark)
+        .bookmarkId(bookmarkId)
         .applyStatus(applyStatus)
         .build();
   }
