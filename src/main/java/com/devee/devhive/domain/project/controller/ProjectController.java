@@ -152,7 +152,7 @@ public class ProjectController {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     User user = getLoggedInUser(authentication);
     log.info("page = " + pageable.getPageNumber() + ", size = " + pageable.getPageSize());
-    log.info("page = " + pageable.getPageNumber() + ", size = " + pageable.getPageSize());
+    log.info("sort : " + sort);
 
     pageable.getSort().forEach(order -> log.info("정렬 필드: " + order.getProperty() + ", 정렬 방향: " + order.getDirection()));
 
