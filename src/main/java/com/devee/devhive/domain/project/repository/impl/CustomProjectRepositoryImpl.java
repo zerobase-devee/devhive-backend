@@ -78,7 +78,7 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     long totalItems = query.fetchCount();
 
     // 페이지 크기와 오프셋 설정
-    query = query.offset(pageable.getPageNumber()).limit(pageable.getPageSize());
+    query = query.offset(pageable.getOffset()).limit(pageable.getPageSize());
 
     List<Project> projectList = query.fetch();
 

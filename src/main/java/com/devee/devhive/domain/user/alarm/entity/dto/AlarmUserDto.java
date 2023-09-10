@@ -20,7 +20,7 @@ public class AlarmUserDto {
     public static AlarmUserDto of(User user, RelatedUrlType urlType) {
         Long userId = user.getId();
         String url = urlType.getValue();
-        String relatedUserUrl = urlType == RelatedUrlType.USER_INFO ? url + userId : url;
+        String relatedUserUrl = urlType == RelatedUrlType.USER_INFO ? String.format(url, userId) : url;
 
         return AlarmUserDto.builder()
             .userId(userId)
