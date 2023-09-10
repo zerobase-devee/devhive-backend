@@ -3,10 +3,11 @@ package com.devee.devhive.domain.project.repository.impl;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.QProject;
-import com.devee.devhive.domain.project.techstack.entity.QProjectTechStack;
 import com.devee.devhive.domain.project.repository.custom.CustomProjectRepository;
+import com.devee.devhive.domain.project.techstack.entity.QProjectTechStack;
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.RecruitmentType;
+import com.devee.devhive.domain.project.views.entity.QViewCount;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,6 +32,7 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
 
     QProject qProject = QProject.project;
     QProjectTechStack qProjectTechStack = QProjectTechStack.projectTechStack;
+    QViewCount qViewCount = QViewCount.viewCount;
     BooleanBuilder predicate = new BooleanBuilder();
 
     if (keyword != null && !keyword.isEmpty()) {
@@ -59,6 +61,10 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
 
     if ("asc".equals(sort)) {
       query = query.orderBy(qProject.createdDate.asc());
+    } else if ("desc".equals(sort)) {
+      query = query.orderBy(qProject.createdDate.desc());
+    } else if ("view".equals(sort)) {
+      query = query.orderBy(qViewCount.count.desc());
     } else {
       query = query.orderBy(qProject.createdDate.desc());
     }
