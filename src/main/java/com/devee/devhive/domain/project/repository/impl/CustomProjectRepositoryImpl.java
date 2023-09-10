@@ -62,9 +62,7 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     JPAQuery<Project> query = queryFactory.selectFrom(qProject)
         .leftJoin(qProjectTechStack)
         .on(qProjectTechStack.project.eq(qProject))
-        .where(predicate)
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .where(predicate);
 
     if ("asc".equals(sort)) {
       query = query.orderBy(qProject.createdDate.asc());
@@ -75,9 +73,15 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     } else {
       query = query.orderBy(qProject.createdDate.desc());
     }
+    // 총 아이템 수 계산
+    long totalItems = query.select(qProject.count()).fetchFirst();
+
+    // 페이지 크기와 오프셋 설정
+    query = query.offset(pageable.getOffset()).limit(pageable.getPageSize());
 
     List<Project> projectList = query.fetch();
 
-    return new PageImpl<>(projectList);
+    // 페이지 객체 생성 시 총 아이템 수 제공
+    return new PageImpl<>(projectList, pageable, totalItems);
   }
 }
