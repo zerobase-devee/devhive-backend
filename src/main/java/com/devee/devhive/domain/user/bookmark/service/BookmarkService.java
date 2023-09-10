@@ -29,10 +29,13 @@ public class BookmarkService {
   }
 
   public void register(User user, Project project) {
-    bookmarkRepository.save(Bookmark.builder()
-        .project(project)
-        .user(user)
-        .build());
+    Bookmark bookmark = findByUserIdAndProjectId(user.getId(), project.getId());
+    if (bookmark == null) {
+      bookmarkRepository.save(Bookmark.builder()
+          .project(project)
+          .user(user)
+          .build());
+    }
   }
 
   public void delete(Bookmark bookmark) {

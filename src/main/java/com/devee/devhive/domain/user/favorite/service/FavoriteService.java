@@ -28,10 +28,13 @@ public class FavoriteService {
   }
 
   public void register(User user, User favoriteUser) {
-    favoriteRepository.save(Favorite.builder()
-        .user(user)
-        .favoriteUser(favoriteUser)
-        .build());
+    Favorite favorite = findByUserIdAndFavoriteUserId(user.getId(), favoriteUser.getId());
+    if (favorite == null) {
+      favoriteRepository.save(Favorite.builder()
+          .user(user)
+          .favoriteUser(favoriteUser)
+          .build());
+    }
   }
 
   public Favorite findById(Long favoriteId) {
