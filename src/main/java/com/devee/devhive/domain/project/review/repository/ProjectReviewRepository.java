@@ -8,9 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProjectReviewRepository extends JpaRepository<ProjectReview, Long> {
 
-  int countAllByProjectIdAndTargetUserId(Long projectId, Long targetUserId);
-
   boolean existsByProjectIdAndReviewerUserIdAndTargetUserId(Long projectId, Long reviewerUserId, Long targetUserId);
 
-  List<ProjectReview> findAllByProjectIdAndTargetUserId(Long projectId, Long targetUserId);
+  List<ProjectReview> findAllByProjectId(Long projectId);
 }

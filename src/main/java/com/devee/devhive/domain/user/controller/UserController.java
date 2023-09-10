@@ -7,6 +7,7 @@ import com.devee.devhive.domain.user.entity.dto.MyInfoDto;
 import com.devee.devhive.domain.user.entity.dto.UserInfoDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
+import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.type.ProviderType;
@@ -52,16 +53,19 @@ public class UserController {
   public ResponseEntity<UserInfoDto> getUserInfo(@PathVariable("userId") Long targetUserId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     User targetUser = userService.getUserById(targetUserId);
-    boolean isFavorite = false;
+    Long favoriteId = null;
 
     if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
       // 로그인한 상태일 때 동작
       PrincipalDetails details = (PrincipalDetails) authentication.getPrincipal();
       User loggedInUser = userService.getUserByEmail(details.getEmail());
-      isFavorite = favoriteService.isFavorite(loggedInUser.getId(), targetUserId);
+      Favorite favorite = favoriteService.findByUserIdAndFavoriteUserId(loggedInUser.getId(), targetUserId);
+      if (favorite != null) {
+        favoriteId = favorite.getId();
+      }
     }
 
-    return ResponseEntity.ok(UserInfoDto.of(targetUser, isFavorite));
+    return ResponseEntity.ok(UserInfoDto.of(targetUser, favoriteId));
   }
 
   /**

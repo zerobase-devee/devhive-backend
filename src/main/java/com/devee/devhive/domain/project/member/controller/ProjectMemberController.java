@@ -36,8 +36,9 @@ public class ProjectMemberController {
 
     for (Project project : projects) {
       if (project.getStatus() == ProjectStatus.COMPLETE) {
+        long memberCount = projectMemberService.getProjectMemberByProjectId(project.getId()).size();
         ProjectHistoryDto projectHistory = ProjectHistoryDto.of(project.getName(),
-            projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, project.getId()));
+            projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, project.getId(), memberCount));
         projectHistoryList.add(projectHistory);
       }
     }

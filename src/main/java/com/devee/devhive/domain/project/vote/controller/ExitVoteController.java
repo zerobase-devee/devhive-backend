@@ -20,7 +20,7 @@ import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
@@ -64,18 +64,35 @@ public class ExitVoteController {
 
     // 투표 대상 유저를 제외한 모든 유저
     List<ProjectMember> votingUsers = projectMemberService.getProjectMemberByProjectId(projectId).stream()
-        .filter(member -> !Objects.equals(member.getUser().getId(), targetUser.getId()))
-        .collect(Collectors.toList());
+        .filter(member -> !Objects.equals(member.getUser().getId(), targetUser.getId())).toList();
+
+    // 팀원이 2명뿐인 경우 바로 퇴출 처리
+    if (votingUsers.size() == 1) {
+      // 퇴출 횟수를 기반으로 유저 비활성화, 퇴출 처리
+      handleUserExit(targetUser, targetUserId);
+
+      // 퇴출자가 프로젝트의 리더인 경우
+      if (Objects.equals(project.getUser().getId(), targetUserId)) {
+        projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
+        projectService.deleteLeadersProject(projectId);
+        return ResponseEntity.ok("팀장이 퇴출되어 프로젝트가 삭제되었습니다.");
+      } else {
+        // 퇴출자만 팀에서 삭제, 알림 발행
+        projectMemberService.deleteMemberFromProjectAndSendAlarm(projectId, targetUserId);
+        return ResponseEntity.ok(targetUser.getNickName() + "님을 퇴출했습니다.");
+      }
+    }
 
     return ResponseEntity.ok(
-        exitVoteService.createExitVoteAndSendAlarm(project, registeringUser, targetUser, votingUsers));
+        exitVoteService.createExitVoteAndSendAlarm(project,registeringUser,targetUser,votingUsers));
   }
 
   @PutMapping("/{voteId}")
   @Operation(summary = "프로젝트 퇴출 투표 제출")
   public ResponseEntity<VoteDto> submitExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @PathVariable(name = "projectId") Long projectId, @PathVariable(name = "voteId") Long voteId, @RequestParam boolean vote
+      @PathVariable(name = "projectId") Long projectId,
+      @PathVariable(name = "voteId") Long voteId, @RequestParam boolean vote
   ) {
     User voterUser = userService.getUserByEmail(principalDetails.getEmail());
     ProjectMemberExitVote myVote = exitVoteService.findById(voteId);
@@ -89,22 +106,14 @@ public class ExitVoteController {
     // 투표 제출
     exitVoteService.submitExitVote(myVote, vote);
     // 모든 팀원이 투표완료한 경우
-    List<ProjectMemberExitVote> exitVotes  = exitVoteService.findByProjectId(projectId);
+    List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
     int countVotedMembers = exitVoteService.countVotedMembers(exitVotes);
     if (countVotedMembers == exitVotes.size()) {
-      // 타겟 유저 퇴출전적
-      int exitedCount = exitHistoryService.countExitHistoryByUserId(targetUserId);
+
       boolean isTargetUserExit = exitVoteService.resultTargetUserExit(exitVotes);
       if (isTargetUserExit) {
-        // 퇴출 횟수 당 1주로 유저 비활성화 기간 설정(이번이 10회째인 경우 영구 비활성화)
-        Instant reActiveDate = exitedCount >= 9 ?
-            Instant.MAX : Instant.now().plus(exitedCount + 1, ChronoUnit.WEEKS);
-
-        exitHistoryService.saveExitHistory(ExitHistory.builder()
-            .user(targetUser)
-            .reActiveDate(reActiveDate)
-            .build());
-        userService.setUserStatus(targetUser, ActivityStatus.INACTIVITY);
+        // 퇴출 횟수를 기반으로 유저 비활성화, 퇴출 처리
+        handleUserExit(targetUser, targetUserId);
 
         // 퇴출자가 프로젝트의 리더인 경우
         if (Objects.equals(project.getUser().getId(), targetUserId)) {
@@ -131,7 +140,21 @@ public class ExitVoteController {
     List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
     return ResponseEntity.ok(exitVotes.stream()
         .map(ProjectExitVoteDto::from)
-        .collect(Collectors.toList())
-    );
+        .collect(Collectors.toList()));
+  }
+
+  // 퇴출 횟수를 기반으로 유저 비활성화, 퇴출 처리
+  private void handleUserExit(User targetUser, Long targetUserId) {
+    // 타겟 유저 퇴출전적
+    int exitedCount = exitHistoryService.countExitHistoryByUserId(targetUserId);
+    // 퇴출 횟수 당 1주로 유저 비활성화 기간 설정(이번이 10회째인 경우 영구 비활성화)
+    LocalDateTime reActiveDate = exitedCount < 9 ?
+        LocalDateTime.now().plus(exitedCount + 1, ChronoUnit.WEEKS) : LocalDateTime.MAX;
+
+    exitHistoryService.saveExitHistory(ExitHistory.builder()
+        .user(targetUser)
+        .reActiveDate(reActiveDate)
+        .build());
+    userService.setUserStatus(targetUser, ActivityStatus.INACTIVITY);
   }
 }
