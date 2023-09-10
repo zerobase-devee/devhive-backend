@@ -37,6 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -158,8 +159,7 @@ public class ProjectController {
           .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
           .collect(Collectors.toList());
 
-      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(
-              project.getId())
+      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(project.getId())
           .stream()
           .map(projectMember -> SimpleUserDto.from(projectMember.getUser()))
           .collect(Collectors.toList());
@@ -229,10 +229,13 @@ public class ProjectController {
   private Long isLoggedInUserBookmark(User loggedInUser, Long projectId) {
     Long bookmarkId = null;
     if (loggedInUser != null) {
-      Bookmark bookmark = bookmarkService.findByUserIdAndProjectId(loggedInUser.getId(), projectId);
-      if (bookmark != null) {
-        bookmarkId = bookmark.getId();
-      }
+      Optional<Long> optionalBookmarkId = bookmarkService.findByUserId(loggedInUser.getId())
+          .stream()
+          .filter(bookmark -> Objects.equals(bookmark.getProject().getId(), projectId))
+          .map(Bookmark::getId)
+          .findFirst();
+
+      bookmarkId = optionalBookmarkId.orElse(null);
     }
     return bookmarkId;
   }

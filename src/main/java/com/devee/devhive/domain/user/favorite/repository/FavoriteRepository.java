@@ -16,4 +16,7 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
   Page<Favorite> findByUserIdOrderByCreatedDateDesc(Long userId, Pageable pageable);
 
   List<Favorite> findAllByFavoriteUserId(Long favoriteUserId);
+
+  List<Favorite> findAllByUserId(Long userId);
+
 }

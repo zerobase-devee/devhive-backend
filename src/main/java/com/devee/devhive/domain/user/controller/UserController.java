@@ -16,6 +16,8 @@ import com.devee.devhive.global.exception.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -59,10 +61,13 @@ public class UserController {
       // 로그인한 상태일 때 동작
       PrincipalDetails details = (PrincipalDetails) authentication.getPrincipal();
       User loggedInUser = userService.getUserByEmail(details.getEmail());
-      Favorite favorite = favoriteService.findByUserIdAndFavoriteUserId(loggedInUser.getId(), targetUserId);
-      if (favorite != null) {
-        favoriteId = favorite.getId();
-      }
+      Optional<Long> optionalFavoriteId = favoriteService.findByUserId(loggedInUser.getId())
+          .stream()
+          .filter(favorite -> Objects.equals(favorite.getFavoriteUser().getId(), targetUserId))
+          .map(Favorite::getId)
+          .findFirst();
+
+      favoriteId = optionalFavoriteId.orElse(null);
     }
 
     return ResponseEntity.ok(UserInfoDto.of(targetUser, favoriteId));

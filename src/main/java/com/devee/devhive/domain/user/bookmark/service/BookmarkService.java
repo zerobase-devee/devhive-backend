@@ -7,6 +7,7 @@ import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import com.devee.devhive.domain.user.bookmark.repository.BookmarkRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,9 @@ public class BookmarkService {
 
   private final BookmarkRepository bookmarkRepository;
 
+  public List<Bookmark> findByUserId(Long userId) {
+    return bookmarkRepository.findAllByUserId(userId);
+  }
   public Bookmark findByUserIdAndProjectId(Long userId, Long projectId) {
     return bookmarkRepository.findBookmarkByUserIdAndProjectId(userId, projectId)
         .orElse(null);

@@ -23,6 +23,9 @@ public class FavoriteService {
   private final ApplicationEventPublisher eventPublisher;
   private final FavoriteRepository favoriteRepository;
 
+  public List<Favorite> findByUserId(Long userId) {
+    return favoriteRepository.findAllByUserId(userId);
+  }
   public Favorite findByUserIdAndFavoriteUserId(Long userId, Long targetUserId) {
     return favoriteRepository.findByUserIdAndFavoriteUserId(userId, targetUserId).orElse(null);
   }
