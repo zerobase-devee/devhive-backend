@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +59,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects")
@@ -158,8 +160,7 @@ public class ProjectController {
           .map(projectTechStack -> TechStackDto.from(projectTechStack.getTechStack()))
           .collect(Collectors.toList());
 
-      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(
-              project.getId())
+      List<SimpleUserDto> projectMemberDtoList = projectMemberService.getProjectMemberByProjectId(project.getId())
           .stream()
           .map(projectMember -> SimpleUserDto.from(projectMember.getUser()))
           .collect(Collectors.toList());

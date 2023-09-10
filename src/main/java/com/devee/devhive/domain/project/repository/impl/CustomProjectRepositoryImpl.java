@@ -6,7 +6,6 @@ import com.devee.devhive.domain.project.repository.custom.CustomProjectRepositor
 import com.devee.devhive.domain.project.techstack.entity.QProjectTechStack;
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.RecruitmentType;
-import com.devee.devhive.domain.project.views.entity.QViewCount;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,7 +30,6 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
 
     QProject qProject = QProject.project;
     QProjectTechStack qProjectTechStack = QProjectTechStack.projectTechStack;
-    QViewCount qViewCount = QViewCount.viewCount;
     BooleanBuilder predicate = new BooleanBuilder();
 
     if (keyword != null && !keyword.isEmpty()) {
@@ -62,22 +60,29 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     JPAQuery<Project> query = queryFactory.selectFrom(qProject)
         .leftJoin(qProjectTechStack)
         .on(qProjectTechStack.project.eq(qProject))
-        .where(predicate)
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .where(predicate);
 
     if ("asc".equals(sort)) {
       query = query.orderBy(qProject.createdDate.asc());
     } else if ("desc".equals(sort)) {
       query = query.orderBy(qProject.createdDate.desc());
     } else if ("view".equals(sort)) {
-      query = query.orderBy(qViewCount.count.desc());
+      query = query.orderBy(qProject.viewCount.count.desc());
     } else {
       query = query.orderBy(qProject.createdDate.desc());
     }
 
+    // 중복된 결과를 제거하기 위해 distinct()를 사용
+    query = query.distinct();
+
+    long totalItems = query.fetchCount();
+
+    // 페이지 크기와 오프셋 설정
+    query = query.offset(pageable.getPageNumber()).limit(pageable.getPageSize());
+
     List<Project> projectList = query.fetch();
 
-    return new PageImpl<>(projectList);
+    // 페이지 객체 생성 시 총 아이템 수 제공
+    return new PageImpl<>(projectList, pageable, totalItems);
   }
 }
