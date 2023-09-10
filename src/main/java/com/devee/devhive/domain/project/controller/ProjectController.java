@@ -151,7 +151,11 @@ public class ProjectController {
   ) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     User user = getLoggedInUser(authentication);
-    log.info("page = " + pageable.getPageNumber() + ", size = " + pageable.getPageSize() + ", sort = " + pageable.getSort());
+    log.info("page = " + pageable.getPageNumber() + ", size = " + pageable.getPageSize());
+    log.info("page = " + pageable.getPageNumber() + ", size = " + pageable.getPageSize());
+
+    pageable.getSort().forEach(order -> log.info("정렬 필드: " + order.getProperty() + ", 정렬 방향: " + order.getDirection()));
+
     log.info("keyword = "+searchRequest.getKeyword());
     log.info("development = "+searchRequest.getDevelopment().name());
     log.info("recruitment = "+searchRequest.getRecruitment().name());
