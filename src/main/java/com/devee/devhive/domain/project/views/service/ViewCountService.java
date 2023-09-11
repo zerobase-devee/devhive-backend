@@ -22,4 +22,9 @@ public class ViewCountService {
     viewCount.incrementCount();
     viewCountRepository.save(viewCount);
   }
+
+  public void delete(Long projectId) {
+    ViewCount viewCount = viewCountRepository.findByProjectId(projectId);
+    viewCountRepository.delete(viewCount);
+  }
 }

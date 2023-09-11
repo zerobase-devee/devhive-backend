@@ -2,10 +2,15 @@ package com.devee.devhive.domain.project.vote.controller;
 
 import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_VOTE;
 
+import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
+import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
+import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.project.techstack.service.ProjectTechStackService;
+import com.devee.devhive.domain.project.views.service.ViewCountService;
 import com.devee.devhive.domain.project.vote.dto.ProjectExitVoteDto;
 import com.devee.devhive.domain.project.vote.dto.VoteDto;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
@@ -47,6 +52,11 @@ public class ExitVoteController {
   private final ProjectService projectService;
   private final ProjectMemberService projectMemberService;
   private final ExitHistoryService exitHistoryService;
+  private final ViewCountService viewCountService;
+  private final ProjectApplyService projectApplyService;
+  private final ProjectTechStackService techStackService;
+  private final CommentService commentService;
+  private final ReplyService replyService;
 
   @PostMapping("/{targetUserId}")
   @Operation(summary = "프로젝트 퇴출 투표 생성")
@@ -73,6 +83,11 @@ public class ExitVoteController {
 
       // 퇴출자가 프로젝트의 리더인 경우
       if (Objects.equals(project.getUser().getId(), targetUserId)) {
+        List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
+        replyService.deleteRepliesByCommentList(commentIdList);
+        viewCountService.delete(projectId);
+        projectApplyService.deleteAll(projectId);
+        techStackService.deleteProjectTechStacksByProjectId(projectId);
         projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
         projectService.deleteLeadersProject(project);
         return ResponseEntity.ok("팀장이 퇴출되어 프로젝트가 삭제되었습니다.");

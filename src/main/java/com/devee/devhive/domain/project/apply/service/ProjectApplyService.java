@@ -46,6 +46,11 @@ public class ProjectApplyService {
         .orElseThrow(() -> new CustomException(NOT_FOUND_APPLICATION));
   }
 
+  public void deleteAll(Long projectId) {
+    List<ProjectApply> projectApplies = getProjectApplies(projectId);
+    projectApplyRepository.deleteAll(projectApplies);
+  }
+
   // 신청
   @Transactional
   public void projectApplyAndSendAlarmToProjectUser(User user, Project project) {

@@ -126,7 +126,7 @@ public class ProjectController {
 
   // 프로젝트 삭제
   @DeleteMapping("/{projectId}")
-  @Operation(summary = "프로젝트 상태 변경", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
+  @Operation(summary = "프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
   public void deleteProject(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
   ) {
@@ -140,6 +140,8 @@ public class ProjectController {
     replyService.deleteRepliesByCommentList(commentIdList);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
     projectMemberService.deleteProjectMembers(projectId);
+    projectApplyService.deleteAll(projectId);
+    viewCountService.delete(projectId);
     projectService.deleteProject(project);
   }
 
