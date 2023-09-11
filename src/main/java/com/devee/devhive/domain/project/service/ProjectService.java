@@ -156,8 +156,7 @@ public class ProjectService {
 
   // 리더가 퇴출된 프로젝트는 예외 없이 삭제
   @Transactional
-  public void deleteLeadersProject(Long projectId) {
-    Project project = findById(projectId);
+  public void deleteLeadersProject(Project project) {
     projectRepository.delete(project);
   }
 

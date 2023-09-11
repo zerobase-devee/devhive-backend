@@ -74,7 +74,7 @@ public class ExitVoteController {
       // 퇴출자가 프로젝트의 리더인 경우
       if (Objects.equals(project.getUser().getId(), targetUserId)) {
         projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
-        projectService.deleteLeadersProject(projectId);
+        projectService.deleteLeadersProject(project);
         return ResponseEntity.ok("팀장이 퇴출되어 프로젝트가 삭제되었습니다.");
       } else {
         // 퇴출자만 팀에서 삭제, 알림 발행
@@ -109,16 +109,16 @@ public class ExitVoteController {
     List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
     int countVotedMembers = exitVoteService.countVotedMembers(exitVotes);
     if (countVotedMembers == exitVotes.size()) {
-
       boolean isTargetUserExit = exitVoteService.resultTargetUserExit(exitVotes);
       if (isTargetUserExit) {
         // 퇴출 횟수를 기반으로 유저 비활성화, 퇴출 처리
         handleUserExit(targetUser, targetUserId);
 
+        exitVoteService.deleteAllVotes(exitVotes);
         // 퇴출자가 프로젝트의 리더인 경우
         if (Objects.equals(project.getUser().getId(), targetUserId)) {
           projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
-          projectService.deleteLeadersProject(projectId);
+          projectService.deleteLeadersProject(project);
         } else {
           // 퇴출자만 팀에서 삭제, 알림 발행
           projectMemberService.deleteMemberFromProjectAndSendAlarm(projectId, targetUserId);
@@ -127,8 +127,6 @@ public class ExitVoteController {
         // 퇴출 실패 알림
         exitVoteService.sendExitVoteFailAlarm(exitVotes);
       }
-      // 투표 결과 처리 후 삭제
-      exitVoteService.deleteAllVotes(exitVotes);
     }
     return ResponseEntity.ok(VoteDto.from(myVote));
   }
