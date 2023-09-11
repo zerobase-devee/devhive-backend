@@ -111,6 +111,7 @@ public class ExitVoteService {
     exitVoteRepository.deleteAll(exitVotes);
   }
 
+  @Transactional
   public void sendExitVoteFailAlarm(List<ProjectMemberExitVote> exitVotes) {
     for (ProjectMemberExitVote memberExitVote : exitVotes) {
       alarmEventPub(memberExitVote.getVoterUser(), memberExitVote.getProject(),
