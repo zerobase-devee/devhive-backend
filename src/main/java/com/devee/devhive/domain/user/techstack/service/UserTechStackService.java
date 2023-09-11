@@ -35,6 +35,7 @@ public class UserTechStackService {
     return userTechStackRepository.findAllByTechStackIdIn(techStackIds);
   }
 
+  @Transactional
   public void recommendAlarmOfProject(Project project, List<TechStackDto> techStacks) {
     List<Long> techStackIds = techStacks.stream().map(TechStackDto::getId).toList();
     // 프로젝트에 등록된 기술을 포함하고 있는 유저 목록

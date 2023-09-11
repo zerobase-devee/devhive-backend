@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -39,6 +40,7 @@ public class ExitVoteService {
     return exitVoteRepository.findAllByProjectId(projectId);
   }
 
+  @Transactional
   public String createExitVoteAndSendAlarm(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
     if (exitVoteRepository.existsByProjectId(project.getId())) {
       throw new CustomException(ALREADY_REGISTERED_VOTE);
@@ -94,24 +96,17 @@ public class ExitVoteService {
   }
 
   // 열린지 24시간이 지난 투표 삭제 처리
+  @Transactional
   public void processVotes() {
     List<ProjectMemberExitVote> closedVotes = exitVoteRepository.findAllByCreatedDateBefore(
         Instant.now().minus(1, ChronoUnit.DAYS));
-    deleteAllVotes(closedVotes);
 
     // 퇴출 실패 알림 이벤트 발행
-    sendExitVoteFailAlarm(closedVotes);
-  }
-
-  public void deleteAllVotes(List<ProjectMemberExitVote> exitVotes) {
-    exitVoteRepository.deleteAll(exitVotes);
-  }
-
-  public void sendExitVoteFailAlarm(List<ProjectMemberExitVote> exitVotes) {
-    for (ProjectMemberExitVote memberExitVote : exitVotes) {
+    for (ProjectMemberExitVote memberExitVote : closedVotes) {
       alarmEventPub(memberExitVote.getVoterUser(), memberExitVote.getProject(),
           AlarmContent.VOTE_RESULT_EXIT_FAIL, memberExitVote.getTargetUser());
     }
+    exitVoteRepository.deleteAll(closedVotes);
   }
 
   private void alarmEventPub(User receiver, Project project, AlarmContent content, User user) {

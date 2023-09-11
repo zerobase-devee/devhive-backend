@@ -105,6 +105,7 @@ public class ProjectApplyService {
   }
 
   // 신청 승인
+  @Transactional
   public void acceptAndSendAlarmToApplicant(ProjectApply projectApply) {
     // 신청 대기 상태가 아닌 경우 (이미 승인/거절된 경우)
     if (projectApply.getStatus() != ApplyStatus.PENDING) {
@@ -118,6 +119,7 @@ public class ProjectApplyService {
   }
 
   // 신청 거절
+  @Transactional
   public void rejectAndSendAlarmToApplicant(User user, Long applicationId) {
     ProjectApply projectApply = getProjectApplyById(applicationId);
     // 프로젝트 작성자가 아닌 경우

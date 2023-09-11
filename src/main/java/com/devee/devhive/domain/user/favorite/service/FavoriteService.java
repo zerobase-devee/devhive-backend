@@ -11,12 +11,15 @@ import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FavoriteService {
 
@@ -49,6 +52,7 @@ public class FavoriteService {
     return favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 
+  @Transactional
   public void favoriteUserUploadAlarmOfProject(User favoriteUser, Long favoriteUserId, Project project) {
     List<Favorite> users = favoriteRepository.findAllByFavoriteUserId(favoriteUserId);
     if (!users.isEmpty()) {

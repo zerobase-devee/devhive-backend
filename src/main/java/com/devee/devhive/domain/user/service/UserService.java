@@ -144,6 +144,7 @@ public class UserService {
   }
 
   // 랭킹포인트 업데이트, 알림이벤트 발행
+  @Transactional
   public void updateRankPoint(User user, Project project, double averagePoint) {
     user.setRankPoint(user.getRankPoint() + averagePoint);
     userRepository.save(user);
