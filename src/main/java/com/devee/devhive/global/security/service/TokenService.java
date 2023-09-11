@@ -197,5 +197,13 @@ public class TokenService {
 
     setAccessTokenHeader(response, BEARER + expireToken);
     setRefreshTokenHeader(response, BEARER + expireToken);
+    setRefreshTokenCookie(response, expireToken);
+
+    response.setStatus(HttpStatus.OK.value());
+    response.setCharacterEncoding("UTF-8");
+    response.setContentType("application/json;charset=UTF-8");
+
+    log.info("만료 Token : " + expireToken);
+    log.info("만료 Token 헤더 및 쿠키 설정 완료");
   }
 }
