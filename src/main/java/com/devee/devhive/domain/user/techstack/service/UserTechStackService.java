@@ -12,6 +12,7 @@ import com.devee.devhive.domain.user.techstack.repository.UserTechStackRepositor
 import com.devee.devhive.domain.user.type.AlarmContent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,12 +44,15 @@ public class UserTechStackService {
 
     for (UserTechStack userTechStack : usersWithTechStacks) {
       User user = userTechStack.getUser();
-      if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
-        recommendAlarmEventPub(user, project);
-      } else {
-        // 프로젝트가 오프라인이면 지역이 일치하는 유저들에게만 알림 이벤트 발행
-        if (project.getRegion().equals(user.getRegion())) {
+      // 작성자 제외
+      if (!Objects.equals(user.getId(), project.getUser().getId())) {
+        if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
           recommendAlarmEventPub(user, project);
+        } else {
+          // 프로젝트가 오프라인이면 지역이 일치하는 유저들에게만 알림 이벤트 발행
+          if (project.getRegion().equals(user.getRegion())) {
+            recommendAlarmEventPub(user, project);
+          }
         }
       }
     }
