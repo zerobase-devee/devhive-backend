@@ -33,12 +33,11 @@ public class AlarmService {
     emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
 
     // 503 에러를 방지하기 위한 더미 이벤트 전송
-    String eventId = makeTimeIncludeId(userId);
-    sendAlarm(emitter, eventId, emitterId, "EventStream Created. [userId=" + userId + "]");
+    sendAlarm(emitter, emitterId, "EventStream Created. [userId=" + userId + "]");
 
     // 클라이언트가 미수신한 Event 목록이 존재할 경우 전송하여 Event 유실을 예방
     if (hasLostData(lastEventId)) {
-      sendLostData(lastEventId, userId, emitterId, emitter);
+      sendLostData(lastEventId, userId, emitter);
     }
 
     return emitter;
@@ -49,12 +48,11 @@ public class AlarmService {
     Alarm saveAlarm = alarmRepository.save(Alarm.from(form));
     log.info("알림 저장 완료");
     Long userId = form.getReceiverUser().getId();
-    String eventId = makeTimeIncludeId(userId);
     Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserId(userId + "_");
     emitters.forEach(
         (key, emitter) -> {
           emitterRepository.saveEventCache(key, saveAlarm.getId());
-          sendAlarm(emitter, eventId, key, "newAlarm");
+          sendAlarm(emitter, key, "newAlarm");
         }
     );
   }
@@ -64,16 +62,15 @@ public class AlarmService {
   }
 
   // 클라이언트에게 알림 전달하는 부분
-  private void sendAlarm(SseEmitter emitter, String eventId, String emitterId,
-      Object data) {
+  private void sendAlarm(SseEmitter emitter, String emitterId, Object data) {
     try {
       emitter.send(SseEmitter.event()
-          .id(eventId)
+          .id(emitterId)
           .data(data));
       log.info("알림 전송 완료");
     } catch (IOException exception) {
       emitterRepository.deleteById(emitterId);
-      log.error("SSE 연결이 올바르지 않습니다. 해당 userId={}", eventId);
+      log.error("SSE 연결이 올바르지 않습니다. 해당 userId={}", emitterId);
     }
   }
 
@@ -81,13 +78,11 @@ public class AlarmService {
     return lastEventId != null && !lastEventId.isEmpty();
   }
 
-  private void sendLostData(String lastEventId, Long userId, String emitterId,
-      SseEmitter emitter) {
+  private void sendLostData(String lastEventId, Long userId, SseEmitter emitter) {
     Map<String, Object> eventCaches = emitterRepository.findAllEventCacheStartWithByUserId(userId + "_");
     eventCaches.entrySet().stream()
         .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-        .forEach(entry -> sendAlarm(emitter, entry.getKey(), emitterId,
-            entry.getValue()));
+        .forEach(entry -> sendAlarm(emitter, entry.getKey(), entry.getValue()));
   }
 
   public List<Alarm> getAlarms(Long userId) {

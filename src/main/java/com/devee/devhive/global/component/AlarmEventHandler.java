@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
@@ -20,7 +21,7 @@ public class AlarmEventHandler {
      * 알림트랜잭션이 실패해도 부모트랜잭션은 성공 가능
      * -> 알림트랜잭션이 부모트랜잭션에 영향을 주지 않는다.
      */
-    @TransactionalEventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Async // 비동기적으로 처리
     public void saveAndSendAlarm(AlarmForm form) {
