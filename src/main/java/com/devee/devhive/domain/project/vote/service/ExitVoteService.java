@@ -122,7 +122,8 @@ public class ExitVoteService {
   private void alarmEventPub(User receiver, Project project, AlarmContent content, User user) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(receiver) // 투표 참여 팀원들
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(content)
         .user(user) // 퇴출 대상자
         .build();

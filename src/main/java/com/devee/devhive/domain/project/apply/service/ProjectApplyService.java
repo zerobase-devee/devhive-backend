@@ -146,7 +146,8 @@ public class ProjectApplyService {
   private void alarmEventPub(User user, Project project, AlarmContent content) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(content)
         .build();
     eventPublisher.publishEvent(alarmForm);

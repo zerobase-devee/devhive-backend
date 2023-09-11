@@ -17,16 +17,18 @@ import lombok.Setter;
 public class AlarmDto {
 
     private Long alarmId;
+    private Long projectId;
+    private String projectName;
     private AlarmUserDto userDto;
-    private AlarmProjectDto projectDto;
     private AlarmContent content;
     private LocalDateTime createDate;
 
     public static AlarmDto from(Alarm alarm) {
         return AlarmDto.builder()
             .alarmId(alarm.getId())
+            .projectId(alarm.getProjectId())
+            .projectName(alarm.getProjectName())
             .content(alarm.getContent())
-            .projectDto(AlarmProjectDto.from(alarm.getProject()))
             .createDate(alarm.getCreatedDate())
             .build();
     }

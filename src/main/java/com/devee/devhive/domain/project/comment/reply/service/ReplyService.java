@@ -85,7 +85,8 @@ public class ReplyService {
   private void replyAlarmEventPub(User user, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(AlarmContent.REPLY)
         .build();
     eventPublisher.publishEvent(alarmForm);

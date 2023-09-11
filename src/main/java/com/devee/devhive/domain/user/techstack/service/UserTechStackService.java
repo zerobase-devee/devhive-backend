@@ -57,7 +57,8 @@ public class UserTechStackService {
   private void recommendAlarmEventPub(User receiver, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(receiver)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(AlarmContent.RECOMMEND)
         .build();
     eventPublisher.publishEvent(alarmForm);

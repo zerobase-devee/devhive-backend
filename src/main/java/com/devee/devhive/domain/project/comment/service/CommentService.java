@@ -5,6 +5,7 @@ import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.entity.form.CommentForm;
+import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.repository.CommentRepository;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
@@ -13,7 +14,6 @@ import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -25,6 +25,7 @@ public class CommentService {
 
   private final ApplicationEventPublisher eventPublisher;
   private final CommentRepository commentRepository;
+  private final ReplyService replyService;
 
   public Comment getCommentById(Long commentId) {
     return commentRepository.findById(commentId)
@@ -65,17 +66,18 @@ public class CommentService {
     commentRepository.delete(comment);
   }
 
-  public List<Long> deleteCommentsByProjectId(Long projectId) {
+  public void deleteCommentsByProjectId(Long projectId) {
     List<Comment> comments = getCommentsByProjectId(projectId);
+    List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+    replyService.deleteRepliesByCommentList(commentIds);
     commentRepository.deleteAll(comments);
-
-    return comments.stream().map(Comment::getId).collect(Collectors.toList());
   }
 
   private void commentAlarmEventPub(User user, Project project) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(AlarmContent.COMMENT)
         .build();
     eventPublisher.publishEvent(alarmForm);

@@ -152,7 +152,8 @@ public class UserService {
     // 평가 완료 알림 이벤트 발행
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(AlarmContent.REVIEW_RESULT)
         .build();
     eventPublisher.publishEvent(alarmForm);

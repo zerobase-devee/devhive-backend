@@ -164,7 +164,8 @@ public class ProjectService {
     for (ProjectMember projectMember : members) {
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(projectMember.getUser())
-          .project(project)
+          .projectId(project.getId())
+          .projectName(project.getName())
           .content(AlarmContent.REVIEW_REQUEST)
           .build();
       eventPublisher.publishEvent(alarmForm);

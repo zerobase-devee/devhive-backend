@@ -4,7 +4,6 @@ import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETE
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
-import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
@@ -69,7 +68,6 @@ public class ProjectController {
   private final UserService userService;
   private final ProjectService projectService;
   private final CommentService commentService;
-  private final ReplyService replyService;
   private final ProjectTechStackService projectTechStackService;
   private final ProjectMemberService projectMemberService;
   private final FavoriteService favoriteService;
@@ -135,9 +133,8 @@ public class ProjectController {
     if (!Objects.equals(project.getUser().getId(), user.getId())) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
-
-    List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
-    replyService.deleteRepliesByCommentList(commentIdList);
+    bookmarkService.deleteByProject(projectId);
+    commentService.deleteCommentsByProjectId(projectId);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
     projectMemberService.deleteProjectMembers(projectId);
     projectApplyService.deleteAll(projectId);

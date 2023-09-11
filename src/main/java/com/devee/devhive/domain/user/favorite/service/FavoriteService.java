@@ -62,7 +62,8 @@ public class FavoriteService {
         // 관심 유저가 프로젝트 업로드한 경우 관심유저로 등록한 유저들에게 알림 이벤트 발행
         AlarmForm alarmForm = AlarmForm.builder()
             .receiverUser(user)
-            .project(project)
+            .projectId(project.getId())
+            .projectName(project.getName())
             .content(AlarmContent.FAVORITE_USER)
             .user(favoriteUser)
             .build();

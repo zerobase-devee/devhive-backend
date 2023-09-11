@@ -109,7 +109,8 @@ public class ProjectMemberService {
   private void alarmEventPub(User receiver, Project project, AlarmContent content, User user) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(receiver)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(content)
         .user(user)
         .build();
