@@ -102,11 +102,20 @@ public class ExitVoteService {
         Instant.now().minus(1, ChronoUnit.DAYS));
 
     // 퇴출 실패 알림 이벤트 발행
-    for (ProjectMemberExitVote memberExitVote : closedVotes) {
+    sendExitVoteFailAlarm(closedVotes);
+
+    deleteAllVotes(closedVotes);
+  }
+
+  public void deleteAllVotes(List<ProjectMemberExitVote> exitVotes) {
+    exitVoteRepository.deleteAll(exitVotes);
+  }
+
+  public void sendExitVoteFailAlarm(List<ProjectMemberExitVote> exitVotes) {
+    for (ProjectMemberExitVote memberExitVote : exitVotes) {
       alarmEventPub(memberExitVote.getVoterUser(), memberExitVote.getProject(),
           AlarmContent.VOTE_RESULT_EXIT_FAIL, memberExitVote.getTargetUser());
     }
-    exitVoteRepository.deleteAll(closedVotes);
   }
 
   private void alarmEventPub(User receiver, Project project, AlarmContent content, User user) {
