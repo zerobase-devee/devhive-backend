@@ -72,6 +72,7 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
+  @Transactional
   public void updateProjectStatusAndAlarmToMembers(User user, Long projectId,
       UpdateProjectStatusDto statusDto, List<ProjectMember> members) {
     Project project = findById(projectId);
@@ -155,7 +156,6 @@ public class ProjectService {
   }
 
   // 리더가 퇴출된 프로젝트는 예외 없이 삭제
-  @Transactional
   public void deleteLeadersProject(Project project) {
     projectRepository.delete(project);
   }
