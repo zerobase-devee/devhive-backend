@@ -35,17 +35,13 @@ public class AlarmController {
     private final UserService userService;
 
     // 알람 sse 구독
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/subscribe/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "알람 구독")
     public ResponseEntity<SseEmitter> subscribe(
-        @AuthenticationPrincipal PrincipalDetails principalDetails,
+        @PathVariable(name = "userId") Long userId,
         @RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
     ) {
-        User user = userService.getUserByEmail(principalDetails.getEmail());
-
-        return ResponseEntity.ok(
-            alarmService.subscribe(user.getId(), lastEventId)
-        );
+        return ResponseEntity.ok(alarmService.subscribe(userId, lastEventId));
     }
 
     // 내 알림 목록 조회
