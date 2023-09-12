@@ -65,10 +65,10 @@ public class SecurityConfig {
         .oauth2Login(oauth2Login -> oauth2Login
             .authorizationEndpoint(
                 authorizationEndpoint -> authorizationEndpoint
-                    .baseUri("/oauth2/authorization")
+                    .baseUri("/oauth/authorize")
                     .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
             .redirectionEndpoint(
-                redirectionEndpoint -> redirectionEndpoint.baseUri("/*/oauth2/code/*"))
+                redirectionEndpoint -> redirectionEndpoint.baseUri("/*/oauth/redirect/* "))
             .userInfoEndpoint(
                 userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
             .successHandler(oAuth2AuthenticationSuccessHandler())
@@ -101,7 +101,8 @@ public class SecurityConfig {
                 "/login/**",
                 "/api/admin/tech-stacks",
                 "/api/admin/badges",
-                "/chat/**"
+                "/chat/**",
+                "/oauth/**"
             ).permitAll()
 
             .requestMatchers(
