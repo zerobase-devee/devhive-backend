@@ -6,7 +6,6 @@ import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITMENT_CO
 import static com.devee.devhive.domain.project.type.RecruitmentType.ALL;
 import static com.devee.devhive.domain.project.type.RecruitmentType.OFFLINE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_PROJECT;
-import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.entity.Project;
@@ -149,9 +148,6 @@ public class ProjectService {
   // 프로젝트 삭제
   @Transactional
   public void deleteProject(Project project) {
-    if (project.getStatus() != ProjectStatus.RECRUITING) {
-      throw new CustomException(PROJECT_CANNOT_DELETED);
-    }
     projectRepository.delete(project);
   }
 

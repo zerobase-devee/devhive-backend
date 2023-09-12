@@ -18,6 +18,7 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.techstack.service.ProjectTechStackService;
 import com.devee.devhive.domain.project.type.ApplyStatus;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.project.views.service.ViewCountService;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
@@ -131,6 +132,9 @@ public class ProjectController {
     User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.findById(projectId);
     if (!Objects.equals(project.getUser().getId(), user.getId())) {
+      throw new CustomException(PROJECT_CANNOT_DELETED);
+    }
+    if (project.getStatus() != ProjectStatus.RECRUITING) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
     bookmarkService.deleteByProject(projectId);
