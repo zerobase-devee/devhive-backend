@@ -2,14 +2,19 @@ package com.devee.devhive.domain.project.vote.controller;
 
 import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_VOTE;
 
+import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
+import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
+import com.devee.devhive.domain.project.techstack.service.ProjectTechStackService;
+import com.devee.devhive.domain.project.views.service.ViewCountService;
 import com.devee.devhive.domain.project.vote.dto.ProjectExitVoteDto;
 import com.devee.devhive.domain.project.vote.dto.VoteDto;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
+import com.devee.devhive.domain.user.bookmark.service.BookmarkService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.exithistory.entity.ExitHistory;
 import com.devee.devhive.domain.user.exithistory.service.ExitHistoryService;
@@ -47,6 +52,11 @@ public class ExitVoteController {
   private final ProjectService projectService;
   private final ProjectMemberService projectMemberService;
   private final ExitHistoryService exitHistoryService;
+  private final ViewCountService viewCountService;
+  private final ProjectApplyService projectApplyService;
+  private final ProjectTechStackService techStackService;
+  private final CommentService commentService;
+  private final BookmarkService bookmarkService;
 
   @PostMapping("/{targetUserId}")
   @Operation(summary = "프로젝트 퇴출 투표 생성")
@@ -73,8 +83,7 @@ public class ExitVoteController {
 
       // 퇴출자가 프로젝트의 리더인 경우
       if (Objects.equals(project.getUser().getId(), targetUserId)) {
-        projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
-        projectService.deleteLeadersProject(projectId);
+        deleteProject(project, projectId);
         return ResponseEntity.ok("팀장이 퇴출되어 프로젝트가 삭제되었습니다.");
       } else {
         // 퇴출자만 팀에서 삭제, 알림 발행
@@ -109,16 +118,15 @@ public class ExitVoteController {
     List<ProjectMemberExitVote> exitVotes = exitVoteService.findByProjectId(projectId);
     int countVotedMembers = exitVoteService.countVotedMembers(exitVotes);
     if (countVotedMembers == exitVotes.size()) {
-
       boolean isTargetUserExit = exitVoteService.resultTargetUserExit(exitVotes);
       if (isTargetUserExit) {
         // 퇴출 횟수를 기반으로 유저 비활성화, 퇴출 처리
         handleUserExit(targetUser, targetUserId);
 
+        exitVoteService.deleteAllVotes(exitVotes);
         // 퇴출자가 프로젝트의 리더인 경우
         if (Objects.equals(project.getUser().getId(), targetUserId)) {
-          projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
-          projectService.deleteLeadersProject(projectId);
+          deleteProject(project, projectId);
         } else {
           // 퇴출자만 팀에서 삭제, 알림 발행
           projectMemberService.deleteMemberFromProjectAndSendAlarm(projectId, targetUserId);
@@ -127,8 +135,6 @@ public class ExitVoteController {
         // 퇴출 실패 알림
         exitVoteService.sendExitVoteFailAlarm(exitVotes);
       }
-      // 투표 결과 처리 후 삭제
-      exitVoteService.deleteAllVotes(exitVotes);
     }
     return ResponseEntity.ok(VoteDto.from(myVote));
   }
@@ -141,6 +147,16 @@ public class ExitVoteController {
     return ResponseEntity.ok(exitVotes.stream()
         .map(ProjectExitVoteDto::from)
         .collect(Collectors.toList()));
+  }
+
+  private void deleteProject(Project project, Long projectId) {
+    bookmarkService.deleteByProject(projectId);
+    commentService.deleteCommentsByProjectId(projectId);
+    viewCountService.delete(projectId);
+    projectApplyService.deleteAll(projectId);
+    techStackService.deleteProjectTechStacksByProjectId(projectId);
+    projectMemberService.deleteAllOfMembersFromProjectAndSendAlarm(projectId);
+    projectService.deleteLeadersProject(project);
   }
 
   // 퇴출 횟수를 기반으로 유저 비활성화, 퇴출 처리

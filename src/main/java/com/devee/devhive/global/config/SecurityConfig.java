@@ -89,6 +89,7 @@ public class SecurityConfig {
                 "/api/projects/{projectId}",
                 "/api/rank/**",
                 "/api/users/{userId}",
+                "/api/users/alarms/subscribe/{userId}",
                 "/api/members/users/{userId}/hive-level",
                 "/api/users/{userId}/exit-num",
                 "/api/members/users/{userId}/project-histories",

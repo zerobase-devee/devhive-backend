@@ -7,6 +7,7 @@ import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
 import com.devee.devhive.domain.user.bookmark.repository.BookmarkRepository;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.global.exception.CustomException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,10 @@ public class BookmarkService {
     bookmarkRepository.delete(bookmark);
   }
 
+  public void deleteByProject(Long projectId) {
+    List<Bookmark> bookmarks = bookmarkRepository.findAllByProjectId(projectId);
+    bookmarkRepository.deleteAll(bookmarks);
+  }
   // 북마크 목록 조회
   public Page<Bookmark> getBookmarkProjects(Long userId, Pageable pageable) {
     return bookmarkRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);

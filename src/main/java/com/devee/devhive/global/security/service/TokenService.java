@@ -4,11 +4,13 @@ import static com.devee.devhive.global.exception.ErrorCode.INVALID_JWT;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.exception.CustomException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 import lombok.Getter;
@@ -167,10 +169,41 @@ public class TokenService {
   public boolean isTokenValid(String token) {
     try {
       JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-      return true;
+      return isValidateToken(token);
     } catch (Exception e) {
       log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
       throw new CustomException(INVALID_JWT);
     }
+  }
+  public boolean isValidateToken(String token) {
+    // 토큰 만료시간이 현재시간보다 전이면 false
+    return !toDecodedJWT(token).getExpiresAt().before(new Date());
+  }
+
+  private DecodedJWT toDecodedJWT(String jwtToken) {
+    return JWT.require(Algorithm.HMAC512(secretKey))
+        .acceptExpiresAt(accessTokenExpirationPeriod)
+        .build()
+        .verify(jwtToken);
+  }
+
+  // 로그아웃 시 만료된 토큰으로 설정
+  public void expireAccessToken(HttpServletResponse response) {
+    // 만료된 토큰으로 설정
+    String expireToken = JWT.create()
+        .withSubject(ACCESS_TOKEN_SUBJECT)
+        .withExpiresAt(Instant.ofEpochSecond(0))
+        .sign(Algorithm.HMAC512(secretKey));
+
+    setAccessTokenHeader(response, BEARER + expireToken);
+    setRefreshTokenHeader(response, BEARER + expireToken);
+    setRefreshTokenCookie(response, expireToken);
+
+    response.setStatus(HttpStatus.OK.value());
+    response.setCharacterEncoding("UTF-8");
+    response.setContentType("application/json;charset=UTF-8");
+
+    log.info("만료 Token : " + expireToken);
+    log.info("만료 Token 헤더 및 쿠키 설정 완료");
   }
 }

@@ -19,8 +19,8 @@ public class ExitHistoryService {
     return exitHistoryRepository.countExitHistoryByUserId(userId);
   }
 
-  public ExitHistory saveExitHistory(ExitHistory exitHistory) {
-    return exitHistoryRepository.save(exitHistory);
+  public void saveExitHistory(ExitHistory exitHistory) {
+    exitHistoryRepository.save(exitHistory);
   }
 
   public List<Long> getReactivatingUsers() {

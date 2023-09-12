@@ -11,12 +11,15 @@ import com.devee.devhive.domain.user.type.AlarmContent;
 import com.devee.devhive.global.exception.CustomException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FavoriteService {
 
@@ -49,6 +52,7 @@ public class FavoriteService {
     return favoriteRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
   }
 
+  @Transactional
   public void favoriteUserUploadAlarmOfProject(User favoriteUser, Long favoriteUserId, Project project) {
     List<Favorite> users = favoriteRepository.findAllByFavoriteUserId(favoriteUserId);
     if (!users.isEmpty()) {
@@ -58,7 +62,8 @@ public class FavoriteService {
         // 관심 유저가 프로젝트 업로드한 경우 관심유저로 등록한 유저들에게 알림 이벤트 발행
         AlarmForm alarmForm = AlarmForm.builder()
             .receiverUser(user)
-            .project(project)
+            .projectId(project.getId())
+            .projectName(project.getName())
             .content(AlarmContent.FAVORITE_USER)
             .user(favoriteUser)
             .build();

@@ -4,7 +4,6 @@ import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETE
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
-import com.devee.devhive.domain.project.comment.reply.service.ReplyService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
@@ -19,6 +18,7 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.project.techstack.service.ProjectTechStackService;
 import com.devee.devhive.domain.project.type.ApplyStatus;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.project.views.service.ViewCountService;
 import com.devee.devhive.domain.techstack.entity.dto.TechStackDto;
 import com.devee.devhive.domain.user.bookmark.entity.Bookmark;
@@ -69,7 +69,6 @@ public class ProjectController {
   private final UserService userService;
   private final ProjectService projectService;
   private final CommentService commentService;
-  private final ReplyService replyService;
   private final ProjectTechStackService projectTechStackService;
   private final ProjectMemberService projectMemberService;
   private final FavoriteService favoriteService;
@@ -126,7 +125,7 @@ public class ProjectController {
 
   // 프로젝트 삭제
   @DeleteMapping("/{projectId}")
-  @Operation(summary = "프로젝트 상태 변경", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
+  @Operation(summary = "프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
   public void deleteProject(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
   ) {
@@ -135,11 +134,15 @@ public class ProjectController {
     if (!Objects.equals(project.getUser().getId(), user.getId())) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
-
-    List<Long> commentIdList = commentService.deleteCommentsByProjectId(projectId);
-    replyService.deleteRepliesByCommentList(commentIdList);
+    if (project.getStatus() != ProjectStatus.RECRUITING) {
+      throw new CustomException(PROJECT_CANNOT_DELETED);
+    }
+    bookmarkService.deleteByProject(projectId);
+    commentService.deleteCommentsByProjectId(projectId);
     projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
     projectMemberService.deleteProjectMembers(projectId);
+    projectApplyService.deleteAll(projectId);
+    viewCountService.delete(projectId);
     projectService.deleteProject(project);
   }
 

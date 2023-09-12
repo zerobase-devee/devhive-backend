@@ -65,6 +65,8 @@ public class AuthController {
   @PostMapping("/logout")
   public void logout(HttpSession session, HttpServletRequest request, HttpServletResponse response)
       throws IOException {
+    // 유효기간 만료된 토큰 설정
+    tokenService.expireAccessToken(response);
     // 세션 무효화
     session.invalidate();
 

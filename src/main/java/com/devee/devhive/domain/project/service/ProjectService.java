@@ -6,7 +6,6 @@ import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITMENT_CO
 import static com.devee.devhive.domain.project.type.RecruitmentType.ALL;
 import static com.devee.devhive.domain.project.type.RecruitmentType.OFFLINE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_PROJECT;
-import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.entity.Project;
@@ -72,6 +71,7 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
+  @Transactional
   public void updateProjectStatusAndAlarmToMembers(User user, Long projectId,
       UpdateProjectStatusDto statusDto, List<ProjectMember> members) {
     Project project = findById(projectId);
@@ -148,16 +148,11 @@ public class ProjectService {
   // 프로젝트 삭제
   @Transactional
   public void deleteProject(Project project) {
-    if (project.getStatus() != ProjectStatus.RECRUITING) {
-      throw new CustomException(PROJECT_CANNOT_DELETED);
-    }
     projectRepository.delete(project);
   }
 
   // 리더가 퇴출된 프로젝트는 예외 없이 삭제
-  @Transactional
-  public void deleteLeadersProject(Long projectId) {
-    Project project = findById(projectId);
+  public void deleteLeadersProject(Project project) {
     projectRepository.delete(project);
   }
 
@@ -165,7 +160,8 @@ public class ProjectService {
     for (ProjectMember projectMember : members) {
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(projectMember.getUser())
-          .project(project)
+          .projectId(project.getId())
+          .projectName(project.getName())
           .content(AlarmContent.REVIEW_REQUEST)
           .build();
       eventPublisher.publishEvent(alarmForm);

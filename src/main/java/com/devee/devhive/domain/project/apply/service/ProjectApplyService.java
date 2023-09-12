@@ -46,6 +46,11 @@ public class ProjectApplyService {
         .orElseThrow(() -> new CustomException(NOT_FOUND_APPLICATION));
   }
 
+  public void deleteAll(Long projectId) {
+    List<ProjectApply> projectApplies = getProjectApplies(projectId);
+    projectApplyRepository.deleteAll(projectApplies);
+  }
+
   // 신청
   @Transactional
   public void projectApplyAndSendAlarmToProjectUser(User user, Project project) {
@@ -105,6 +110,7 @@ public class ProjectApplyService {
   }
 
   // 신청 승인
+  @Transactional
   public void acceptAndSendAlarmToApplicant(ProjectApply projectApply) {
     // 신청 대기 상태가 아닌 경우 (이미 승인/거절된 경우)
     if (projectApply.getStatus() != ApplyStatus.PENDING) {
@@ -118,6 +124,7 @@ public class ProjectApplyService {
   }
 
   // 신청 거절
+  @Transactional
   public void rejectAndSendAlarmToApplicant(User user, Long applicationId) {
     ProjectApply projectApply = getProjectApplyById(applicationId);
     // 프로젝트 작성자가 아닌 경우
@@ -139,7 +146,8 @@ public class ProjectApplyService {
   private void alarmEventPub(User user, Project project, AlarmContent content) {
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(content)
         .build();
     eventPublisher.publishEvent(alarmForm);

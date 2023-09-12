@@ -144,6 +144,7 @@ public class UserService {
   }
 
   // 랭킹포인트 업데이트, 알림이벤트 발행
+  @Transactional
   public void updateRankPoint(User user, Project project, double averagePoint) {
     user.setRankPoint(user.getRankPoint() + averagePoint);
     userRepository.save(user);
@@ -151,7 +152,8 @@ public class UserService {
     // 평가 완료 알림 이벤트 발행
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(AlarmContent.REVIEW_RESULT)
         .build();
     eventPublisher.publishEvent(alarmForm);

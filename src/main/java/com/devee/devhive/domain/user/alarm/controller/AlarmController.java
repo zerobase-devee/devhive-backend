@@ -6,8 +6,6 @@ import com.devee.devhive.domain.user.alarm.entity.dto.AlarmUserDto;
 import com.devee.devhive.domain.user.alarm.service.AlarmService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.domain.user.type.AlarmContent;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,17 +33,13 @@ public class AlarmController {
     private final UserService userService;
 
     // 알람 sse 구독
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/subscribe/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "알람 구독")
     public ResponseEntity<SseEmitter> subscribe(
-        @AuthenticationPrincipal PrincipalDetails principalDetails,
+        @PathVariable(name = "userId") Long userId,
         @RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
     ) {
-        User user = userService.getUserByEmail(principalDetails.getEmail());
-
-        return ResponseEntity.ok(
-            alarmService.subscribe(user.getId(), lastEventId)
-        );
+        return ResponseEntity.ok(alarmService.subscribe(userId, lastEventId));
     }
 
     // 내 알림 목록 조회
@@ -63,19 +57,11 @@ public class AlarmController {
 
     private AlarmDto mapToAlarmDto(Alarm alarm) {
         AlarmDto alarmDto = AlarmDto.from(alarm);
-        AlarmContent content = alarm.getContent();
-
-        if (content == AlarmContent.FAVORITE_USER ||
-            content == AlarmContent.VOTE_RESULT_EXIT_SUCCESS ||
-            content == AlarmContent.VOTE_RESULT_EXIT_FAIL ||
-            content == AlarmContent.EXIT_LEADER_DELETE_PROJECT ||
-            content == AlarmContent.EXIT_VOTE) {
+        Long args = alarm.getArgs();
+        if (args != null) {
             User targetUser = userService.getUserById(alarm.getArgs());
-            alarmDto.setUserDto(AlarmUserDto.of(targetUser, RelatedUrlType.USER_INFO));
-        } else {
-            alarmDto.setUserDto(AlarmUserDto.of(alarm.getUser(), RelatedUrlType.MY_INFO));
+            alarmDto.setUserDto(AlarmUserDto.from(targetUser));
         }
-
         return alarmDto;
     }
 
