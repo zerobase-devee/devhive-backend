@@ -11,8 +11,10 @@ import com.devee.devhive.domain.user.techstack.entity.UserTechStack;
 import com.devee.devhive.domain.user.techstack.repository.UserTechStackRepository;
 import com.devee.devhive.domain.user.type.AlarmContent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,16 +44,22 @@ public class UserTechStackService {
     // 프로젝트에 등록된 기술을 포함하고 있는 유저 목록
     List<UserTechStack> usersWithTechStacks = findUsersWithTechStacks(techStackIds);
 
+    // 중복 알림을 방지하기 위한 Set
+    Set<Long> sendAlarmUserIds = new HashSet<>();
     for (UserTechStack userTechStack : usersWithTechStacks) {
       User user = userTechStack.getUser();
       // 작성자 제외
       if (!Objects.equals(user.getId(), project.getUser().getId())) {
         if (project.getRecruitmentType() == RecruitmentType.ONLINE) {
-          recommendAlarmEventPub(user, project);
+          if (sendAlarmUserIds.add(user.getId())) { // 중복 체크 후 알림 발생
+            recommendAlarmEventPub(user, project);
+          }
         } else {
           // 프로젝트가 오프라인이면 지역이 일치하는 유저들에게만 알림 이벤트 발행
           if (project.getRegion().equals(user.getRegion())) {
-            recommendAlarmEventPub(user, project);
+            if (sendAlarmUserIds.add(user.getId())) { // 중복 체크 후 알림 발생
+              recommendAlarmEventPub(user, project);
+            }
           }
         }
       }
