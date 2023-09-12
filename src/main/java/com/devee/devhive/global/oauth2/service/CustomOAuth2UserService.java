@@ -49,7 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     User user = getUser(extractAttributes, providerType);
     SessionUserDto userDto = new SessionUserDto(user);
     httpSession.setAttribute("user", userDto);
-
+    log.info("유저 정보 만들기");
     return new CustomOAuth2User(
         Collections.singleton(new SimpleGrantedAuthority(user.getRole().getValue())),
         attributes,
@@ -80,6 +80,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   private User createSave(OAuthAttributes attributes, ProviderType providerType) {
     User user = attributes.toEntity(providerType, attributes.getOauth2UserInfo());
+    log.info("유저 정보 저장");
     return userRepository.save(user);
   }
 }

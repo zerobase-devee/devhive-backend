@@ -88,7 +88,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
     ProviderType providerType = ProviderType.valueOf(authToken.getAuthorizedClientRegistrationId().toUpperCase());
-
+    log.info("provider = " + providerType.name());
     OidcUser oidcUser = ((OidcUser) authentication.getPrincipal());
     OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(providerType, oidcUser.getAttributes());
 
@@ -131,7 +131,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
   private boolean isAuthorizedRedirectUri(String uri) {
     URI clientRedirectUri = URI.create(uri);
-
+    log.info("uri =" + uri);
     return appProperties.getOauth2().getAuthorizedRedirectUris()
         .stream()
         .anyMatch(authorizedRedirectUri -> {
