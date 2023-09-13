@@ -69,7 +69,7 @@ public class ChatRoomController {
       throw new CustomException(NOT_YOUR_PROJECT);
     }
 
-    if (!chatRoomService.existsRoomByProjectId(projectId)) {
+    if (chatRoomService.existsRoomByProjectId(projectId)) {
       throw new CustomException(ALREADY_CREATE_CHATROOM);
     }
 
