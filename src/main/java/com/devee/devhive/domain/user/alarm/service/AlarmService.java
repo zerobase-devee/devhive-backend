@@ -21,12 +21,14 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 public class AlarmService {
 
+  private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60; // 1시간
+
   private final AlarmRepository alarmRepository;
   private final EmitterRepository emitterRepository;
 
   public SseEmitter subscribe(Long userId, String lastEventId) {
     String emitterId = makeTimeIncludeId(userId);
-    SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(10L));
+    SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
     emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
     emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
 
