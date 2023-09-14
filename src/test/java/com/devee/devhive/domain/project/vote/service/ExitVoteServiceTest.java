@@ -83,8 +83,7 @@ class ExitVoteServiceTest {
     when(exitVoteRepository.saveAllAndFlush(any())).thenReturn(exitVoteList);
 
     // when
-    exitVoteService.createExitVoteAndSendAlarm(project,
-        registeringUser, targetUser, projectMemberList);
+    exitVoteService.createExitVoteAndSendAlarm(project, registeringUser.getId(), targetUser, projectMemberList);
 
     // then
     verify(eventPublisher, times(projectMemberList.size()-1))
