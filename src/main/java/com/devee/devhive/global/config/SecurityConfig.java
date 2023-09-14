@@ -102,6 +102,8 @@ public class SecurityConfig {
                 "/api/admin/tech-stacks",
                 "/api/admin/badges",
                 "/chat/**",
+                "/pub/**",
+                "/sub/**",
                 "/oauth/**"
             ).permitAll()
 
