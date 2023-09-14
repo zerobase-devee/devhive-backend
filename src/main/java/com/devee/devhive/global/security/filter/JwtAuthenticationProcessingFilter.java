@@ -99,7 +99,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
    */
   public void checkAccessTokenAndAuthentication(HttpServletRequest request,
       HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    log.info("checkAccessTokenAndAuthentication() 호출");
     String token = tokenService.extractAccessToken(request);
     if (token != null && tokenService.isTokenValid(token)) {
       Optional<String> email = tokenService.extractEmail(token);
