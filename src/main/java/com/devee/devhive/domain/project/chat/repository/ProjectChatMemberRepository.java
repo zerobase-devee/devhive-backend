@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
 public interface ProjectChatMemberRepository
     extends JpaRepository<ProjectChatMember, Long> {
 
-  boolean existsByChatRoomIdAndUserId(Long chatRoomId, Long userId);
-
   Optional<ProjectChatMember> findByChatRoomIdAndUserId(Long chatRoomId, Long userId);
 
   List<ProjectChatMember> findAllByUserId(Long userId);
+
+  List<ProjectChatMember> findAllByChatRoomId(Long chatRoomId);
 }

@@ -4,6 +4,10 @@ import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETE
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
+import com.devee.devhive.domain.project.chat.entity.ProjectChatRoom;
+import com.devee.devhive.domain.project.chat.service.ChatMemberService;
+import com.devee.devhive.domain.project.chat.service.ChatMessageService;
+import com.devee.devhive.domain.project.chat.service.ChatRoomService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.CreateProjectDto;
@@ -77,6 +81,9 @@ public class ProjectController {
   private final ProjectApplyService projectApplyService;
   private final S3Service s3Service;
   private final ViewCountService viewCountService;
+  private final ChatRoomService chatRoomService;
+  private final ChatMemberService chatMemberService;
+  private final ChatMessageService chatMessageService;
 
   // 프로젝트 작성
   @PostMapping
@@ -136,6 +143,14 @@ public class ProjectController {
     }
     if (project.getStatus() != ProjectStatus.RECRUITING) {
       throw new CustomException(PROJECT_CANNOT_DELETED);
+    }
+
+    ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
+    if (chatRoom != null) {
+      Long chatRoomId = chatRoom.getId();
+      chatMessageService.deleteOfChatRoom(chatRoomId);
+      chatMemberService.deleteOfChatRoom(chatRoomId);
+      chatRoomService.deleteChatRoom(chatRoom);
     }
     bookmarkService.deleteByProject(projectId);
     commentService.deleteCommentsByProjectId(projectId);

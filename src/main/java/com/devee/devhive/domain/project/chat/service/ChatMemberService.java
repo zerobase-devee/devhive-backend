@@ -41,4 +41,13 @@ public class ChatMemberService {
 
     return room.getTitle() + " 채팅방에서 퇴장합니다.";
   }
+
+  public List<ProjectChatMember> findByChatRoomId(Long chatRoomId) {
+    return chatMemberRepository.findAllByChatRoomId(chatRoomId);
+  }
+
+  public void deleteOfChatRoom(Long chatRoomId) {
+    List<ProjectChatMember> chatMembers = findByChatRoomId(chatRoomId);
+    chatMemberRepository.deleteAll(chatMembers);
+  }
 }

@@ -3,6 +3,10 @@ package com.devee.devhive.domain.project.vote.controller;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_VOTE;
 
 import com.devee.devhive.domain.project.apply.service.ProjectApplyService;
+import com.devee.devhive.domain.project.chat.entity.ProjectChatRoom;
+import com.devee.devhive.domain.project.chat.service.ChatMemberService;
+import com.devee.devhive.domain.project.chat.service.ChatMessageService;
+import com.devee.devhive.domain.project.chat.service.ChatRoomService;
 import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
@@ -57,6 +61,9 @@ public class ExitVoteController {
   private final ProjectTechStackService techStackService;
   private final CommentService commentService;
   private final BookmarkService bookmarkService;
+  private final ChatRoomService chatRoomService;
+  private final ChatMemberService chatMemberService;
+  private final ChatMessageService chatMessageService;
 
   @PostMapping("/{targetUserId}")
   @Operation(summary = "프로젝트 퇴출 투표 생성")
@@ -150,6 +157,13 @@ public class ExitVoteController {
   }
 
   private void deleteProject(Project project, Long projectId) {
+    ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
+    if (chatRoom != null) {
+      Long chatRoomId = chatRoom.getId();
+      chatMessageService.deleteOfChatRoom(chatRoomId);
+      chatMemberService.deleteOfChatRoom(chatRoomId);
+      chatRoomService.deleteChatRoom(chatRoom);
+    }
     bookmarkService.deleteByProject(projectId);
     commentService.deleteCommentsByProjectId(projectId);
     viewCountService.delete(projectId);

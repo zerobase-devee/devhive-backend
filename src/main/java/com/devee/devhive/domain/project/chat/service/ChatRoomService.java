@@ -36,4 +36,8 @@ public class ChatRoomService {
   public ProjectChatRoom findByProjectId(Long projectId) {
     return chatRoomRepository.findByProjectId(projectId).orElse(null);
   }
+
+  public void deleteChatRoom(ProjectChatRoom chatRoom) {
+    chatRoomRepository.delete(chatRoom);
+  }
 }
