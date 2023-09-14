@@ -6,9 +6,8 @@ import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.member.entity.ProjectMember;
 import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
-import com.devee.devhive.domain.project.vote.dto.CreateVoteDto;
+import com.devee.devhive.domain.project.vote.dto.VoteDto;
 import com.devee.devhive.domain.project.vote.dto.ProjectExitVoteDto;
-import com.devee.devhive.domain.project.vote.dto.ResultVoteDto;
 import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
 import com.devee.devhive.domain.project.vote.service.ExitVoteService;
 import com.devee.devhive.domain.user.entity.User;
@@ -45,7 +44,7 @@ public class ExitVoteController {
 
   @PostMapping("/{targetUserId}")
   @Operation(summary = "프로젝트 퇴출 투표 생성")
-  public ResponseEntity<CreateVoteDto> createExitVote(
+  public ResponseEntity<VoteDto> createExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable Long projectId, @PathVariable Long targetUserId
   ) {
@@ -59,7 +58,7 @@ public class ExitVoteController {
 
     // 팀원이 2명뿐인 경우 투표 생성 하지 않음
     if (project.getTeamSize() == 2) {
-      return ResponseEntity.ok(CreateVoteDto.of(project, targetUserId));
+      return ResponseEntity.ok(VoteDto.of(project, targetUserId));
     }
 
     // 투표 대상 유저를 제외한 모든 유저
@@ -71,7 +70,7 @@ public class ExitVoteController {
 
   @PutMapping("/{voteId}")
   @Operation(summary = "프로젝트 퇴출 투표 제출")
-  public ResponseEntity<ResultVoteDto> submitExitVote(
+  public ResponseEntity<VoteDto> submitExitVote(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @PathVariable(name = "projectId") Long projectId,
       @PathVariable(name = "voteId") Long voteId, @RequestParam boolean vote
@@ -96,7 +95,7 @@ public class ExitVoteController {
       boolean isTargetUserExit = exitVoteService.resultTargetUserExit(exitVotes);
       if (isTargetUserExit) {
         exitVoteService.deleteAllVotes(exitVotes);
-        return ResponseEntity.ok(ResultVoteDto.of(project, targetUserId));
+        return ResponseEntity.ok(VoteDto.of(project, targetUserId));
       } else {
         // 퇴출 실패 알림
         exitVoteService.sendExitVoteFailAlarm(exitVotes);
