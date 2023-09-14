@@ -1,7 +1,6 @@
 package com.devee.devhive.domain.project.chat.controller;
 
 import static com.devee.devhive.global.exception.ErrorCode.ALREADY_CREATE_CHATROOM;
-import static com.devee.devhive.global.exception.ErrorCode.ALREADY_ENTER_CHATROOM;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_YOUR_PROJECT;
 
 import com.devee.devhive.domain.project.chat.entity.ProjectChatMember;
@@ -15,8 +14,9 @@ import com.devee.devhive.domain.project.member.service.ProjectMemberService;
 import com.devee.devhive.domain.project.service.ProjectService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
-import com.devee.devhive.global.exception.CustomException;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import com.devee.devhive.global.exception.CustomException;
+import com.devee.devhive.global.exception.ErrorCode;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ public class ChatRoomController {
       throw new CustomException(NOT_YOUR_PROJECT);
     }
 
-    if (!chatRoomService.existsRoomByProjectId(projectId)) {
+    if (chatRoomService.existsRoomByProjectId(projectId)) {
       throw new CustomException(ALREADY_CREATE_CHATROOM);
     }
 
@@ -91,23 +91,19 @@ public class ChatRoomController {
       throw new CustomException(NOT_YOUR_PROJECT);
     }
 
-    if (chatMemberService.isMemberOfChat(roomId, user.getId())) {
-      throw new CustomException(ALREADY_ENTER_CHATROOM);
-    }
-
     return ResponseEntity.ok(chatMemberService.enterChatRoom(chatRoom, user));
   }
 
   @DeleteMapping("{roomId}")
   public ResponseEntity<String> exitChatRoom(
-      @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @PathVariable Long roomId
+      @AuthenticationPrincipal PrincipalDetails principalDetails, @PathVariable Long roomId
   ) {
     User user = userService.getUserByEmail(principalDetails.getEmail());
     ProjectChatRoom chatRoom = chatRoomService.findByRoomId(roomId);
     Long userId = user.getId();
 
-    ProjectChatMember member = chatMemberService.findMember(roomId, userId);
+    ProjectChatMember member = chatMemberService.findMember(roomId, userId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CHATMEMBER));
 
     return ResponseEntity.ok(chatMemberService.exitChatRoom(chatRoom, member));
   }

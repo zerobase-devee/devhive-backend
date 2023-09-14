@@ -40,7 +40,7 @@ public class ChatMessageController {
   public void sendMessage(@Payload ChatMessageDto message,
       @DestinationVariable("roomId") Long roomId) {
     ProjectChatRoom chatRoom = chatRoomService.findByRoomId(roomId);
-    User senderUser = userService.getUserById(message.getUserId());
+    User senderUser = userService.getUserById(message.getUserDto().getUserId());
 
     ChatMessageDto messageDto = chatMessageService.addMessage(chatRoom, senderUser,
         message.getText(), ChatMessageType.TALK);

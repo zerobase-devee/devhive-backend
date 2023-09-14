@@ -32,4 +32,8 @@ public class ChatRoomService {
 
     return chatRoomRepository.save(newRoom);
   }
+
+  public ProjectChatRoom findByProjectId(Long projectId) {
+    return chatRoomRepository.findByProjectId(projectId).orElse(null);
+  }
 }

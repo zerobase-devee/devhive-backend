@@ -1,5 +1,7 @@
 package com.devee.devhive.domain.user.controller;
 
+import com.devee.devhive.domain.project.chat.entity.ProjectChatRoom;
+import com.devee.devhive.domain.project.chat.service.ChatRoomService;
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.dto.MyProjectInfoDto;
 import com.devee.devhive.domain.project.entity.dto.SimpleProjectDto;
@@ -39,6 +41,7 @@ public class UserProjectController {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final ProjectReviewService projectReviewService;
+    private final ChatRoomService chatRoomService;
 
     // 내가 생성한 프로젝트 페이지
     @GetMapping("/write")
@@ -89,9 +92,10 @@ public class UserProjectController {
                 }).toList();
 
         boolean leader = Objects.equals(project.getUser().getId(), userId);
-
+        ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
+        Long roomId = chatRoom == null ? null : chatRoom.getId();
         return ResponseEntity.ok(
-            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader)
+            MyProjectInfoDto.of(userId, project, projectMemberDtoList, totalAverageScore, leader, roomId)
         );
     }
 }

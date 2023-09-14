@@ -4,9 +4,8 @@ import com.devee.devhive.domain.project.chat.entity.ProjectChatMember;
 import com.devee.devhive.domain.project.chat.entity.ProjectChatRoom;
 import com.devee.devhive.domain.project.chat.repository.ProjectChatMemberRepository;
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.global.exception.CustomException;
-import com.devee.devhive.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,22 +19,19 @@ public class ChatMemberService {
     return chatMemberRepository.findAllByUserId(userId);
   }
 
-  public boolean isMemberOfChat(Long roomId, Long userId) {
-    return chatMemberRepository.existsByChatRoomIdAndUserId(roomId, userId);
-  }
-
-  public ProjectChatMember findMember(Long roomId, Long userId) {
-    return chatMemberRepository.findByChatRoomIdAndUserId(roomId, userId)
-        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CHATMEMBER));
+  public Optional<ProjectChatMember> findMember(Long roomId, Long userId) {
+    return chatMemberRepository.findByChatRoomIdAndUserId(roomId, userId);
   }
 
   public String enterChatRoom(ProjectChatRoom room, User user) {
-    ProjectChatMember newMember = ProjectChatMember.builder()
-        .chatRoom(room)
-        .user(user)
-        .build();
+    Optional<ProjectChatMember> memberOptional = findMember(room.getId(), user.getId());
 
-    chatMemberRepository.save(newMember);
+    if (memberOptional.isEmpty()) {
+      chatMemberRepository.save(ProjectChatMember.builder()
+          .chatRoom(room)
+          .user(user)
+          .build());
+    }
 
     return room.getTitle() + " 채팅방에 참여합니다.";
   }
