@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,5 +51,11 @@ public class ProjectMemberController {
   @Operation(summary = "유저의 벌집 레벨 조회")
   public ResponseEntity<Integer> getUserHiveLevel(@PathVariable("userId") Long userId) {
     return ResponseEntity.ok(projectMemberService.countCompletedProjectsByUserId(userId));
+  }
+
+  @DeleteMapping("/{userId}/projects/{projectId}")
+  @Operation(summary = "퇴출팀원 삭제, 퇴출알림 발생")
+  public void deleteProjectMember(@PathVariable("userId") Long userId, @PathVariable("projectId") Long projectId) {
+    projectMemberService.deleteMemberFromProjectAndSendAlarm(projectId, userId);
   }
 }

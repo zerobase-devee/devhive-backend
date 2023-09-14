@@ -65,7 +65,7 @@ public class ChatRoomController {
     String title = chatRoomForm.getTitle();
     Project project = projectService.findById(projectId);
 
-    if (!projectMemberService.isMemberofProject(projectId, user.getId())) {
+    if (projectMemberService.isNotMemberOfProject(projectId, user.getId())) {
       throw new CustomException(NOT_YOUR_PROJECT);
     }
 
@@ -87,7 +87,7 @@ public class ChatRoomController {
     ProjectChatRoom chatRoom = chatRoomService.findByRoomId(roomId);
     Long projectId = chatRoom.getProject().getId();
 
-    if (!projectMemberService.isMemberofProject(projectId, user.getId())) {
+    if (projectMemberService.isNotMemberOfProject(projectId, user.getId())) {
       throw new CustomException(NOT_YOUR_PROJECT);
     }
 
