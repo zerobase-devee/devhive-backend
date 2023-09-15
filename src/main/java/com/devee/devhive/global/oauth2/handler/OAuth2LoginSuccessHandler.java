@@ -49,7 +49,7 @@ public class OAuth2LoginSuccessHandler extends
     }
 
     clearAuthenticationAttributes(request, response);
-    getRedirectStrategy().sendRedirect(request, response, targetUrl);
+//    getRedirectStrategy().sendRedirect(request, response, targetUrl);
     log.info("OAuth2 Login 성공");
 
     String email = extractUsername(authentication); // 인증 정보에서 Username(email) 추출
@@ -82,6 +82,7 @@ public class OAuth2LoginSuccessHandler extends
       response.setCharacterEncoding("UTF-8");
       response.setStatus(HttpServletResponse.SC_OK);
       response.getWriter().write(tokenJson);
+      response.sendRedirect("http://localhost:3000/oauth2/redirect");
 
       log.info("OAuth2로그인에 성공하였습니다. 이메일: {}", email);
     }
@@ -94,12 +95,10 @@ public class OAuth2LoginSuccessHandler extends
 
   protected String determineTargetUrl(HttpServletRequest request,
       HttpServletResponse response, Authentication authentication) {
-    Optional<String> redirectUri = CookieUtils.getCookie(request,
-            REDIRECT_URI_PARAM_COOKIE_NAME)
+    Optional<String> redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
         .map(Cookie::getValue);
 
-    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(
-        redirectUri.get())) {
+    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
       throw new IllegalArgumentException(
           "인증실패! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
     }

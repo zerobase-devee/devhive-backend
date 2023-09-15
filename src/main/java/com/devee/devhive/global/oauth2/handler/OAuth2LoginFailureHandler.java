@@ -47,7 +47,7 @@ public class OAuth2LoginFailureHandler extends SimpleUrlAuthenticationFailureHan
     super.onAuthenticationFailure(request, response, exception);
       String targetUrl = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
           .map(Cookie::getValue)
-          .orElse(("/"));
+          .orElse(("http://localhost:3000/oauth2/redirect"));
 
       targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
           .queryParam("error", exception.getLocalizedMessage())
