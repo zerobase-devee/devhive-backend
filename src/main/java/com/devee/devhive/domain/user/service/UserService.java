@@ -87,7 +87,7 @@ public class UserService {
     // 닉네임은 소셜로그인한 유저가 1번만 변경 가능
     String nickname = form.getNickName();
     String userNickname = user.getNickName();
-    if (!userNickname.equals(nickname)) {
+    if (nickname != null && !userNickname.equals(nickname)) {
       // 최초 닉네임인 경우에만 변경
       if (userNickname.length() > 6) {
         updateNickname(user, nickname);
