@@ -6,6 +6,7 @@ import com.devee.devhive.domain.project.chat.entity.dto.ChatMessageDto;
 import com.devee.devhive.domain.project.chat.repository.ProjectChatMessageRepository;
 import com.devee.devhive.domain.project.type.ChatMessageType;
 import com.devee.devhive.domain.user.entity.User;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,5 +28,14 @@ public class ChatMessageService {
     chatMessageRepository.save(newMessage);
 
     return ChatMessageDto.from(newMessage);
+  }
+
+  public List<ProjectChatMessage> findByChatRoomId(Long projectChatRoomId) {
+    return chatMessageRepository.findAllByProjectChatRoomId(projectChatRoomId);
+  }
+
+  public void deleteOfChatRoom(Long projectChatRoomId) {
+    List<ProjectChatMessage> chatMembers = findByChatRoomId(projectChatRoomId);
+    chatMessageRepository.deleteAll(chatMembers);
   }
 }

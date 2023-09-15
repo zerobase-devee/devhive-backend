@@ -177,6 +177,7 @@ class ProjectApplyServiceTest {
     // Given
     ProjectApply projectApply = ProjectApply.builder()
         .id(1L)
+        .project(Project.builder().id(3L).build())
         .status(ApplyStatus.PENDING)
         .build();
 

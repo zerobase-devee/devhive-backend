@@ -41,7 +41,7 @@ public class ExitVoteService {
   }
 
   @Transactional
-  public String createExitVoteAndSendAlarm(Project project, User registeringUser, User targetUser, List<ProjectMember> votingUsers) {
+  public void createExitVoteAndSendAlarm(Project project, Long registeringUserId, User targetUser, List<ProjectMember> members) {
     if (exitVoteRepository.existsByProjectId(project.getId())) {
       throw new CustomException(ALREADY_REGISTERED_VOTE);
     }
@@ -49,11 +49,12 @@ public class ExitVoteService {
     Instant currentTime = Instant.now();
     List<ProjectMemberExitVote> exitVoteList = new ArrayList<>();
 
-    for (ProjectMember member : votingUsers) {
+    for (ProjectMember member : members) {
+      User user = member.getUser();
       ProjectMemberExitVote exitVote = ProjectMemberExitVote.of(
-          project, targetUser, member.getUser(), currentTime);
+          project, targetUser, user, currentTime);
       // 등록자의 투표는 자동으로 참여 및 찬성으로 처리
-      if (exitVote.getVoterUser().getId().equals(registeringUser.getId())) {
+      if (Objects.equals(user.getId(), registeringUserId)) {
         exitVote.setAccept(true);
         exitVote.setVoted(true);
       }
@@ -63,14 +64,13 @@ public class ExitVoteService {
     exitVoteRepository.saveAll(exitVoteList);
 
     // 팀원(퇴출 대상자와 등록자 제외한)들에게 퇴출 투표 생성 알림 이벤트 발행
-    for (ProjectMember projectMember : votingUsers) {
-      if (Objects.equals(registeringUser.getId(), projectMember.getUser().getId())) {
+    for (ProjectMember projectMember : members) {
+      User user = projectMember.getUser();
+      if (Objects.equals(registeringUserId, user.getId())) {
         continue; // 등록자 알림 제외
       }
-      alarmEventPub(projectMember.getUser(), project, AlarmContent.EXIT_VOTE, targetUser);
+      alarmEventPub(user, project, AlarmContent.EXIT_VOTE, targetUser);
     }
-
-    return targetUser.getNickName() + " 유저에 대한 퇴출 투표 생성이 완료되었습니다.";
   }
 
   // 투표 제출 및 결과 저장

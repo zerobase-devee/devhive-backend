@@ -1,6 +1,7 @@
 package com.devee.devhive.domain.project.vote.dto;
 
-import com.devee.devhive.domain.project.vote.entity.ProjectMemberExitVote;
+import com.devee.devhive.domain.project.entity.Project;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,16 +14,14 @@ import lombok.NoArgsConstructor;
 public class VoteDto {
 
   private Long projectId;
-  private Long voterId;
-  private Long targetId;
-  private boolean vote;
+  private Long targetUserId;
+  private boolean leader;
 
-  public static VoteDto from(ProjectMemberExitVote vote) {
+  public static VoteDto of(Project project, Long targetUserId) {
     return VoteDto.builder()
-        .projectId(vote.getProject().getId())
-        .voterId(vote.getVoterUser().getId())
-        .targetId(vote.getTargetUser().getId())
-        .vote(vote.isAccept())
+        .projectId(project.getId())
+        .targetUserId(targetUserId)
+        .leader(Objects.equals(project.getUser().getId(), targetUserId))
         .build();
   }
 }

@@ -70,26 +70,21 @@ public class ProjectMemberService {
         .build());
   }
 
+  @Transactional
   public void deleteProjectMembers(Long projectId) {
     List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
-    projectMemberRepository.deleteAll(projectMembers);
-  }
-
-  // 해당 프로젝트에 유저가 참가해있는지 체크
-  public boolean isMemberofProject(Long projectId, Long userId) {
-    return projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
-  }
-  
-  @Transactional
-  public void deleteAllOfMembersFromProjectAndSendAlarm(Long projectId) {
-    List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
-    projectMemberRepository.deleteAll(projectMembers);
 
     // 리더가 퇴출된 경우 프로젝트 멤버들에게 프로젝트 삭제 알림 이벤트 발행
     for (ProjectMember projectMember : projectMembers) {
       alarmEventPub(projectMember.getUser(), projectMember.getProject(),
-          AlarmContent.EXIT_LEADER_DELETE_PROJECT, null);
+          AlarmContent.DELETE_PROJECT, null);
     }
+    projectMemberRepository.deleteAll(projectMembers);
+  }
+
+  // 해당 프로젝트에 유저가 팀원인지
+  public boolean isNotMemberOfProject(Long projectId, Long userId) {
+    return !projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
   }
 
   @Transactional
@@ -97,13 +92,12 @@ public class ProjectMemberService {
     ProjectMember projectMember = projectMemberRepository.findByProjectIdAndUserId(projectId, userId);
     List<ProjectMember> projectMembers = getProjectMemberByProjectId(projectId);
 
-    projectMemberRepository.delete(projectMember);
-
-    // 프로젝트 멤버들에게 퇴출자 알림 이벤트 발행
+    // 프로젝트 멤버들에게 퇴출 성공 알림 이벤트 발행
     for (ProjectMember member : projectMembers) {
       alarmEventPub(member.getUser(), member.getProject(),
           AlarmContent.VOTE_RESULT_EXIT_SUCCESS, projectMember.getUser());
     }
+    projectMemberRepository.delete(projectMember);
   }
 
   private void alarmEventPub(User receiver, Project project, AlarmContent content, User user) {

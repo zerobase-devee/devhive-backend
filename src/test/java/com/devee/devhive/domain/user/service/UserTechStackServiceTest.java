@@ -57,9 +57,10 @@ class UserTechStackServiceTest {
     Project project = new Project();
     project.setRecruitmentType(RecruitmentType.OFFLINE);
     project.setRegion("seoul");
+    project.setUser(User.builder().id(10L).build());
 
-    User user = User.builder().region("seoul").build();
-    User user2 = User.builder().region("BuSan").build();
+    User user = User.builder().id(1L).region("seoul").build();
+    User user2 = User.builder().id(5L).region("BuSan").build();
 
     List<UserTechStack> usersWithTechStacks = Arrays.asList(
         UserTechStack.builder()
