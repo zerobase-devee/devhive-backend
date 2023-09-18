@@ -63,7 +63,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     }
 
     String targetUrl = appProperties.getOauth2().getAuthorizedRedirectUris().get(0);
-    log.info("여기에 프론트 리다이렉트url이 나와야함 : " + targetUrl);
     User user = userRepository.findByEmail(extractUsername(authentication)).orElse(null);
     String refreshToken = "";
     if (user != null) {

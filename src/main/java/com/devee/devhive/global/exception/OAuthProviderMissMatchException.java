@@ -1,6 +1,8 @@
 package com.devee.devhive.global.exception;
 
-public class OAuthProviderMissMatchException extends RuntimeException{
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+
+public class OAuthProviderMissMatchException extends InternalAuthenticationServiceException {
 
   public OAuthProviderMissMatchException(String message) {
     super(message);
