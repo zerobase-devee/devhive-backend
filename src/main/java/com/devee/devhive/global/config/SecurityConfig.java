@@ -175,8 +175,7 @@ public class SecurityConfig {
 
   @Bean
   public OAuth2LoginSuccessHandler oAuth2AuthenticationSuccessHandler() {
-    return new OAuth2LoginSuccessHandler(tokenService, oAuth2AuthorizationRequestRepository(), appProperties, userRepository
-    );
+    return new OAuth2LoginSuccessHandler(oAuth2AuthorizationRequestRepository(), appProperties, userRepository);
   }
 
   @Bean
