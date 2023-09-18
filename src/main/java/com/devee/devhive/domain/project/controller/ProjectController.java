@@ -116,7 +116,7 @@ public class ProjectController {
   @Operation(summary = "프로젝트 상태 변경", description = "프로젝트 고유 ID로 프로젝트 상태 변경 - 글 작성자만 변경 가능(모집중, 모집 완료, 재모집, 완료)")
   public void updateProjectStatus(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId, @RequestBody UpdateProjectStatusDto statusDto
+      @PathVariable(name = "projectId") Long projectId, @RequestBody UpdateProjectStatusDto statusDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
@@ -128,7 +128,7 @@ public class ProjectController {
   @Operation(summary = "프로젝트 수정", description = "프로젝트 고유 ID로 프로젝트 수정 - 글 작성자만 수정 가능")
   public void updateProject(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId, @RequestBody @Valid UpdateProjectDto updateProjectDto
+      @PathVariable(name = "projectId") Long projectId, @RequestBody @Valid UpdateProjectDto updateProjectDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.updateProject(user, projectId, updateProjectDto);
@@ -139,7 +139,7 @@ public class ProjectController {
   @DeleteMapping("/{projectId}")
   @Operation(summary = "작성자가 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
   public void deleteProject(
-      @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
+      @AuthenticationPrincipal PrincipalDetails principal, @PathVariable(name = "projectId") Long projectId
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.findById(projectId);
@@ -158,7 +158,7 @@ public class ProjectController {
   @Transactional
   @DeleteMapping("/{projectId}/leader-exit")
   @Operation(summary = "리더가 퇴출되어 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제")
-  public void deleteProject(@PathVariable Long projectId) {
+  public void deleteProject(@PathVariable(name = "projectId") Long projectId) {
     Project project = projectService.findById(projectId);
     deleteOfProject(projectId);
     log.info("프로젝트 관련 삭제 완료");
@@ -212,7 +212,7 @@ public class ProjectController {
   // 프로젝트 상세 조회
   @GetMapping("/{projectId}")
   @Operation(summary = "프로젝트 상세 조회", description = "프로젝트 고유 ID로 프로젝트 조회")
-  public ResponseEntity<ProjectInfoDto> getProjectInfo(@PathVariable("projectId") Long projectId) {
+  public ResponseEntity<ProjectInfoDto> getProjectInfo(@PathVariable(name = "projectId") Long projectId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     Project project = projectService.findById(projectId);
