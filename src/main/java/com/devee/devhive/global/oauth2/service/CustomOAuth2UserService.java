@@ -74,9 +74,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   // 회원가입
   private User createUser(OAuth2UserInfo userInfo, ProviderType providerType) {
-    String nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+    String nickname = "닉네임변경해주세요" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     while (userRepository.existsByNickName(nickname)) {
-      nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+      nickname = "닉네임변경해주세요" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
     String refreshToken = tokenService.createRefreshToken();
     return userRepository.save(User.builder()
