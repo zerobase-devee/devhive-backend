@@ -136,7 +136,7 @@ public class ProjectController {
 
   // 프로젝트 삭제
   @DeleteMapping("/{projectId}")
-  @Operation(summary = "프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
+  @Operation(summary = "작성자가 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
   public void deleteProject(
       @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
   ) {
@@ -149,20 +149,17 @@ public class ProjectController {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
 
-    ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
-    if (chatRoom != null) {
-      Long chatRoomId = chatRoom.getId();
-      chatMessageService.deleteOfChatRoom(chatRoomId);
-      chatMemberService.deleteOfChatRoom(chatRoomId);
-      chatRoomService.deleteChatRoom(chatRoom);
-    }
-    bookmarkService.deleteByProject(projectId);
-    commentService.deleteCommentsByProjectId(projectId);
-    projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
-    projectMemberService.deleteProjectMembers(projectId);
-    projectApplyService.deleteAll(projectId);
-    viewCountService.delete(projectId);
+    deleteOfProject(projectId);
     projectService.deleteProject(project);
+  }
+
+  // 리더가 퇴출되어 예외없이 프로젝트 삭제
+  @DeleteMapping("/{projectId}/leader-exit")
+  @Operation(summary = "리더가 퇴출되어 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제")
+  public void deleteProject(@PathVariable Long projectId) {
+    Project project = projectService.findById(projectId);
+    deleteOfProject(projectId);
+    projectService.deleteLeadersProject(project);
   }
 
   @PostMapping("/list")
@@ -227,6 +224,22 @@ public class ProjectController {
     return ResponseEntity.ok(ProjectInfoDto.of(
         project, techStacks, projectMembers, loggedInUser, bookmarkId, applyStatus)
     );
+  }
+
+  private void deleteOfProject(Long projectId) {
+    ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
+    if (chatRoom != null) {
+      Long chatRoomId = chatRoom.getId();
+      chatMessageService.deleteOfChatRoom(chatRoomId);
+      chatMemberService.deleteOfChatRoom(chatRoomId);
+      chatRoomService.deleteChatRoom(chatRoom);
+    }
+    bookmarkService.deleteByProject(projectId);
+    commentService.deleteCommentsByProjectId(projectId);
+    projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
+    projectMemberService.deleteProjectMembers(projectId);
+    projectApplyService.deleteAll(projectId);
+    viewCountService.delete(projectId);
   }
 
   private List<TechStackDto> getTechStacks(Long projectId) {
