@@ -15,8 +15,6 @@ import com.devee.devhive.global.security.service.TokenService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -35,14 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
     log.info("CustomOAuth2UserService.loadUser() 실행 - OAuth2 로그인 요청 진입");
     OAuth2User oAuth2User = super.loadUser(userRequest);
-
-    try {
-      return process(userRequest, oAuth2User);
-    } catch (AuthenticationException ex) {
-      throw new OAuth2AuthenticationException(ex.getMessage());
-    } catch (Exception ex) {
-      throw new InternalAuthenticationServiceException(ex.getMessage());
-    }
+    return process(userRequest, oAuth2User);
   }
 
   //인증을 요청하는 사용자에 따라서 없는 회원이면 회원가입

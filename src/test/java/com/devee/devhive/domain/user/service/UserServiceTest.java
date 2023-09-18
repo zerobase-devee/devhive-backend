@@ -71,7 +71,7 @@ class UserServiceTest {
             .id(1L)
             .email("test@test.com")
             .region("seoul")
-            .nickName("GOOGLE_123")
+            .nickName("닉네임변경해주세요_123")
             .providerType(ProviderType.GOOGLE)
             .intro(null)
             .build();
@@ -122,7 +122,7 @@ class UserServiceTest {
             .id(1L)
             .email("test@test.com")
             .region("seoul")
-            .nickName("GOOGLE_123")
+            .nickName("닉네임변경해주세요123")
             .providerType(ProviderType.GOOGLE)
             .intro(null)
             .build();

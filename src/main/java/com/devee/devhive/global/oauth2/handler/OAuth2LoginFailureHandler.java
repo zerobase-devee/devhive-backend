@@ -2,6 +2,8 @@ package com.devee.devhive.global.oauth2.handler;
 
 import static com.devee.devhive.global.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 
+import com.devee.devhive.global.exception.InactivityException;
+import com.devee.devhive.global.exception.OAuthProviderMissMatchException;
 import com.devee.devhive.global.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.devee.devhive.global.oauth2.util.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -11,9 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,19 +29,21 @@ public class OAuth2LoginFailureHandler extends SimpleUrlAuthenticationFailureHan
   public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException exception) throws IOException, ServletException {
     log.info("소셜로그인 인증실패");
-    if (exception instanceof OAuth2AuthenticationException) {
+    if (exception instanceof InactivityException) {
       // 비활성 상태 예외 처리
       response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED); // 405 Method Not Allowed
       response.setCharacterEncoding("UTF-8");
       response.setContentType("text/plain;charset=UTF-8");
-      response.getWriter().write(exception.getMessage());
+      response.getWriter().write("퇴출 전적으로 인해 로그인 비활성 상태입니다!");
+      response.sendRedirect("http://localhost:3000/oauth2/redirect");
       log.info("계정 비활성화로 로그인에 실패했습니다. 메시지: {}", exception.getMessage());
-    } else if(exception instanceof InternalAuthenticationServiceException) {
+    } else if(exception instanceof OAuthProviderMissMatchException) {
       // 소셜타입 불일치
       response.setStatus(HttpServletResponse.SC_CONFLICT); // 409 ProviderType Conflict
       response.setCharacterEncoding("UTF-8");
       response.setContentType("text/plain;charset=UTF-8");
       response.getWriter().write(exception.getMessage());
+      response.sendRedirect("http://localhost:3000/oauth2/redirect");
       log.info("소셜타입 불일치 로그인에 실패했습니다. 메시지: {}", exception.getMessage());
     }else {
     super.onAuthenticationFailure(request, response, exception);
