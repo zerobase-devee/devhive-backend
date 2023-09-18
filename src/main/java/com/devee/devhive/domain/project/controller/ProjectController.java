@@ -161,9 +161,7 @@ public class ProjectController {
   public void deleteProject(@PathVariable(name = "projectId") Long projectId) {
     Project project = projectService.findById(projectId);
     deleteOfProject(projectId);
-    log.info("프로젝트 관련 삭제 완료");
     projectService.deleteLeadersProject(project);
-    log.info("리더 퇴출 프로젝트 삭제 완료");
   }
 
   @PostMapping("/list")
