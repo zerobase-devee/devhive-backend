@@ -66,18 +66,8 @@ public class User extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   private ProviderType providerType;
-  private String providerId;
 
   public void updateRefreshToken(String updateRefreshToken) {
     this.refreshToken = updateRefreshToken;
-  }
-
-  @Builder
-  public User(String nickName, String password, String email, ProviderType providerType, String providerId) {
-    this.nickName = nickName;
-    this.email = email;
-    this.password = password;
-    this.providerType = providerType;
-    this.providerId = providerId;
   }
 }

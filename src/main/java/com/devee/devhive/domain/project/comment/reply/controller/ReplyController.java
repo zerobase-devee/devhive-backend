@@ -1,5 +1,7 @@
 package com.devee.devhive.domain.project.comment.reply.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.PLEASE_CHANGE_NICKNAME;
+
 import com.devee.devhive.domain.project.comment.entity.Comment;
 import com.devee.devhive.domain.project.comment.reply.entity.Reply;
 import com.devee.devhive.domain.project.comment.reply.entity.dto.ReplyDto;
@@ -9,6 +11,7 @@ import com.devee.devhive.domain.project.comment.service.CommentService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.global.entity.PrincipalDetails;
+import com.devee.devhive.global.exception.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -41,6 +44,9 @@ public class ReplyController {
         @PathVariable("commentId") Long commentId, @RequestBody @Valid ReplyForm form
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
+        if (user.getNickName().startsWith("닉네임변경해주세요")) {
+            throw new CustomException(PLEASE_CHANGE_NICKNAME);
+        }
         Comment comment = commentService.getCommentById(commentId);
         Reply reply = replyService.createAndSendAlarmToCommentUser(user, comment, form);
         return ResponseEntity.ok(ReplyDto.from(reply));

@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.project.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.PLEASE_CHANGE_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
@@ -51,6 +52,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -93,6 +95,9 @@ public class ProjectController {
       @RequestBody @Valid CreateProjectDto createProjectDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
+    if (user.getNickName().startsWith("닉네임변경해주세요")) {
+      throw new CustomException(PLEASE_CHANGE_NICKNAME);
+    }
 
     Project project = projectService.createProject(createProjectDto, user);
     viewCountService.create(project);
@@ -111,7 +116,7 @@ public class ProjectController {
   @Operation(summary = "프로젝트 상태 변경", description = "프로젝트 고유 ID로 프로젝트 상태 변경 - 글 작성자만 변경 가능(모집중, 모집 완료, 재모집, 완료)")
   public void updateProjectStatus(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId, @RequestBody UpdateProjectStatusDto statusDto
+      @PathVariable(name = "projectId") Long projectId, @RequestBody UpdateProjectStatusDto statusDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
@@ -123,7 +128,7 @@ public class ProjectController {
   @Operation(summary = "프로젝트 수정", description = "프로젝트 고유 ID로 프로젝트 수정 - 글 작성자만 수정 가능")
   public void updateProject(
       @AuthenticationPrincipal PrincipalDetails principal,
-      @PathVariable Long projectId, @RequestBody @Valid UpdateProjectDto updateProjectDto
+      @PathVariable(name = "projectId") Long projectId, @RequestBody @Valid UpdateProjectDto updateProjectDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.updateProject(user, projectId, updateProjectDto);
@@ -132,9 +137,9 @@ public class ProjectController {
 
   // 프로젝트 삭제
   @DeleteMapping("/{projectId}")
-  @Operation(summary = "프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
+  @Operation(summary = "작성자가 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제 - 글 작성자만 삭제 가능")
   public void deleteProject(
-      @AuthenticationPrincipal PrincipalDetails principal, @PathVariable Long projectId
+      @AuthenticationPrincipal PrincipalDetails principal, @PathVariable(name = "projectId") Long projectId
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
     Project project = projectService.findById(projectId);
@@ -145,20 +150,18 @@ public class ProjectController {
       throw new CustomException(PROJECT_CANNOT_DELETED);
     }
 
-    ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
-    if (chatRoom != null) {
-      Long chatRoomId = chatRoom.getId();
-      chatMessageService.deleteOfChatRoom(chatRoomId);
-      chatMemberService.deleteOfChatRoom(chatRoomId);
-      chatRoomService.deleteChatRoom(chatRoom);
-    }
-    bookmarkService.deleteByProject(projectId);
-    commentService.deleteCommentsByProjectId(projectId);
-    projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
-    projectMemberService.deleteProjectMembers(projectId);
-    projectApplyService.deleteAll(projectId);
-    viewCountService.delete(projectId);
+    deleteOfProject(projectId);
     projectService.deleteProject(project);
+  }
+
+  // 리더가 퇴출되어 예외없이 프로젝트 삭제
+  @Transactional
+  @DeleteMapping("/{projectId}/leader-exit")
+  @Operation(summary = "리더가 퇴출되어 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제")
+  public void deleteProject(@PathVariable(name = "projectId") Long projectId) {
+    Project project = projectService.findById(projectId);
+    deleteOfProject(projectId);
+    projectService.deleteLeadersProject(project);
   }
 
   @PostMapping("/list")
@@ -207,7 +210,7 @@ public class ProjectController {
   // 프로젝트 상세 조회
   @GetMapping("/{projectId}")
   @Operation(summary = "프로젝트 상세 조회", description = "프로젝트 고유 ID로 프로젝트 조회")
-  public ResponseEntity<ProjectInfoDto> getProjectInfo(@PathVariable("projectId") Long projectId) {
+  public ResponseEntity<ProjectInfoDto> getProjectInfo(@PathVariable(name = "projectId") Long projectId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     Project project = projectService.findById(projectId);
@@ -223,6 +226,22 @@ public class ProjectController {
     return ResponseEntity.ok(ProjectInfoDto.of(
         project, techStacks, projectMembers, loggedInUser, bookmarkId, applyStatus)
     );
+  }
+
+  private void deleteOfProject(Long projectId) {
+    ProjectChatRoom chatRoom = chatRoomService.findByProjectId(projectId);
+    if (chatRoom != null) {
+      Long chatRoomId = chatRoom.getId();
+      chatMessageService.deleteOfChatRoom(chatRoomId);
+      chatMemberService.deleteOfChatRoom(chatRoomId);
+      chatRoomService.deleteChatRoom(chatRoom);
+    }
+    bookmarkService.deleteByProject(projectId);
+    commentService.deleteCommentsByProjectId(projectId);
+    projectTechStackService.deleteProjectTechStacksByProjectId(projectId);
+    projectMemberService.deleteProjectMembers(projectId);
+    projectApplyService.deleteAll(projectId);
+    viewCountService.delete(projectId);
   }
 
   private List<TechStackDto> getTechStacks(Long projectId) {

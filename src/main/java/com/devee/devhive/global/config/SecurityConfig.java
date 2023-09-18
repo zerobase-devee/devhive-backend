@@ -65,10 +65,11 @@ public class SecurityConfig {
         .oauth2Login(oauth2Login -> oauth2Login
             .authorizationEndpoint(
                 authorizationEndpoint -> authorizationEndpoint
-                    .baseUri("/oauth/authorize")
+                    .baseUri("/oauth2/authorization")
                     .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
             .redirectionEndpoint(
-                redirectionEndpoint -> redirectionEndpoint.baseUri("/*/oauth/redirect/* "))
+                redirectionEndpoint -> redirectionEndpoint
+                    .baseUri("/oauth2/callback/*"))
             .userInfoEndpoint(
                 userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
             .successHandler(oAuth2AuthenticationSuccessHandler())
@@ -97,6 +98,9 @@ public class SecurityConfig {
                 "/api/users/{userId}/tech-stacks",
                 "/api/users/{userId}/careers",
                 "/api/projects/{projectId}/vote",
+                "/api/projects/{projectId}/leader-exit",
+                "/api/members/users/{userId}/projects/{projectId}",
+                "/api/users/{userId}/exit-process",
                 "/api/comments/projects/{projectId}",
                 "/login/**",
                 "/api/admin/tech-stacks",
@@ -174,8 +178,7 @@ public class SecurityConfig {
 
   @Bean
   public OAuth2LoginSuccessHandler oAuth2AuthenticationSuccessHandler() {
-    return new OAuth2LoginSuccessHandler(tokenService, userRepository, oAuth2AuthorizationRequestRepository(), appProperties
-    );
+    return new OAuth2LoginSuccessHandler(oAuth2AuthorizationRequestRepository(), appProperties, userRepository);
   }
 
   @Bean

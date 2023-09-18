@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.project.apply.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.PLEASE_CHANGE_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.RECRUITMENT_ALREADY_COMPLETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
@@ -50,6 +51,9 @@ public class ProjectApplyController {
         @PathVariable("projectId") Long projectId
     ) {
         User user = userService.getUserByEmail(principalDetails.getEmail());
+        if (user.getNickName().startsWith("닉네임변경해주세요")) {
+            throw new CustomException(PLEASE_CHANGE_NICKNAME);
+        }
         Project project = projectService.findById(projectId);
         projectApplyService.projectApplyAndSendAlarmToProjectUser(user, project);
     }

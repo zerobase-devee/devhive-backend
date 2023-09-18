@@ -89,7 +89,7 @@ public class UserService {
     String userNickname = user.getNickName();
     if (!userNickname.equals(nickname)) {
       // 최초 닉네임인 경우에만 변경
-      if (userNickname.equals(user.getProviderType().getValue() + "_" + user.getProviderId())) {
+      if (userNickname.startsWith("닉네임변경해주세요")) {
         updateNickname(user, nickname);
       } else {
         throw new CustomException(ALREADY_CHANGED_NICKNAME);
