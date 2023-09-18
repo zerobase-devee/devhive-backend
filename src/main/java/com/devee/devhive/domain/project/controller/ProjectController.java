@@ -52,6 +52,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -154,6 +155,7 @@ public class ProjectController {
   }
 
   // 리더가 퇴출되어 예외없이 프로젝트 삭제
+  @Transactional
   @DeleteMapping("/{projectId}/leader-exit")
   @Operation(summary = "리더가 퇴출되어 프로젝트 삭제", description = "프로젝트 고유 ID로 프로젝트 삭제")
   public void deleteProject(@PathVariable Long projectId) {
