@@ -11,6 +11,7 @@ import com.devee.devhive.global.exception.InactivityException;
 import com.devee.devhive.global.exception.OAuthProviderMissMatchException;
 import com.devee.devhive.global.oauth2.info.OAuth2UserInfo;
 import com.devee.devhive.global.oauth2.info.OAuth2UserInfoFactory;
+import com.devee.devhive.global.security.service.TokenService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   private final UserRepository userRepository;
+  private final TokenService tokenService;
 
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -76,6 +78,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     while (userRepository.existsByNickName(nickname)) {
       nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
+    String refreshToken = tokenService.createRefreshToken();
     return userRepository.save(User.builder()
             .nickName(nickname)
             .email(userInfo.getEmail())
@@ -83,6 +86,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             .providerType(providerType)
             .rankPoint(0.0)
             .status(ActivityStatus.ACTIVITY)
+            .refreshToken(refreshToken)
             .build());
   }
 }

@@ -2,16 +2,12 @@ package com.devee.devhive.global.oauth2.handler;
 
 import static com.devee.devhive.global.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 
-import com.devee.devhive.domain.auth.dto.LoginUserDto;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.config.AppProperties;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.devee.devhive.global.oauth2.util.CookieUtils;
-import com.devee.devhive.global.security.dto.TokenDto;
-import com.devee.devhive.global.security.service.TokenService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,17 +17,15 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OAuth2LoginSuccessHandler extends
-    SavedRequestAwareAuthenticationSuccessHandler {
+public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-  private final TokenService tokenService;
   private final HttpCookieOAuth2AuthorizationRequestRepository auth2AuthorizationRequestRepository;
   private final AppProperties appProperties;
   private final UserRepository userRepository;
@@ -49,43 +43,8 @@ public class OAuth2LoginSuccessHandler extends
     }
 
     clearAuthenticationAttributes(request, response);
-//    getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    getRedirectStrategy().sendRedirect(request, response, targetUrl);
     log.info("OAuth2 Login 성공");
-
-    String email = extractUsername(authentication); // 인증 정보에서 Username(email) 추출
-
-    User user = userRepository.findByEmail(email).orElse(null);
-
-    if (user != null) {
-      // AccessToken 및 RefreshToken 생성
-      String accessToken = tokenService.createAccessToken(email);
-      String refreshToken = tokenService.createRefreshToken();
-
-      // 응답 헤더에 AccessToken 및 RefreshToken 추가
-      tokenService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
-
-      // 사용자의 RefreshToken 업데이트
-      user.updateRefreshToken(refreshToken);
-      userRepository.saveAndFlush(user);
-
-      // TokenDto 생성
-      TokenDto tokenDto = TokenDto.builder()
-          .accessToken(accessToken)
-          .refreshToken(refreshToken)
-          .userDto(LoginUserDto.from(user))
-          .build();
-
-      // TokenDto를 JSON 문자열로 변환하여 응답
-      String tokenJson = new ObjectMapper().writeValueAsString(tokenDto);
-
-      response.setContentType("application/json");
-      response.setCharacterEncoding("UTF-8");
-      response.setStatus(HttpServletResponse.SC_OK);
-      response.getWriter().write(tokenJson);
-      response.sendRedirect("http://localhost:3000/oauth2/redirect");
-
-      log.info("OAuth2로그인에 성공하였습니다. 이메일: {}", email);
-    }
   }
 
   private String extractUsername(Authentication authentication) {
@@ -103,10 +62,16 @@ public class OAuth2LoginSuccessHandler extends
           "인증실패! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
     }
 
-    String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-    String token = tokenService.createAccessToken(authentication.getName());
+    String targetUrl = appProperties.getOauth2().getAuthorizedRedirectUris().get(0);
+    log.info("여기에 프론트 리다이렉트url이 나와야함 : " + targetUrl);
+    User user = userRepository.findByEmail(extractUsername(authentication)).orElse(null);
+    String refreshToken = "";
+    if (user != null) {
+      refreshToken = user.getRefreshToken();
+    }
+
     return UriComponentsBuilder.fromUriString(targetUrl)
-        .queryParam("token", token)
+        .queryParam("refreshToken", refreshToken)
         .build().toUriString();
   }
 

@@ -15,7 +15,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements
     AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
   public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
-  public static final String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_url";
+  public static final String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri";
   private static final int COOKIE_EXPIRE_SECONDS = 180;
 
   //쿠키에 저장된 인증요청 정보를 가지고 온다
@@ -34,8 +34,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements
     log.info("saveAuthorizationRequest() 실행");
     if (authorizationRequest == null) {
       CookieUtils.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
-      CookieUtils.deleteCookie(request, response,
-          REDIRECT_URI_PARAM_COOKIE_NAME);
+      CookieUtils.deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME);
       return;
     }
 

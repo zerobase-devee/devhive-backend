@@ -73,7 +73,6 @@ class UserServiceTest {
             .region("seoul")
             .nickName("GOOGLE_123")
             .providerType(ProviderType.GOOGLE)
-            .providerId("123")
             .intro(null)
             .build();
 
@@ -99,7 +98,6 @@ class UserServiceTest {
             .region("seoul")
             .nickName("cool")
             .providerType(ProviderType.GOOGLE)
-            .providerId("123")
             .intro(null)
             .build();
 
@@ -126,7 +124,6 @@ class UserServiceTest {
             .region("seoul")
             .nickName("GOOGLE_123")
             .providerType(ProviderType.GOOGLE)
-            .providerId("123")
             .intro(null)
             .build();
 
