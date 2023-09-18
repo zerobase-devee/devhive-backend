@@ -61,7 +61,6 @@ public class ExitVoteController {
       return ResponseEntity.ok(VoteDto.of(project, targetUserId));
     }
 
-    // 투표 대상 유저를 제외한 모든 유저
     List<ProjectMember> members = projectMemberService.getProjectMemberByProjectId(projectId);
 
     exitVoteService.createExitVoteAndSendAlarm(project, registeringUser.getId(), targetUser, members);

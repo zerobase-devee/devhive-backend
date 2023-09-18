@@ -51,6 +51,10 @@ public class ExitVoteService {
 
     for (ProjectMember member : members) {
       User user = member.getUser();
+      // 퇴출대상자 제외
+      if (Objects.equals(user.getId(), targetUser.getId())) {
+        continue;
+      }
       ProjectMemberExitVote exitVote = ProjectMemberExitVote.of(
           project, targetUser, user, currentTime);
       // 등록자의 투표는 자동으로 참여 및 찬성으로 처리
