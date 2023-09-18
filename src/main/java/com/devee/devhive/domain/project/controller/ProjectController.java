@@ -1,5 +1,6 @@
 package com.devee.devhive.domain.project.controller;
 
+import static com.devee.devhive.global.exception.ErrorCode.PLEASE_CHANGE_NICKNAME;
 import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
@@ -93,6 +94,9 @@ public class ProjectController {
       @RequestBody @Valid CreateProjectDto createProjectDto
   ) {
     User user = userService.getUserByEmail(principal.getEmail());
+    if (user.getNickName().startsWith("닉네임변경해주세요")) {
+      throw new CustomException(PLEASE_CHANGE_NICKNAME);
+    }
 
     Project project = projectService.createProject(createProjectDto, user);
     viewCountService.create(project);
