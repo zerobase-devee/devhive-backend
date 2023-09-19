@@ -29,7 +29,7 @@ public class AlarmService {
 
   public SseEmitter subscribe(Long userId, String lastEventId) {
     String emitterId = makeTimeIncludeId(userId);
-    SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
+    SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(10L));
     emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
     emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
 
