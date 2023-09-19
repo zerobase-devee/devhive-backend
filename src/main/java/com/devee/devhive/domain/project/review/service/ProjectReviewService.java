@@ -22,14 +22,14 @@ public class ProjectReviewService {
   private final ProjectReviewRepository projectReviewRepository;
 
   // 프로젝트에서 유저가 받은 리뷰의 평균점수
-  public double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId, long memberCount) {
+  public Double getAverageTotalScoreByTargetUserAndProject(Long targetUserId, Long projectId, int memberCount) {
     List<ProjectReview> projectReviews = getAllProjectReviewsById(projectId);
     List<ProjectReview> userReviews = projectReviews.stream()
         .filter(projectReview -> Objects.equals(projectReview.getTargetUser().getId(), targetUserId)).toList();
 
     int count = userReviews.size();
     if (memberCount -1 != count) {
-      return 0.0;
+      return null;
     }
 
     int sumTotalScore = userReviews.stream().mapToInt(ProjectReview::getTotalScore).sum();

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ProjectHistoryDto {
 
     private String projectName;
-    private double totalAverageScore;
+    private Double totalAverageScore;
 
     public static ProjectHistoryDto of(String projectName, double totalAverageScore) {
         return ProjectHistoryDto.builder()

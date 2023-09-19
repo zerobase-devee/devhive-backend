@@ -82,8 +82,8 @@ public class UserProjectController {
         User user = userService.getUserByEmail(principal.getEmail());
         Long userId = user.getId();
         Project project = projectService.findById(projectId);
-        long memberCount = projectMemberService.getProjectMemberByProjectId(projectId).size();
-        double totalAverageScore = projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, projectId, memberCount);
+        int memberCount = projectMemberService.getProjectMemberByProjectId(projectId).size();
+        Double totalAverageScore = projectReviewService.getAverageTotalScoreByTargetUserAndProject(userId, projectId, memberCount);
         List<ProjectMemberDto> projectMemberDtoList =
             projectMemberService.getProjectMemberByProjectId(projectId).stream()
                 .map(projectMember -> {

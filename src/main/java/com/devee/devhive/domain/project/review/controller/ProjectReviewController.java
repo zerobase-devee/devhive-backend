@@ -58,10 +58,10 @@ public class ProjectReviewController {
     // 타겟유저의 유저뱃지리스트들 점수 업데이트
     userBadgeService.updatePoint(targetUser, evaluationList);
 
-    long memberCount = memberService.getProjectMemberByProjectId(projectId).size();
+    int memberCount = memberService.getProjectMemberByProjectId(projectId).size();
     // 팀원평가 모두 한 경우 평균점수를 타겟유저 랭킹포인트 업데이트
-    double averagePoint = reviewService.getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId, memberCount);
-    if (averagePoint != 0.0) {
+    Double averagePoint = reviewService.getAverageTotalScoreByTargetUserAndProject(targetUserId, projectId, memberCount);
+    if (averagePoint != null) {
       userService.updateRankPoint(targetUser, project, averagePoint);
     }
     return ResponseEntity.ok(ReviewDto.of(newReview, evaluationList));
