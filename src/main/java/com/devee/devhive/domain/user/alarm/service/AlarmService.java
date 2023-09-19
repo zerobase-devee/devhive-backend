@@ -22,7 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 public class AlarmService {
 
-  private static final Long DEFAULT_TIMEOUT = 30 * 1000L; // 30초
+  private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60; // 1시간
 
   private final AlarmRepository alarmRepository;
   private final EmitterRepository emitterRepository;
