@@ -14,7 +14,7 @@ public class ProjectHistoryDto {
     private String projectName;
     private Double totalAverageScore;
 
-    public static ProjectHistoryDto of(String projectName, double totalAverageScore) {
+    public static ProjectHistoryDto of(String projectName, Double totalAverageScore) {
         return ProjectHistoryDto.builder()
             .projectName(projectName)
             .totalAverageScore(totalAverageScore)
