@@ -29,7 +29,7 @@ public class MyProjectInfoDto {
     private Long roomId;
 
     public static MyProjectInfoDto of(Long userId, Project project, List<ProjectMemberDto> projectMemberDtoList,
-        double totalAverageScore, boolean leader, Long roomId) {
+        Double totalAverageScore, boolean leader, Long roomId) {
 
         return MyProjectInfoDto.builder()
             .userId(userId)
