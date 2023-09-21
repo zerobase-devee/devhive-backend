@@ -161,11 +161,6 @@ public class TokenService {
     response.addCookie(cookie);
   }
 
-  public void updateRefreshToken(String email, String refreshToken) {
-    userRepository.findByEmail(email)
-        .ifPresent(user -> user.updateRefreshToken(refreshToken));
-  }
-
   public boolean isTokenValid(String token) {
     try {
       JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
@@ -188,11 +183,12 @@ public class TokenService {
   }
 
   // 로그아웃 시 만료된 토큰으로 설정
-  public void expireAccessToken(HttpServletResponse response) {
+  public void expireAccessToken(HttpServletResponse response, String email) {
     // 만료된 토큰으로 설정
     String expireToken = JWT.create()
         .withSubject(ACCESS_TOKEN_SUBJECT)
         .withExpiresAt(Instant.ofEpochSecond(0))
+        .withClaim(EMAIL_CLAIM, email)
         .sign(Algorithm.HMAC512(secretKey));
 
     setAccessTokenHeader(response, BEARER + expireToken);
