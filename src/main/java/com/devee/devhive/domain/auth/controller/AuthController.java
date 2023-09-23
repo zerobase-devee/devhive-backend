@@ -8,6 +8,7 @@ import com.devee.devhive.domain.auth.dto.VerifyDto;
 import com.devee.devhive.domain.auth.service.AuthService;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.repository.UserRepository;
+import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.security.dto.TokenDto;
 import com.devee.devhive.global.security.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,10 +65,10 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  public void logout(HttpSession session, HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
+  public void logout(HttpSession session, HttpServletRequest request, HttpServletResponse response,
+      @AuthenticationPrincipal PrincipalDetails principalDetails) throws IOException {
     // 유효기간 만료된 토큰 설정
-    tokenService.expireAccessToken(response);
+    tokenService.expireAccessToken(response, principalDetails.getEmail());
     // 세션 무효화
     session.invalidate();
 

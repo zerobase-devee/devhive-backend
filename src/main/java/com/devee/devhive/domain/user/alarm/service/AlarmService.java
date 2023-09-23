@@ -50,12 +50,17 @@ public class AlarmService {
     log.info("알림 저장 완료");
     Long userId = form.getReceiverUser().getId();
     Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserId(userId + "_");
-    emitters.forEach(
-        (key, emitter) -> {
-          emitterRepository.saveEventCache(key, saveAlarm.getId());
-          sendAlarm(emitter, key, "newAlarm");
-        }
-    );
+    for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
+      String key = entry.getKey();
+      SseEmitter emitter = entry.getValue();
+      try {
+        emitterRepository.saveEventCache(key, saveAlarm.getId());
+        sendAlarm(emitter, key, "newAlarm");
+      } catch (Exception e) {
+        log.error("SSE 연결이 올바르지 않습니다. 해당 userId={}", key);
+        emitterRepository.deleteById(key);
+      }
+    }
   }
 
   private String makeTimeIncludeId(Long userId) {
@@ -70,8 +75,9 @@ public class AlarmService {
           .data(data));
       log.info("알림 전송 완료");
     } catch (IOException exception) {
+      log.error("알림 전송 중 오류 발생. 해당 userId={}", emitterId);
+    } finally {
       emitterRepository.deleteById(emitterId);
-      log.error("SSE 연결이 올바르지 않습니다. 해당 userId={}", emitterId);
     }
   }
 
