@@ -52,7 +52,7 @@ public class UserBadgeService {
         userBadges.forEach(userBadge -> {
             Long badgeId = userBadge.getBadge().getId();
             badgePointsMap.computeIfPresent(badgeId, (key, value) -> {
-                userBadge.setTotalScore(Math.max(userBadge.getTotalScore() + value, 0));
+                userBadge.setTotalScore(userBadge.getTotalScore() + value);
                 return userBadge.getTotalScore();
             });
         });
