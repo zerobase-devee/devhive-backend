@@ -118,12 +118,9 @@ public class SecurityConfig {
                 "/api/projects/**",
                 "/api/chat/**",
                 "/api/comments/**",
-                "/api/reply/**"
-            ).hasAnyRole("USER", "ADMIN")
-
-            .requestMatchers(
+                "/api/reply/**",
                 "/api/admin/**"
-            ).hasRole("ADMIN")
+            ).hasAnyRole("USER", "ADMIN")
 
             .anyRequest().authenticated()
         )
