@@ -33,7 +33,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    ## create application-prod.yaml
+    # create application-prod.yaml
     - name: make application-prod.yaml
       run: |
         # create application-prod.yaml
