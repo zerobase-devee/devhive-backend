@@ -4,19 +4,19 @@ import static com.devee.devhive.global.exception.ErrorCode.AVAILABLE_LOCAL_LOGIN
 
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.entity.dto.MyInfoDto;
-import com.devee.devhive.domain.user.entity.dto.RankUserDto;
 import com.devee.devhive.domain.user.entity.dto.UserInfoDto;
 import com.devee.devhive.domain.user.entity.form.UpdateBasicInfoForm;
 import com.devee.devhive.domain.user.entity.form.UpdatePasswordForm;
+import com.devee.devhive.domain.user.favorite.entity.Favorite;
 import com.devee.devhive.domain.user.favorite.service.FavoriteService;
 import com.devee.devhive.domain.user.service.UserService;
 import com.devee.devhive.domain.user.type.ProviderType;
 import com.devee.devhive.global.entity.PrincipalDetails;
 import com.devee.devhive.global.exception.CustomException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "USER API", description = "유저 API")
 public class UserController {
 
   private final UserService userService;
@@ -48,19 +49,23 @@ public class UserController {
    * UserInfoDto - userId, nickname, profileImage url, intro, isFavorite : 로그인한 유저가 조회할 경우 상대가 관심유저인지 여부
    */
   @GetMapping("/{userId}")
+  @Operation(summary = "사용저 기본 정보 조회")
   public ResponseEntity<UserInfoDto> getUserInfo(@PathVariable("userId") Long targetUserId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     User targetUser = userService.getUserById(targetUserId);
-    boolean isFavorite = false;
+    Long favoriteId = null;
 
     if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
       // 로그인한 상태일 때 동작
       PrincipalDetails details = (PrincipalDetails) authentication.getPrincipal();
       User loggedInUser = userService.getUserByEmail(details.getEmail());
-      isFavorite = favoriteService.isFavorite(loggedInUser.getId(), targetUserId);
+      Favorite favorite = favoriteService.findByUserIdAndFavoriteUserId(loggedInUser.getId(), targetUserId);
+      if (favorite != null) {
+        favoriteId = favorite.getId();
+      }
     }
 
-    return ResponseEntity.ok(UserInfoDto.of(targetUser, isFavorite));
+    return ResponseEntity.ok(UserInfoDto.of(targetUser, favoriteId));
   }
 
   /**
@@ -68,6 +73,7 @@ public class UserController {
    * MyInfoDto - userId, email, region, nickname, isLocalLogin : 일반로그인유저 여부, profileImage url, intro
    */
   @GetMapping("/my-profile")
+  @Operation(summary = "내 기본 정보 조회")
   public ResponseEntity<MyInfoDto> getMyInfo(@AuthenticationPrincipal PrincipalDetails principal) {
     User user = userService.getUserByEmail(principal.getEmail());
     return ResponseEntity.ok(MyInfoDto.of(user));
@@ -75,6 +81,7 @@ public class UserController {
 
   // 내 기본 정보 수정
   @PutMapping("/my-profile")
+  @Operation(summary = "내 기본 정보 수정")
   public void updateBasicInfo(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody @Valid UpdateBasicInfoForm form
@@ -85,6 +92,7 @@ public class UserController {
 
   // 비밀번호 변경
   @PutMapping("/password")
+  @Operation(summary = "비밀번호 변경")
   public void updatePassword(
       @AuthenticationPrincipal PrincipalDetails principal,
       @RequestBody @Valid UpdatePasswordForm form
@@ -98,6 +106,7 @@ public class UserController {
 
   // 내 프로필 사진 수정
   @PutMapping("/my-profile/image")
+  @Operation(summary = "내 프로필 사진 수정")
   public void updateProfileImage(
       @RequestPart(value = "image", required = false) MultipartFile multipartFile,
       @AuthenticationPrincipal PrincipalDetails principal
@@ -108,14 +117,9 @@ public class UserController {
 
   // 내 프로필 사진 삭제
   @DeleteMapping("/my-profile/image")
+  @Operation(summary = "내 프로필 사진 삭제")
   public void deleteProfileImage(@AuthenticationPrincipal PrincipalDetails principal) {
     User user = userService.getUserByEmail(principal.getEmail());
     userService.deleteProfileImage(user);
-  }
-
-  // 랭킹 목록 페이징 처리
-  @GetMapping("/rank")
-  public ResponseEntity<Page<RankUserDto>> getRankUsers(Pageable pageable) {
-    return ResponseEntity.ok(userService.getRankUsers(pageable).map(RankUserDto::from));
   }
 }

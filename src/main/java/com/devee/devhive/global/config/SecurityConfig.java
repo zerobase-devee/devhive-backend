@@ -1,5 +1,7 @@
 package com.devee.devhive.global.config;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import com.devee.devhive.domain.user.repository.UserRepository;
 import com.devee.devhive.global.oauth2.handler.OAuth2LoginFailureHandler;
 import com.devee.devhive.global.oauth2.handler.OAuth2LoginSuccessHandler;
@@ -52,6 +54,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
+        .cors(withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
@@ -59,50 +62,72 @@ public class SecurityConfig {
         .sessionManagement(sessionManagement -> sessionManagement
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .headers(headers -> headers.frameOptions(FrameOptionsConfig::disable))
-        .authorizeHttpRequests((authorizeRequests) -> {
-          authorizeRequests.requestMatchers(
-              "/api/auth/**",
-              "/api/projects/list",
-              "/api/projects/{projectId}",
-              "/api/projects/image",
-              "/api/users/rank",
-              "/api/users/{userId}",
-              "api/members/users/{userId}/hive-level",
-              "api/users/{userId}/exit-num",
-              "api/members/users/{userId}/project-histories",
-              "api/users/{userId}/badges",
-              "/api/tech-stacks/users/{userId}",
-              "/api/careers/users/{userId}",
-              "/api/projects/{projectId}/vote",
-              "api/comments/projects/{projectId}",
-              "/login/**"
-          ).permitAll();
-          authorizeRequests.requestMatchers(
-              "/api/**/users/**",
-              "/api/favorite/**",
-              "/api/bookmark/**",
-              "/api/projects/**",
-              "/api/chat/**",
-              "/api/comments/**",
-              "/api/reply/**"
-          ).hasAnyRole("USER", "ADMIN");
-
-          authorizeRequests.requestMatchers(
-              "/api/admin/**"
-          ).hasRole("ADMIN");
-        })
-        .logout(logout -> logout.logoutSuccessUrl("/"))
         .oauth2Login(oauth2Login -> oauth2Login
             .authorizationEndpoint(
                 authorizationEndpoint -> authorizationEndpoint
                     .baseUri("/oauth2/authorization")
                     .authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
             .redirectionEndpoint(
-                redirectionEndpoint -> redirectionEndpoint.baseUri("/api/oauth2/code/*"))
+                redirectionEndpoint -> redirectionEndpoint
+                    .baseUri("/oauth2/callback/*"))
             .userInfoEndpoint(
                 userInfoEndPoint -> userInfoEndPoint.userService(customOAuth2UserService))
             .successHandler(oAuth2AuthenticationSuccessHandler())
             .failureHandler(oAuth2AuthenticationFailureHandler()))
+        .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+            .requestMatchers(
+                "/v2/api-docs",
+                "/swagger-resources",
+                "/swagger-resources/**",
+                "/configuration/ui",
+                "/configuration/security",
+                "/swagger-ui.html",
+                "/webjars/**",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/api/auth/**",
+                "/api/projects/list",
+                "/api/projects/{projectId}",
+                "/api/rank/**",
+                "/api/users/{userId}",
+                "/api/users/alarms/subscribe/{userId}",
+                "/api/members/users/{userId}/hive-level",
+                "/api/users/{userId}/exit-num",
+                "/api/members/users/{userId}/project-histories",
+                "/api/users/{userId}/badges",
+                "/api/users/{userId}/tech-stacks",
+                "/api/users/{userId}/careers",
+                "/api/projects/{projectId}/vote",
+                "/api/projects/{projectId}/leader-exit",
+                "/api/members/users/{userId}/projects/{projectId}",
+                "/api/users/{userId}/exit-process",
+                "/api/comments/projects/{projectId}",
+                "/login/**",
+                "/api/admin/tech-stacks",
+                "/api/admin/badges",
+                "/chat/**",
+                "/pub/**",
+                "/sub/**",
+                "/oauth/**"
+            ).permitAll()
+
+            .requestMatchers(
+                "/api/users/**",
+                "/api/favorite/**",
+                "/api/bookmark/**",
+                "/api/projects/**",
+                "/api/chat/**",
+                "/api/comments/**",
+                "/api/reply/**"
+            ).hasAnyRole("USER", "ADMIN")
+
+            .requestMatchers(
+                "/api/admin/**"
+            ).hasRole("ADMIN")
+
+            .anyRequest().authenticated()
+        )
+        .logout(withDefaults())
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         .addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
         .addFilterBefore(jwtAuthenticationProcessingFilter(),
@@ -148,14 +173,12 @@ public class SecurityConfig {
 
   @Bean
   public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-    return new JwtAuthenticationProcessingFilter(
-        tokenService, userRepository);
+    return new JwtAuthenticationProcessingFilter(tokenService, userRepository);
   }
 
   @Bean
   public OAuth2LoginSuccessHandler oAuth2AuthenticationSuccessHandler() {
-    return new OAuth2LoginSuccessHandler(tokenService, userRepository, oAuth2AuthorizationRequestRepository(), appProperties
-    );
+    return new OAuth2LoginSuccessHandler(oAuth2AuthorizationRequestRepository(), appProperties, userRepository);
   }
 
   @Bean

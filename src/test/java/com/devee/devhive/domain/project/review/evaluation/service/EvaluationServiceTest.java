@@ -1,13 +1,15 @@
 package com.devee.devhive.domain.project.review.evaluation.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import com.devee.devhive.domain.badge.entity.dto.BadgeDto;
+import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.review.dto.EvaluationForm;
 import com.devee.devhive.domain.project.review.entity.ProjectReview;
-import com.devee.devhive.domain.project.review.evaluation.entity.Evaluation;
 import com.devee.devhive.domain.project.review.evaluation.repository.EvaluationRepository;
+import com.devee.devhive.domain.project.type.ProjectStatus;
 import com.devee.devhive.domain.user.entity.User;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,31 +38,30 @@ class EvaluationServiceTest {
     User user = User.builder().id(1L).build();
     User targetUser = User.builder().id(2L).build();
 
-    EvaluationForm form = EvaluationForm.builder()
-        .manner(5)
-        .contribution(5)
-        .communication(5)
-        .schedule(5)
-        .professionalism(5)
-        .build();
+    List<EvaluationForm> forms = List.of(
+        EvaluationForm.builder()
+            .badgeDto(BadgeDto.builder().id(1L).name("매너").image("매너 url").build())
+            .point(3)
+            .build(),
+        EvaluationForm.builder()
+            .badgeDto(BadgeDto.builder().id(2L).name("척척박사").image("척척박사 url").build())
+            .point(4)
+            .build());
 
     ProjectReview projectReview = ProjectReview.builder()
         .id(1L)
         .reviewerUser(user)
         .targetUser(targetUser)
-        .totalScore(form.getTotalScore())
+        .project(Project.builder()
+            .id(1L)
+            .status(ProjectStatus.RECRUITMENT_COMPLETE).build())
+        .totalScore(7)
         .build();
 
-    List<Evaluation> evaluationList = evaluationService.getEvaluationList(projectReview, form);
-
-    when(evaluationRepository.saveAll(any()))
-        .thenReturn(evaluationList);
-
     // when
-    List<Evaluation> savedEvaluationList = evaluationService.saveAllEvaluations(projectReview,form);
+    evaluationService.saveAllEvaluations(projectReview, forms);
 
     // then
-    assertThat(savedEvaluationList).isNotNull();
-    assertThat(savedEvaluationList.size()).isEqualTo(5);
+    verify(evaluationRepository, times(1)).saveAll(anyList());
   }
 }

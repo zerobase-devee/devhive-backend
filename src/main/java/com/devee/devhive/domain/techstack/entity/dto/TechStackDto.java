@@ -21,10 +21,13 @@ public class TechStackDto {
   }
 
   public static TechStackDto from(TechStack techStack) {
-    return TechStackDto.builder()
-        .id(techStack.getId())
-        .name(techStack.getName())
-        .image(techStack.getImage())
-        .build();
+    if (techStack != null) {
+      return TechStackDto.builder()
+          .id(techStack.getId())
+          .name(techStack.getName())
+          .image(techStack.getImage())
+          .build();
+    }
+    return new TechStackDto();
   }
 }

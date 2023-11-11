@@ -1,7 +1,6 @@
 package com.devee.devhive.domain.user.alarm.entity.dto;
 
 import com.devee.devhive.domain.user.entity.User;
-import com.devee.devhive.domain.user.type.RelatedUrlType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,17 +14,11 @@ public class AlarmUserDto {
 
     private Long userId;
     private String nickName;
-    private String relatedUserUrl;
 
-    public static AlarmUserDto of(User user, RelatedUrlType urlType) {
-        Long userId = user.getId();
-        String url = urlType.getValue();
-        String relatedUserUrl = urlType == RelatedUrlType.USER_INFO ? url + userId : url;
-
+    public static AlarmUserDto from(User user) {
         return AlarmUserDto.builder()
-            .userId(userId)
+            .userId(user.getId())
             .nickName(user.getNickName())
-            .relatedUserUrl(relatedUserUrl)
             .build();
     }
 }

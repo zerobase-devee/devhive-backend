@@ -29,6 +29,7 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
@@ -60,6 +61,15 @@ dependencies {
 
     // batch
     implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    // Chat(WebSocket, Stomp)
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+    implementation 'com.google.code.gson:gson:2.9.0'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
 }
 
 tasks.named('test') {

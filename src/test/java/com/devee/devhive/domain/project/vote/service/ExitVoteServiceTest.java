@@ -83,8 +83,7 @@ class ExitVoteServiceTest {
     when(exitVoteRepository.saveAllAndFlush(any())).thenReturn(exitVoteList);
 
     // when
-    exitVoteService.createExitVoteAndSendAlarm(project,
-        registeringUser, targetUser, projectMemberList);
+    exitVoteService.createExitVoteAndSendAlarm(project, registeringUser.getId(), targetUser, projectMemberList);
 
     // then
     verify(eventPublisher, times(projectMemberList.size()-1))
@@ -107,7 +106,7 @@ class ExitVoteServiceTest {
         .voterUser(user)
         .targetUser(targetUser)
         .isVoted(false)
-        .isAccept(true)
+        .isAccept(false)
         .build();
 
     when(exitVoteRepository.save(any())).thenReturn(myVote);
@@ -115,12 +114,10 @@ class ExitVoteServiceTest {
         (anyLong(), anyLong(), anyLong())).thenReturn(Optional.of(myVote));
 
     // when
-    ProjectMemberExitVote savedVote = exitVoteService
-        .submitExitVote(project, user, targetUser, true);
+    exitVoteService.submitExitVote(myVote, true);
 
-    assertThat(savedVote).isNotNull();
-    assertThat(savedVote.isVoted()).isTrue();
-    assertThat(savedVote.isAccept()).isTrue();
+    assertThat(myVote.isVoted()).isTrue();
+    assertThat(myVote.isAccept()).isTrue();
   }
 
   @Test
@@ -149,7 +146,7 @@ class ExitVoteServiceTest {
     // when
     CustomException exception = assertThrows(CustomException.class,
         () -> exitVoteService
-            .submitExitVote(project, user, targetUser, true));
+            .submitExitVote(myVote, true));
 
     assertEquals(ALREADY_SUBMIT_VOTE, exception.getErrorCode());
   }

@@ -1,4 +1,4 @@
-package com.devee.devhive.domain.user.repository;
+package com.devee.devhive.domain.user.badge.repository;
 
 import com.devee.devhive.domain.user.badge.entity.UserBadge;
 import java.util.List;

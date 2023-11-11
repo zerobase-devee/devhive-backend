@@ -1,6 +1,5 @@
 package com.devee.devhive.domain.user.alarm.entity;
 
-import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.user.alarm.entity.form.AlarmForm;
 import com.devee.devhive.domain.user.entity.User;
 import com.devee.devhive.domain.user.type.AlarmContent;
@@ -34,9 +33,8 @@ public class Alarm extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
+    private Long projectId;
+    private String projectName;
 
     private Long args; // 관심유저아이디 or 타겟유저아이디
 
@@ -48,7 +46,8 @@ public class Alarm extends BaseEntity {
         User otherUser = form.getUser();
         return Alarm.builder()
             .user(form.getReceiverUser())
-            .project(form.getProject())
+            .projectId(form.getProjectId())
+            .projectName(form.getProjectName())
             .args(otherUser == null ? null : otherUser.getId())
             .content(form.getContent())
             .build();

@@ -13,6 +13,7 @@ public enum ErrorCode {
     FAILED_SENDING_VERIFY_CODE(HttpStatus.BAD_REQUEST, "인증 코드 전송에 실패했습니다. "),
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일 입니다. "),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "이미 가입된 닉네임 입니다. "),
+    PLEASE_CHANGE_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임 변경 후 이용바랍니다. "),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다. "),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "권한이 없습니다. "),
     INVALID_JWT(HttpStatus.UNAUTHORIZED, "유효하지않은 인증입니다. "),
@@ -44,6 +45,10 @@ public enum ErrorCode {
 
     NOT_FOUND_ALARM(HttpStatus.BAD_REQUEST, "해당 알림을 찾을 수 없습니다."),
 
+    NOT_FOUND_CAREER(HttpStatus.BAD_REQUEST, "해당 경력을 찾을 수 없습니다."),
+    NOT_FOUND_BOOKMARK(HttpStatus.BAD_REQUEST, "해당 북마크를 찾을 수 없습니다."),
+    NOT_FOUND_FAVORITE(HttpStatus.BAD_REQUEST, "해당 관심유저를 찾을 수 없습니다."),
+
     // S3
     S3_NOT_FOUND_IMAGE(HttpStatus.BAD_REQUEST, "파일을 찾을 수 없습니다."),
     S3_FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "파일용량은 5MB 이하만 업로드 가능합니다."),
@@ -59,6 +64,7 @@ public enum ErrorCode {
 
     // Vote
     NOT_FOUND_VOTE(HttpStatus.BAD_REQUEST, "해당 투표를 찾을 수 없습니다."),
+    NOT_YOUR_VOTE(HttpStatus.BAD_REQUEST, "유저가 가진 투표권이 아닙니다."),
     ALREADY_REGISTERED_VOTE(HttpStatus.BAD_REQUEST, "진행중인 투표가 있습니다."),
     ALREADY_SUBMIT_VOTE(HttpStatus.BAD_REQUEST, "투표를 이미 진행했습니다."),
 
@@ -66,6 +72,12 @@ public enum ErrorCode {
     DUPLICATE_TECH_STACK(HttpStatus.BAD_REQUEST, "이미 등록된 테크스택입니다. "),
     NOT_FOUND_BADGE(HttpStatus.NOT_FOUND, "뱃지를 찾을 수 없습니다. "),
     DUPLICATE_BADGE(HttpStatus.BAD_REQUEST, "이미 등록된 뱃지입니다. "),
+
+    // Chat
+    ALREADY_CREATE_CHATROOM(HttpStatus.BAD_REQUEST, "해당 프로젝트에 대한 채팅방이 이미 존재합니다. "),
+    ALREADY_ENTER_CHATROOM(HttpStatus.BAD_REQUEST, "이미 참여한 채팅방입니다."),
+    NOT_FOUND_CHATROOM(HttpStatus.NOT_FOUND, "해당 채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATMEMBER(HttpStatus.NOT_FOUND, "해당 채팅방에 참여하고 있지 않습니다."),
     ;
     private final HttpStatus httpStatus;
     private final String detail;

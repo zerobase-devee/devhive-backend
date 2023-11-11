@@ -1,10 +1,9 @@
-// CustomProjectRepositoryImpl.java
 package com.devee.devhive.domain.project.repository.impl;
 
 import com.devee.devhive.domain.project.entity.Project;
 import com.devee.devhive.domain.project.entity.QProject;
-import com.devee.devhive.domain.project.techstack.entity.QProjectTechStack;
 import com.devee.devhive.domain.project.repository.custom.CustomProjectRepository;
+import com.devee.devhive.domain.project.techstack.entity.QProjectTechStack;
 import com.devee.devhive.domain.project.type.DevelopmentType;
 import com.devee.devhive.domain.project.type.RecruitmentType;
 import com.querydsl.core.BooleanBuilder;
@@ -39,11 +38,19 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     }
 
     if (development != null) {
-      predicate.and(qProject.developmentType.eq(development));
+      if (development == DevelopmentType.ALL) {
+        predicate.and(qProject.developmentType.in(DevelopmentType.getAllDevelopmentTypes()));
+      } else {
+        predicate.and(qProject.developmentType.eq(development));
+      }
     }
 
     if (recruitment != null) {
-      predicate.and(qProject.recruitmentType.eq(recruitment));
+      if (recruitment == RecruitmentType.ALL) {
+        predicate.and(qProject.recruitmentType.in(RecruitmentType.getAllRecruitmentTypes()));
+      } else {
+        predicate.and(qProject.recruitmentType.eq(recruitment));
+      }
     }
 
     if (techStackIds != null && !techStackIds.isEmpty()) {
@@ -51,20 +58,20 @@ public class CustomProjectRepositoryImpl implements CustomProjectRepository {
     }
 
     JPAQuery<Project> query = queryFactory.selectFrom(qProject)
+        .distinct()
         .leftJoin(qProjectTechStack)
         .on(qProjectTechStack.project.eq(qProject))
         .where(predicate)
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .orderBy("asc".equals(sort) ? qProject.createdDate.asc() : qProject.createdDate.desc());
 
-    if ("asc".equals(sort)) {
-      query = query.orderBy(qProject.createdDate.asc());
-    } else {
-      query = query.orderBy(qProject.createdDate.desc());
-    }
+    long totalItems = query.fetchCount();
+
+    // 페이지 크기와 오프셋 설정
+    query = query.offset(pageable.getOffset()).limit(pageable.getPageSize());
 
     List<Project> projectList = query.fetch();
 
-    return new PageImpl<>(projectList);
+    // 페이지 객체 생성 시 총 아이템 수 제공
+    return new PageImpl<>(projectList, pageable, totalItems);
   }
 }

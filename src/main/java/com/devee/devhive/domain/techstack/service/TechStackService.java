@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -26,16 +25,14 @@ public class TechStackService {
     return techStackRepository.findAllById(techStackIds);
   }
 
-  public void createTechStack(CreateTechStackDto techStackDto, MultipartFile imageFile) {
+  public void createTechStack(CreateTechStackDto techStackDto) {
     if (techStackRepository.existsByName(techStackDto.getName())) {
       throw new CustomException(DUPLICATE_TECH_STACK);
     }
 
-    String imageUrl = s3Service.upload(imageFile);
-
     TechStack techStack = TechStack.builder()
         .name(techStackDto.getName())
-        .image(imageUrl)
+        .image(techStackDto.getImageUrl())
         .build();
 
     techStackRepository.save(techStack);
@@ -50,5 +47,9 @@ public class TechStackService {
     s3Service.delete(filename);
 
     techStackRepository.delete(techStack);
+  }
+
+  public List<TechStack> getAllTechStacks() {
+    return techStackRepository.findAllByOrderByNameAsc();
   }
 }

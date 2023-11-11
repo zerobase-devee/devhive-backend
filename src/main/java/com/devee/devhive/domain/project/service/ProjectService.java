@@ -3,9 +3,9 @@ package com.devee.devhive.domain.project.service;
 import static com.devee.devhive.domain.project.type.ProjectStatus.COMPLETE;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITING;
 import static com.devee.devhive.domain.project.type.ProjectStatus.RECRUITMENT_COMPLETE;
+import static com.devee.devhive.domain.project.type.RecruitmentType.ALL;
 import static com.devee.devhive.domain.project.type.RecruitmentType.OFFLINE;
 import static com.devee.devhive.global.exception.ErrorCode.NOT_FOUND_PROJECT;
-import static com.devee.devhive.global.exception.ErrorCode.PROJECT_CANNOT_DELETED;
 import static com.devee.devhive.global.exception.ErrorCode.UNAUTHORIZED;
 
 import com.devee.devhive.domain.project.entity.Project;
@@ -63,7 +63,7 @@ public class ProjectService {
         .status(RECRUITING)
         .build();
 
-    if (createProjectDto.getRecruitmentType() == OFFLINE) {
+    if (createProjectDto.getRecruitmentType() == OFFLINE || createProjectDto.getRecruitmentType() == ALL) {
       project.setRegion(createProjectDto.getRegion());
     }
 
@@ -71,6 +71,7 @@ public class ProjectService {
   }
 
   // 프로젝트 상태변경
+  @Transactional
   public void updateProjectStatusAndAlarmToMembers(User user, Long projectId,
       UpdateProjectStatusDto statusDto, List<ProjectMember> members) {
     Project project = findById(projectId);
@@ -95,6 +96,15 @@ public class ProjectService {
       // 프로젝트 멤버들에게 팀원 평가 권유 알림 이벤트 발행
       reviewRequestAlarmEventPub(saveProject, members);
     }
+  }
+
+  public void updateProjectStatusRecruitmentComplete(Project project) {
+    if (project.getStatus() == RECRUITING) {
+      project.setStartDate(LocalDateTime.now());
+    }
+    project.setStatus(RECRUITMENT_COMPLETE);
+
+    projectRepository.save(project);
   }
 
   // 프로젝트 수정
@@ -128,42 +138,30 @@ public class ProjectService {
     if (!Objects.equals(project.getDeadline(), updateProjectDto.getDeadline())) {
       project.setDeadline(updateProjectDto.getDeadline());
     }
-    if (updateProjectDto.getRecruitmentType() == OFFLINE && !Objects.equals(project.getRegion(),
-        updateProjectDto.getRegion())) {
+    if (updateProjectDto.getRecruitmentType() == OFFLINE || updateProjectDto.getRecruitmentType() == ALL) {
       project.setRegion(updateProjectDto.getRegion());
     }
 
     return projectRepository.save(project);
   }
 
-
   // 프로젝트 삭제
   @Transactional
   public void deleteProject(Project project) {
-    if (project.getStatus() != ProjectStatus.RECRUITING) {
-      throw new CustomException(PROJECT_CANNOT_DELETED);
-    }
     projectRepository.delete(project);
   }
 
   // 리더가 퇴출된 프로젝트는 예외 없이 삭제
-  @Transactional
-  public void deleteLeadersProject(Long projectId) {
-    Project project = findById(projectId);
+  public void deleteLeadersProject(Project project) {
     projectRepository.delete(project);
-  }
-
-  public Project updateViewPoint(Long projectId) {
-    Project project = findById(projectId);
-    project.setViewCount(project.getViewCount() + 1);
-    return projectRepository.save(project);
   }
 
   private void reviewRequestAlarmEventPub(Project project, List<ProjectMember> members) {
     for (ProjectMember projectMember : members) {
       AlarmForm alarmForm = AlarmForm.builder()
           .receiverUser(projectMember.getUser())
-          .project(project)
+          .projectId(project.getId())
+          .projectName(project.getName())
           .content(AlarmContent.REVIEW_REQUEST)
           .build();
       eventPublisher.publishEvent(alarmForm);

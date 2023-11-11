@@ -58,8 +58,9 @@ public class UserService {
   @Transactional
   public void updateProfileImage(MultipartFile multipartFile, User user) {
     // 기존 프로필 있으면 s3에 저장한 이미지 삭제
-    if (!user.getProfileImage().isEmpty() || user.getProfileImage() != null) {
-      String imageUrl = URLDecoder.decode(user.getProfileImage(), StandardCharsets.UTF_8);
+    String currentProfileImage = user.getProfileImage();
+    if (currentProfileImage != null && !currentProfileImage.isEmpty()) {
+      String imageUrl = URLDecoder.decode(currentProfileImage, StandardCharsets.UTF_8);
       String filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
 
       s3Service.delete(filename);
@@ -88,7 +89,7 @@ public class UserService {
     String userNickname = user.getNickName();
     if (!userNickname.equals(nickname)) {
       // 최초 닉네임인 경우에만 변경
-      if (userNickname.equals(user.getProviderType().getValue() + "_" + user.getProviderId())) {
+      if (userNickname.startsWith("닉네임변경해주세요")) {
         updateNickname(user, nickname);
       } else {
         throw new CustomException(ALREADY_CHANGED_NICKNAME);
@@ -143,14 +144,16 @@ public class UserService {
   }
 
   // 랭킹포인트 업데이트, 알림이벤트 발행
-  public void updateRankPoint(User user, Project project, double averagePoint) {
+  @Transactional
+  public void updateRankPoint(User user, Project project, Double averagePoint) {
     user.setRankPoint(user.getRankPoint() + averagePoint);
     userRepository.save(user);
 
     // 평가 완료 알림 이벤트 발행
     AlarmForm alarmForm = AlarmForm.builder()
         .receiverUser(user)
-        .project(project)
+        .projectId(project.getId())
+        .projectName(project.getName())
         .content(AlarmContent.REVIEW_RESULT)
         .build();
     eventPublisher.publishEvent(alarmForm);
